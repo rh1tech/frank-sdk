@@ -48,6 +48,10 @@ static volatile uint32_t __attribute__((section(".uninitialized_data"))) crash_i
 
 /* ---- reboot ---- */
 
+#ifndef FRANK_CONSOLE_USB
+#define FRANK_CONSOLE_USB 0
+#endif
+
 static bool guard_on;   /* frank_boot_guard() ran this boot: scratch[0] is its */
 
 void __attribute__((noreturn)) frank_reboot(bool bootsel) {
@@ -56,7 +60,10 @@ void __attribute__((noreturn)) frank_reboot(bool bootsel) {
      * USB stack may be what faulted */
     if (__get_current_exception() == 0) {
         stdio_flush();
-        busy_wait_ms(20);
+        /* USB CDC sends when the host polls: 20 ms lost the end of a full
+         * buffer now and then (frank-test: a ~C bootinfo~ cut short by the
+         * ~RST~ behind it, 1 reboot in 8) */
+        busy_wait_ms(FRANK_CONSOLE_USB ? 100 : 20);
     }
     if (get_core_num() == 0) {
         /* Core 1 off: it may be reading PSRAM. Not multicore_reset_core1(),
