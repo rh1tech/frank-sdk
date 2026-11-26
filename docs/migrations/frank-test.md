@@ -1,6 +1,6 @@
 # Moving frank-test onto frank-sdk — the plan
 
-Status: **phases 1 and 2 done (2026-11-26)**, in frank-sdk; frank-test unchanged so far. Next: phase 3.
+Status: **phases 1, 2 and 3a done (2026-11-26).** frank-test: branch `frank-sdk` (worktree `frank-test-sdk/`), commit 776cab0, not pushed. Next: 3c, then 3b (see below).
 
 ## Why frank-test is different
 
@@ -141,6 +141,39 @@ does not know. They go in when frank-test gets descriptors (and signatures) for 
 
 Unchanged in this step: `tests/`, `ui/`, `app/` dialogs, `core/detect.c`, `pinsig.c`,
 `attest.c`, settings, and all of `drivers/` and `common/link_*`.
+
+### Phase 3a: what was done (frank-test 776cab0, branch `frank-sdk`)
+
+- frank-sdk as a submodule (f7cc291); `core/board_table.c`, `board_desc.h`, `frank_caps.h`,
+  `video_mode.h` removed; `frank_core` compiles `frank-sdk/boards/gen/frank_fleet.c`,
+  `fleet/fleet.c`, with `frank-sdk/fleet/include` on its include path.
+- All five images and the slave build, with the same five warnings as before.
+- **On FRANK Next** (next image, USB console, `UI_INPUT_USB_HID=OFF`), against a baseline of
+  239a330 on the same board: the same board (FRANK Next, RP2350B rev 3), the same report row
+  for row (14 passed, 2 failed, 4 n/a, 7 could not run; the failures and could-not-runs are
+  the ESP-01 behind JP2 and the slave, which runs no link firmware), but for the firmware's
+  own CRC32 and flash-read noise (24.4 / 25.0 MiB/s).
+- Found along the way: the new FRANK mini carries an RV-3032 RTC (I2C 0x51, GP28/29), not a
+  DS3231: `CAP_RTC_RV3032` in the fleet. frank-test's RTC test knows only the DS3231, and
+  frank-sdk has no RTC driver yet: both chips are work for later (phase 4).
+
+### What 3a showed about the rest of phase 3
+
+- **3c before 3b.** `frank_platform` needs the generated board macros (`FRANK_BOARD_NAME`,
+  the clocks...), so frank-test's `boards/frank_*.h` go first. It uses little from them:
+  `PICO_DEFAULT_UART_*` and `PICO_DEFAULT_LED_PIN`, nothing else (`FRANK_A`, `FRANK_B`...
+  are unused). Mapping: frank_a -> GA, frank_b -> GB, frank_next -> NX with
+  `FRANK_RUNTIME_BOARD=ON`, frank_xt8086 -> XT, frank_z0 -> FZ with `FRANK_RUNTIME_BOARD=ON`.
+- **The heap and the linker script** come with `frank_platform`: newlib's malloc becomes the
+  two-space dlmalloc heap, and the main stack moves to its own 32 KB region. frank-test's SRAM
+  use has to be measured against that first.
+- **The clock** stays frank-test's campaign, calling `frank_clocks_apply()`. One thing
+  goes the other way: frank-test puts the regulator's voltage limit back on after a
+  non-overclocked boot (POWMAN's password write; a Core 2U sat at 1.65 V and stock clock for
+  half an hour without it). frank-sdk's reboot path restores the voltage but not the limit:
+  adopt frank-test's rule in `frank_clocks_for_reboot()`.
+- frank-test has no `~BOOT~`: flashing it went through `frank flash`'s SWD fallback (the boot
+  ROM's reboot, nothing written over SWD). frank-sdk's console protocol in 3b fixes that.
 
 ## Phase 4 (later, its own review): drivers
 
