@@ -144,7 +144,8 @@ int frank_console_poll(void (*on_char)(int ch), void (*on_cmd)(const char *line)
 
 /* ---- the console as keys: getchar_timeout_us() with the protocol taken out ----
  * For a firmware whose own code reads the console as keys (frank-test's UI):
- * linked with -Wl,--wrap=getchar_timeout_us and FRANK_CONSOLE_WRAP_GETCHAR=1
+ * linked with -Wl,--wrap=stdio_getchar_timeout_us (getchar_timeout_us() is an
+ * inline alias of it, so no symbol to wrap) and FRANK_CONSOLE_WRAP_GETCHAR=1
  * (frank_console_wrap_getchar() in CMake), every reader then gets the bytes
  * that are not the protocol, and the protocol works wherever keys are read.
  * frank_console_poll() passes each byte on as well, which a key reader
@@ -154,7 +155,7 @@ int frank_console_poll(void (*on_char)(int ch), void (*on_cmd)(const char *line)
  * next one is short. Held bytes that turn out not to be a sequence are
  * returned in order. */
 #if FRANK_CONSOLE_WRAP_GETCHAR
-int __real_getchar_timeout_us(uint32_t timeout_us);
+int __real_stdio_getchar_timeout_us(uint32_t timeout_us);
 
 #define SEQ_GAP_US 50000u   /* the longest wait for a sequence's next byte */
 
@@ -187,16 +188,16 @@ static void seq_run(const char *s, unsigned n) {
     for (unsigned i = 0; i < n; i++) frank_console_feed((unsigned char)s[i]);
 }
 
-int __wrap_getchar_timeout_us(uint32_t timeout_us) {
+int __wrap_stdio_getchar_timeout_us(uint32_t timeout_us) {
     for (;;) {
         if (held_out < held_n) return (unsigned char)held[held_out++];
         held_n = held_out = 0;
-        int c = __real_getchar_timeout_us(timeout_us);
+        int c = __real_stdio_getchar_timeout_us(timeout_us);
         if (c != '~') return c;
         held[held_n++] = '~';
         int st = 1;
         while (st == 1) {
-            c = __real_getchar_timeout_us(SEQ_GAP_US);
+            c = __real_stdio_getchar_timeout_us(SEQ_GAP_US);
             if (c < 0) break;
             held[held_n++] = (char)c;
             st = seq_state(held, held_n);

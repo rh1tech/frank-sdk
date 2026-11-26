@@ -175,7 +175,8 @@ endfunction()
 # out and acted on, for firmware whose own code reads the console as keys.
 function(frank_console_wrap_getchar target)
     target_compile_definitions(${target} PRIVATE FRANK_CONSOLE_WRAP_GETCHAR=1)
-    target_link_options(${target} PRIVATE -Wl,--wrap=getchar_timeout_us)
+    # getchar_timeout_us() is an inline alias: the function behind it
+    target_link_options(${target} PRIVATE -Wl,--wrap=stdio_getchar_timeout_us)
 endfunction()
 
 # -fno-short-enums for these sources only (see frank_firmware); the linker's
