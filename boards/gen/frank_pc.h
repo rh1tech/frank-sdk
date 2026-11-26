@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_PC 1
+#define FRANK_TARGET_PC 1
 #define FRANK_BOARD_ID "PC"
 #define FRANK_BOARD_NAME "Olimex PICO-PC (Pico 2)"
-#define FRANK_ROLE_SINGLE 1
+#define FRANK_TARGET_ROLE_SINGLE 1
 
 #define PICO_RP2350A 1
 

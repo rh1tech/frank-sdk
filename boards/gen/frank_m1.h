@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_M1 1
+#define FRANK_TARGET_M1 1
 #define FRANK_BOARD_ID "M1"
 #define FRANK_BOARD_NAME "Murmulator 1 pinout, Pico 2 (M1P2)"
-#define FRANK_ROLE_SINGLE 1
+#define FRANK_TARGET_ROLE_SINGLE 1
 
 #define PICO_RP2350A 1
 

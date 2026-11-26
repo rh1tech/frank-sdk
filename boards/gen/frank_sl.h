@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_SL 1
+#define FRANK_TARGET_SL 1
 #define FRANK_BOARD_ID "SL"
 #define FRANK_BOARD_NAME "FRANK Next / Core 2 (slave)"
-#define FRANK_ROLE_SLAVE 1
+#define FRANK_TARGET_ROLE_SLAVE 1
 
 #define PICO_RP2350A 1
 

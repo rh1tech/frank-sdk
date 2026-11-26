@@ -27,6 +27,7 @@
 import argparse
 import glob
 import json
+import re
 import os
 import sys
 
@@ -190,10 +191,10 @@ def header(b, bases):
         "",
         "pico_board_cmake_set(PICO_PLATFORM, rp2350)",
         "",
-        f"#define FRANK_BOARD_{b['id']} 1",
+        f"#define FRANK_TARGET_{b['id']} 1",
         f"#define FRANK_BOARD_ID \"{b['id']}\"",
         f"#define FRANK_BOARD_NAME {json.dumps(b['name'])}",
-        f"#define FRANK_ROLE_{b['role'].upper()} 1",
+        f"#define FRANK_TARGET_ROLE_{b['role'].upper()} 1",
         "",
     ]
     if b["mcu"] == "rp2350b":
@@ -348,7 +349,27 @@ def render():
         index[b["id"]] = dict(b, gpio={str(p): f for p, f in sorted(owner.items())},
                               pio_gpio_base={str(i): v for i, v in bases.items()})
     files["boards/gen/boards.json"] = json.dumps(index, indent=1, sort_keys=True) + "\n"
+    clash_check(files)
     return files
+
+
+# A board header is included after the fleet's headers in some files and
+# before them in others. A macro named like one of the fleet's enum constants
+# then silently takes the constant's place: FRANK_ROLE_SINGLE 1 made every
+# frank-test settings record default to role 1, master.
+def clash_check(files):
+    idents = set()
+    for h in glob.glob(os.path.join(ROOT, "fleet", "include", "*.h")):
+        text = re.sub(r"/\*.*?\*/|//[^\n]*", "", open(h).read(), flags=re.S)
+        idents |= set(re.findall(r"\b[A-Za-z_]\w*\b", text))
+    errs = []
+    for rel, text in files.items():
+        if rel.endswith(".h"):
+            for m in re.findall(r"^#define (\w+)", text, re.M):
+                if m in idents and not re.match(r"_BOARDS_", m):
+                    errs.append(f"{rel}: #define {m} is a name in fleet/include")
+    if errs:
+        raise BoardError("macro clashes:\n  " + "\n  ".join(sorted(set(errs))))
 
 
 def main():

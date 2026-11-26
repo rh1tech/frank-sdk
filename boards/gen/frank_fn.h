@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_FN 1
+#define FRANK_TARGET_FN 1
 #define FRANK_BOARD_ID "FN"
 #define FRANK_BOARD_NAME "FRANK Nano"
-#define FRANK_ROLE_SINGLE 1
+#define FRANK_TARGET_ROLE_SINGLE 1
 
 #define PICO_RP2350A 1
 

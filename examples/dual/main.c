@@ -19,7 +19,7 @@
 
 static link_session_t *link;
 
-#if FRANK_ROLE_MASTER
+#if FRANK_TARGET_ROLE_MASTER
 static void cmd_hello(const char *a) {
     (void)a;
     link_node_info_t ni;
@@ -52,7 +52,7 @@ static void cmd_slaveboot(const char *a) {
 int main(void) {
     frank_init("dual", FRANK_SDK_VERSION);
     link = frank_link_init();
-#if FRANK_ROLE_MASTER
+#if FRANK_TARGET_ROLE_MASTER
     frank_console_add("hello", cmd_hello, "ask the slave who it is");
     frank_console_add("echo", cmd_echo, "[bytes] the soak pattern there and back, 20 times");
     frank_console_add("slaveboot", cmd_slaveboot, "the slave into BOOTSEL");
@@ -64,7 +64,7 @@ int main(void) {
         frank_crumb_tick();
         frank_watchdog_feed();
         frank_console_poll(NULL, NULL);
-#if !FRANK_ROLE_MASTER
+#if !FRANK_TARGET_ROLE_MASTER
         frank_link_serve(link, 10000, "dual " FRANK_SDK_VERSION);
 #endif
     }

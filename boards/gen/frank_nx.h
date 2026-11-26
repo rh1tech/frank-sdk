@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_NX 1
+#define FRANK_TARGET_NX 1
 #define FRANK_BOARD_ID "NX"
 #define FRANK_BOARD_NAME "FRANK Next (master)"
-#define FRANK_ROLE_MASTER 1
+#define FRANK_TARGET_ROLE_MASTER 1
 
 // RP2350B: 48 GPIOs, so PIO needs the movable 32-pin window
 #define PICO_RP2350A 0

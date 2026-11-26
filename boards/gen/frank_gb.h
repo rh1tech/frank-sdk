@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_GB 1
+#define FRANK_TARGET_GB 1
 #define FRANK_BOARD_ID "GB"
 #define FRANK_BOARD_NAME "Generic RP2350B (board found at run time)"
-#define FRANK_ROLE_SINGLE 1
+#define FRANK_TARGET_ROLE_SINGLE 1
 
 // RP2350B: 48 GPIOs, so PIO needs the movable 32-pin window
 #define PICO_RP2350A 0

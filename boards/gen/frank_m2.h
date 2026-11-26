@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_M2 1
+#define FRANK_TARGET_M2 1
 #define FRANK_BOARD_ID "M2"
 #define FRANK_BOARD_NAME "FRANK M2 (Murmulator 2.0 pinout)"
-#define FRANK_ROLE_SINGLE 1
+#define FRANK_TARGET_ROLE_SINGLE 1
 
 // RP2350B: 48 GPIOs, so PIO needs the movable 32-pin window
 #define PICO_RP2350A 0

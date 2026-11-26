@@ -10,10 +10,10 @@
 
 pico_board_cmake_set(PICO_PLATFORM, rp2350)
 
-#define FRANK_BOARD_GA 1
+#define FRANK_TARGET_GA 1
 #define FRANK_BOARD_ID "GA"
 #define FRANK_BOARD_NAME "Generic RP2350A (board found at run time)"
-#define FRANK_ROLE_SINGLE 1
+#define FRANK_TARGET_ROLE_SINGLE 1
 
 #define PICO_RP2350A 1
 
