@@ -73,6 +73,11 @@ bool frank_rtc_read(const frank_rtc_t *r, frank_rtc_time_t *out, bool *lost);
 bool frank_rtc_set(const frank_rtc_t *r, const frank_rtc_time_t *t);
 bool frank_rtc_clear_lost(const frank_rtc_t *r);
 
+/* One register, for the bench (the RV-3032's PMU byte at 0xC0: backup
+ * switchover, trickle charge) */
+bool frank_rtc_reg_read(const frank_rtc_t *r, uint8_t reg, uint8_t *v);
+bool frank_rtc_reg_write(const frank_rtc_t *r, uint8_t reg, uint8_t v);
+
 bool frank_rtc_time_valid(const frank_rtc_time_t *t);
 uint8_t frank_rtc_days_in_month(uint16_t year, uint8_t mon);
 /* 0 = Sunday */

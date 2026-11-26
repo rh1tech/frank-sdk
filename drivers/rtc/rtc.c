@@ -96,6 +96,15 @@ bool frank_rtc_clear_lost(const frank_rtc_t *r) {
     return r->wr(r->ctx, addr_of(r->chip), w, sizeof(w));
 }
 
+bool frank_rtc_reg_read(const frank_rtc_t *r, uint8_t reg, uint8_t *v) {
+    return r && r->chip != FRANK_RTC_NONE && r->rd(r->ctx, addr_of(r->chip), reg, v, 1);
+}
+
+bool frank_rtc_reg_write(const frank_rtc_t *r, uint8_t reg, uint8_t v) {
+    const uint8_t w[2] = {reg, v};
+    return r && r->chip != FRANK_RTC_NONE && r->wr(r->ctx, addr_of(r->chip), w, sizeof(w));
+}
+
 bool frank_rtc_set(const frank_rtc_t *r, const frank_rtc_time_t *t) {
     if (!r || r->chip == FRANK_RTC_NONE || !frank_rtc_time_valid(t)) return false;
     const bool ds = r->chip == FRANK_RTC_DS3231;
