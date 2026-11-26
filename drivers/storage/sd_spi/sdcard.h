@@ -1,5 +1,5 @@
 /*
- * frank-sdk: the SPI microSD driver's pins, from the board file (boards/*.yaml
+ * frank-sdk: the SPI microSD driver's pins, from the board file (boards/<id>.yaml
  * sd, or sd_spi_fallback on a board whose card is SDIO). Hardware SPI where the
  * card sits on an SPI block's pins, PIO SPI (the board's pio.sd) where not.
  */

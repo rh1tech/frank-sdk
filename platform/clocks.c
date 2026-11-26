@@ -103,7 +103,7 @@ static void __no_inline_not_in_flash_func(flash_write_timing)(uint32_t divisor, 
  * it is the divider (+1 over 100 MHz), as the fleet always had it. Past 7 the
  * old code overflowed into a reserved bit and left 0 (504 MHz / 66 MHz); there
  * it is boot2's delay scaled to the new clock (xrip/pico-386's rule), at most 7.
- * Boards whose flash was tuned (boards/*.yaml flash_rxdelay) pass theirs.
+ * Boards whose flash was tuned (flash_rxdelay in boards/<id>.yaml) pass theirs.
  * No 64-bit division here: __aeabi_uldivmod would be a call into flash. */
 void __no_inline_not_in_flash_func(frank_flash_set_timing)(uint32_t sys_hz, unsigned max_mhz, int rxdelay) {
     const uint32_t max_hz = max_mhz * 1000000u;

@@ -27,7 +27,7 @@ extern int sdio_dma_a, sdio_dma_b;
  * emulator's SRAM buffers are a sector or a few (the driver's state is sized by it) */
 #define SDIO_MAX_BLOCKS_PER_REQ 16
 
-/* frank-sdk: the PIO and pins from the board file (boards/*.yaml sd, pio.sd) */
+/* frank-sdk: the PIO and pins from the board file (boards/<id>.yaml sd, pio.sd) */
 #define SDIO_PIO PIO_INSTANCE(FRANK_PIO_SD)
 #define SDIO_SM 0
 #define SDIO_GPIO_FUNC (FRANK_PIO_SD == 0 ? GPIO_FUNC_PIO0 : FRANK_PIO_SD == 1 ? GPIO_FUNC_PIO1 : GPIO_FUNC_PIO2)

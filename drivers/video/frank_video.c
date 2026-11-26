@@ -117,7 +117,7 @@ void frank_video_start(void) {}   /* the timer IRQ and DMA run from frank_video_
 uint32_t frank_video_frame_count(void) { return frames; }   /* tv-software counts no frames: stays 0 */
 const char *frank_video_backend(void) { return "composite"; }
 
-/* the back-end: the board's (boards/*.yaml video.hdmi.backend), or PIO on an
+/* the back-end: the board's (boards/<id>.yaml video.hdmi.backend), or PIO on an
  * HSTX board when the build asks (cmake -DFRANK_HDMI_BACKEND=pio) */
 #elif FRANK_VIDEO_HDMI_BACKEND_HSTX && !FRANK_VIDEO_USE_PIO
 /* ================= HSTX: psx_video, 320 BGR555 pixels doubled ================= */

@@ -41,7 +41,7 @@
 #include "pico.h"
 
 /* frank-sdk: the pins, lane order and PIO instance from the board
- * (boards/*.yaml video.hdmi, pio.video). Z0 wires the data lanes first, then
+ * (boards/<id>.yaml video.hdmi, pio.video). Z0 wires the data lanes first, then
  * the clock, BGR, the pairs not inverted; the M2 layout clock first, RGB,
  * inverted. */
 #define HDMI_PIO_BASE_PIN FRANK_VIDEO_HDMI_BASE
