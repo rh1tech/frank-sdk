@@ -159,11 +159,15 @@ static const pinsig_entry_t sig_minifrank[] = {
      * the earlier one, and both must still be identified. */
     /* TXS0104 A-side, 10K */
     /* PSRAM CE */
-    /* ESP-01S URXD idles high */
+    /* ESP-01S URXD, high only with a module in the socket: GP20 has no
+     * pull-up of its own (the netlist: U14 URXD and J12, nothing else). A
+     * mini without the ESP-01S read it floating and came up undecided
+     * between frank and mini (2026-11-27). GP2/3 high and GP8 high are the
+     * mini already: frank floats GP8, zero and micro float GP2/3. */
     { 2, PINSIG_HIGH },
     { 3, PINSIG_HIGH },
     { 8, PINSIG_HIGH },
-    { 20, PINSIG_HIGH },
+    { 20, PINSIG_DONTCARE },
 };
 
 static const pinsig_entry_t sig_zerofrank[] = {

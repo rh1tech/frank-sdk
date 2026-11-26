@@ -376,7 +376,7 @@
    "2": "high",
    "3": "high",
    "8": "high",
-   "20": "high"
+   "20": "dontcare"
   },
   "flash_bytes": 16777216,
   "psram_bytes": 8388608,
@@ -385,7 +385,7 @@
    "2026-11-26 (frank-sdk, from frank-lab frank_mini's netlist): the\ncurrent revision adds an RV-3032-C7 RTC (U8) on its own I2C pair,\nSDA GP28 / SCL GP29 (CAP_I2C, CAP_RTC_RV3032, address 0x51). Every\nother pin is as before. The signature is unchanged on purpose: a\npull-up pair on GP28/29 would read HIGH on this revision and float on\nthe earlier one, and both must still be identified.",
    "TXS0104 A-side, 10K",
    "PSRAM CE",
-   "ESP-01S URXD idles high"
+   "ESP-01S URXD, high only with a module in the socket: GP20 has no\npull-up of its own (the netlist: U14 URXD and J12, nothing else). A\nmini without the ESP-01S read it floating and came up undecided\nbetween frank and mini (2026-11-27). GP2/3 high and GP8 high are the\nmini already: frank floats GP8, zero and micro float GP2/3."
   ]
  },
  {
