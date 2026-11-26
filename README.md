@@ -20,6 +20,11 @@ Every HDMI output carries sound (data islands) or runs as DVI (`frank_video_set_
 board with HSTX pins can take the PIO back-end too (`-DFRANK_HDMI_BACKEND=pio`).
 `boards/unverified/` holds boards whose sources contradict themselves (Pimoroni Pico DV).
 
+`boards/fleet/` is the run-time side: every board frank-test can identify (14 and a
+fallback), its full pin map, capabilities and pin signature, generated into the C table
+`frank_fleet` and cross-checked pin for pin against the build target each runs as
+([docs/fleet.md](docs/fleet.md)).
+
 Pins live only in [`boards/*.yaml`](boards); `tools/gen_boards.py` checks them (no pin
 twice, each PIO inside one GPIO window, the two halves of a pair at one clock) and
 generates the board headers, [the pin tables](docs/boards) and the MCP's data.

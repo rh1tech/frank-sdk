@@ -6,6 +6,7 @@
 | [building.md](building.md) | the libraries, the build options, the desktop build |
 | [bench.md](bench.md) | flashing, the console, picture and sound checks, recovery |
 | [boards/](boards) | one page per target: pins, clocks, console, PIO plan (generated) |
+| [fleet.md](fleet.md) | frank-test's run-time board descriptors, and the target each runs as (generated) |
 | [gotchas/](gotchas/README.md) | the fleet's lessons: symptom, cause, fix |
 | [provenance.md](provenance.md) | where every file came from, what was merged in, what was verified on hardware |
 | [inventory.md](inventory.md) | the drift between the fleet's copies (`tools/inventory.py`) |

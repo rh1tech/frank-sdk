@@ -15,6 +15,9 @@ in [inventory.md](inventory.md) (`tools/inventory.py`).
 | `boards/fz.yaml` | frank-test `FRANK_BOARD_Z0`, `boards/frank_z0.h` | FRANK Z0. Clocks untuned (378 MHz) |
 | `boards/z0.yaml` | frank-quake2 (`BOARD_VARIANT=Z0`), frank-dos `BOARD_Z2`, `drivers/hdmi/hdmi.h` lane order | Waveshare RP2350-PiZero |
 
+| `boards/fleet/*.yaml` | frank-test `core/board_table.c` at 239a330 (netlist-derived), imported with its comments | Z0pa's accessory pins to frank-dos's wiring and its PIO-USB socket (the user's decision, 2026-11-26) |
+| `fleet/include/*.h`, `fleet/fleet.c` | frank-test `core/board_desc.h`, `frank_caps.h`, `video_mode.h`, the lookups of `board_table.c` | unchanged |
+
 ## Platform
 
 | frank-sdk | Base | Merged in |

@@ -1,0 +1,240 @@
+/*
+ * FRANK universal test firmware
+ *
+ * Copyright (c) 2026 Mikhail Matveev <xtreme@rh1.tech>
+ * https://github.com/rh1tech/frank-sdk (from frank-test)
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
+ * frank_caps.h — board identity and capability vocabulary.
+ *
+ * Every test in tests/ declares the capabilities it needs; the runner
+ * compares that against the detected board's mask and skips what the
+ * board does not have. The distinction the whole design rests on:
+ *
+ *     n/a   the board has no such hardware       (not a defect)
+ *     fail  the hardware is there and wrong      (a defect)
+ *     no-run the test could not complete          (unknown)
+ *
+ * Conflating the first two is how a test suite stops being believed.
+ */
+#ifndef FRANK_CAPS_H
+#define FRANK_CAPS_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+/* ------------------------------------------------------------------ */
+/* Boards                                                              */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    FRANK_BOARD_UNKNOWN = 0,
+
+    FRANK_BOARD_FRANK,            /* Pico 2 module carrier              */
+    FRANK_BOARD_FRANK_PGA,        /* PGA2350 carrier                    */
+    FRANK_BOARD_MEGAFRANK,        /* PGA2350 + TurboSound + RTC + PSRAM */
+    FRANK_BOARD_MICROFRANK,       /* RP2350A, HDMI only                 */
+    FRANK_BOARD_MINIFRANK,        /* RP2350A, HDMI + VGA                */
+    FRANK_BOARD_ZEROFRANK,        /* RP2350A, HDMI + PIO-USB            */
+    FRANK_BOARD_OLDSKOOLFRANK,    /* PGA2350, TDA1545A, DB9             */
+    /* Core 2 and Core 2U are one entry.
+     *
+     * They shared a pin map exactly, and the only electrical difference
+     * visible from the master was GP45: a bare pad on one, a CMOS input
+     * on the other, about 5 pF apart. Nothing could measure that, so the
+     * detector tied, called the pair ambiguous, and refused to run a
+     * single test until somebody picked one from a menu — which is a
+     * question the operator was being asked on every board of the type,
+     * to distinguish two boards that test identically.
+     *
+     * One entry with the union of their hardware asks nothing and covers
+     * both. See the descriptor in board_table.c for what that costs on
+     * the older revision. */
+    FRANK_BOARD_CORE2,            /* RP2350B + RP2350A, U revision too  */
+    /* Its master only. The slave half is pin-identical to the Core 2's
+     * and shares that descriptor, for the same reason the two Core 2
+     * revisions share theirs — see board_table.c. */
+    FRANK_BOARD_NEXT,             /* RP2350B + RP2350A + ESP8266        */
+    FRANK_BOARD_Z0PA,             /* Waveshare RP2350-PiZero            */
+    FRANK_BOARD_XT8086,           /* RP2350B chipset for a real 8086    */
+    /* Last rather than beside FRANK Next, which it most resembles: the
+     * id is what settings.c stores, so a board inserted mid-list would
+     * renumber every one after it on units that saved a choice. */
+    FRANK_BOARD_ZX,               /* RP2350B + 40-key matrix + ESP-01   */
+    /* Last for the same reason. */
+    FRANK_BOARD_Z0,               /* RP2350B, TLV320, PIO-USB, Pi header*/
+
+    FRANK_BOARD_COUNT
+} frank_board_id_t;
+
+/* Which of the two binaries this board belongs to.
+ *
+ * Two, not three. `hecate` and `frank`'s RP2040-Zero are the fleet's only
+ * RP2040s, both are PS/2-to-USB adapters with no video hardware, and both
+ * are exercised through the PS/2 tests of whatever board they are plugged
+ * into — so neither needs firmware of its own. See PLAN.md 1.4. */
+typedef enum {
+    FRANK_MCU_RP2350A = 0,        /* QFN-60, 30 GPIOs */
+    FRANK_MCU_RP2350B,            /* QFN-80 / PGA2350, 48 GPIOs */
+    FRANK_MCU_ANY,                /* descriptor is valid on more than one */
+} frank_mcu_class_t;
+
+/* A board can present more than one MCU to the firmware. The role says
+ * which half this image is running on. */
+typedef enum {
+    FRANK_ROLE_SINGLE = 0,
+    FRANK_ROLE_MASTER,
+    FRANK_ROLE_SLAVE,
+} frank_role_t;
+
+/* ------------------------------------------------------------------ */
+/* Capabilities                                                        */
+/* ------------------------------------------------------------------ */
+
+typedef uint64_t frank_caps_t;
+
+#define CAP_NONE                 0ull
+
+/* Memory */
+#define CAP_PSRAM_QMI            (1ull <<  0)  /* PSRAM on the QMI CS pin      */
+#define CAP_PSRAM_SOFTSPI        (1ull <<  1)  /* bit-banged SPI PSRAM (mega)  */
+
+/* Storage */
+#define CAP_SD                   (1ull <<  2)  /* microSD on SPI               */
+#define CAP_SD_4BIT              (1ull <<  3)  /* SDIO 4-bit wiring (next)     */
+
+/* Video — see video_detect.h. All three drive the same eight GPIOs. */
+#define CAP_VIDEO_HDMI           (1ull <<  4)
+#define CAP_VIDEO_VGA            (1ull <<  5)
+#define CAP_VIDEO_COMPOSITE      (1ull <<  6)
+
+/* Audio */
+#define CAP_AUDIO_I2S            (1ull <<  7)  /* TDA1387 / TDA1545A           */
+#define CAP_AUDIO_CODEC_I2C      (1ull <<  8)  /* TLV320DAC3100, needs I2C init*/
+#define CAP_AUDIO_AMP            (1ull <<  9)  /* PAM8403 — switch-controlled  */
+#define CAP_AUDIO_MUX            (1ull << 10)  /* 74HC4052 — switch-controlled */
+#define CAP_TURBOSOUND           (1ull << 11)  /* 2x AY via 74HC595            */
+
+/* USB */
+#define CAP_USB_DEVICE           (1ull << 12)
+#define CAP_USB_HOST             (1ull << 13)
+#define CAP_USB_HUB              (1ull << 14)
+#define CAP_USB_MUX              (1ull << 15)  /* switch-controlled            */
+#define CAP_PIO_USB              (1ull << 16)  /* soft host on ordinary GPIOs  */
+
+/* Human input */
+#define CAP_PS2                  (1ull << 17)
+#define CAP_GAMEPAD_NES          (1ull << 18)
+#define CAP_GAMEPAD_DB9          (1ull << 19)
+
+/* Misc peripherals */
+#define CAP_TAPE_IN              (1ull << 20)  /* a squarer into one GPIO      */
+#define CAP_TAPE_DIP_GATED       (1ull << 21)  /* ...only when the DIP is on   */
+#define CAP_RTC_DS3231           (1ull << 22)
+#define CAP_ONEWIRE_DS2401       (1ull << 23)
+#define CAP_I2C                  (1ull << 24)
+
+/* Companion processors */
+/* A companion 8266 on a UART, whether it arrives on an ESP-01S module or
+ * is soldered down as a bare ESP8266EX. The test does not care which —
+ * it asks over the UART and either something answers or nothing does.
+ *
+ * Bit 26 was CAP_ESP32_SPI, an ESP32-D0WD reached over SPI with real
+ * reset lines. The only board that had one was the first FRANK Next, and
+ * the second replaced it with an 8266 on the console UART, so nothing
+ * declares it and no test ever implemented it. */
+#define CAP_ESP01                (1ull << 25)  /* an 8266 on a UART            */
+#define CAP_LINK                 (1ull << 27)  /* the dual-RP2350 parallel link*/
+
+/* Indicators and controls */
+#define CAP_LED_WS2812           (1ull << 28)
+#define CAP_LED_PLAIN            (1ull << 29)
+#define CAP_DIPSWITCH            (1ull << 30)
+
+/* This board can take the PCM5122 audio hat.
+ *
+ * Deliberately not CAP_AUDIO_CODEC_I2C, which means a codec is soldered
+ * to the board and which detection vetoes a board for claiming when
+ * nothing answers on the bus. The hat is an accessory: most units do not
+ * have one fitted, and claiming it as present ruled Z0pa out of its own
+ * identification. This says only that the connector and the pins exist,
+ * which is true whether or not anything is plugged into them. */
+#define CAP_AUDIO_PCM5122        (1ull << 31)
+
+/* PWM pins straight into the analogue side - no DAC and no mux.
+ *
+ * Deliberately not CAP_AUDIO_MUX, which is what the PWM path used to be
+ * gated on because until then PWM only ever existed as one of the four
+ * inputs of megafrank's 74HC4052. On xt8086 there is no mux to set and
+ * nothing to select: the pins are the output. Gating on the mux would
+ * have hidden the only sound the board can make behind hardware it does
+ * not have, and printed switch positions for switches that are not there.
+ *
+ * This was one pin into one buzzer when it was written. The current
+ * xt8086 has a pin per channel - GP46 left, GP44 right - each through an
+ * RC filter and an LM358 follower, so it is stereo now and makes three
+ * passes like everything else. A board with only `pwm_l` wired is still
+ * mono, and tests_audio.c still says so. */
+#define CAP_AUDIO_PWM            (1ull << 32)
+
+/* A host CPU on the other side of the GPIOs.
+ *
+ * xt8086 is not a peripheral board with an MCU on it — it is a real 8086
+ * whose entire chipset is the RP2350, so thirty GPIOs are a CPU bus and
+ * not spare pins. The capability exists so the report can say so, and so
+ * the pin-short sweep can be told to keep its hands off; see
+ * `host_bus_base` in board_desc.h. */
+#define CAP_HOST_8086            (1ull << 33)
+
+/* The master can pull the slave's RUN pin low.
+ *
+ * Separate from CAP_LINK, and the separation is the point. Every board
+ * with a link can ask the slave to reboot itself over the wire, because
+ * the slave samples FS from a timer interrupt — that path proves the
+ * slave's firmware is listening, and it is the only path a Core 2 has.
+ * It also cannot recover the one failure worth recovering: a slave in
+ * lockup with interrupts off, which no message reaches.
+ *
+ * FRANK Next is the first board where GP43 actually arrives at the other
+ * chip's RUN pin. The Core 2 schematic draws the same net and the copper
+ * is not there, which is why this is a capability the board declares
+ * rather than something inferred from having two processors.
+ *
+ * See `link_run` in board_desc.h for the pin, and tests_link.c for what
+ * the two reset paths each prove. */
+#define CAP_LINK_RUN             (1ull << 34)
+
+/* A key matrix wired straight to GPIOs - no controller, no protocol.
+ *
+ * frank_zx is the first: forty MX switches in four rows of ten, the
+ * Spectrum's own arrangement, with a diode per key so that any number of
+ * keys can be held at once without ghosting. The pins are `kbd_col_*`
+ * and `kbd_row_*` in board_desc.h, and the scan is in app/dlg_matrix.c.
+ *
+ * Separate from CAP_PS2 because nothing about it is PS/2: there is no
+ * clock to watch and no byte to count. Whether a key works is a question
+ * a person answers by pressing it, which is what the dialog is for. */
+#define CAP_KBD_MATRIX           (1ull << 35)
+
+/* Any video output at all — convenience mask, not a bit of its own. */
+#define CAP_VIDEO_ANY  (CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_VIDEO_COMPOSITE)
+
+static inline bool frank_has_cap(frank_caps_t have, frank_caps_t want) {
+    return (have & want) == want;
+}
+
+static inline bool frank_has_any(frank_caps_t have, frank_caps_t want) {
+    return (have & want) != 0ull;
+}
+
+const char *frank_board_name(frank_board_id_t id);
+const char *frank_board_slug(frank_board_id_t id);   /* for `board set <x>` */
+const char *frank_mcu_class_name(frank_mcu_class_t c);
+const char *frank_role_name(frank_role_t r);
+
+/* Parse a slug back to an id. Returns FRANK_BOARD_UNKNOWN on no match. */
+frank_board_id_t frank_board_from_slug(const char *slug);
+
+#endif /* FRANK_CAPS_H */

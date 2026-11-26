@@ -1,0 +1,119 @@
+# FRANK Z0: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 13
+id: FRANK_BOARD_Z0
+name: FRANK Z0
+slug: z0
+mcu: rp2350b
+role: single
+target: FZ
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_AUDIO_I2S
+- CAP_AUDIO_CODEC_I2C
+- CAP_USB_DEVICE
+- CAP_PIO_USB
+- CAP_I2C
+- CAP_LED_PLAIN
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 8
+  uart_rx: 9
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  i2s_data: 23
+  i2s_clk_base: 25
+  i2s_mclk: 24
+  video_base: 12
+  psram_cs: 47
+  led_plain: 20
+  i2c_sda: 10
+  i2c_scl: 11
+  pio_usb_dp: 21
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_z0
+signature:
+  0: float
+  1: float
+  4: high
+  5: high
+  6: float
+  7: high
+  28: float
+  43: float
+  45: float
+  47: high
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: 'Speaker on J3, headphones on J4 (L/GND/R). Use the z0 image: keyboard and mouse on J7 (PIO-USB,
+  GP21/GP22), USB console on J8, UART console on J1 pins 8/10. The rp2350b image runs too, without a keyboard.'
+inline_notes:
+- |-
+  FRANK Z0: one RP2350B on a Pi Zero-sized board, with the fleet's
+  card and video pins and a 40-pin Raspberry Pi header for most of
+  the rest.
+
+  microSD is SPI on GP4-7 in the usual order and HDMI is HSTX on
+  GP12-19, so both take the shared drivers unchanged. The audio is
+  FRANK Next's TLV320DAC3100, but on other pins: I2C on GP10/GP11
+  behind 4K7 (also J1 pins 3/5, the Pi's SDA/SCL), DIN on GP23, MCLK
+  GP24, BCLK GP25, WCLK GP26. The driver runs its PLL from BCLK, so
+  MCLK is recorded and never driven. Both of the codec's outputs are
+  wired: the class-D pair to J3, and the headphone pair to J4
+  through 100 uF.
+
+  Two USB-C ports. J8 is the native USB, device only (5K1 on CC). J7
+  is a PIO-USB port on GP21/GP22 through 22R - also 5K1 on CC, so a
+  host cable or adapter is needed to plug a device in.
+
+  The console is the Pi's UART on J1 pins 8/10, GP8/GP9, which is
+  UART1, in the z0 image (boards/frank_z0.h). That image also puts
+  the USB HID host on J7's PIO-USB port and a CDC console on J8. The
+  rp2350b image still runs here, with its console on GP0/GP1 - bare
+  J1 pins 13/36 - and no keyboard, since its host is on J8. Every
+  other J1 pin goes nowhere but the header; docs/pinouts.txt has the
+  map.
+
+  One plain LED, LD2, blue through 100R on GP20. LD1 is the power
+  LED. The codec's RESET is an RC on its own, so no GPIO reaches it
+  and the driver's software reset is the only one.
+- 'TLV320: BCLK/WCLK/DIN, as on FRANK Next.'
+- U4, W25Q128JVPIQ
+- U1, APS6404L
+signature_notes: |-
+  FRANK Z0, which carries FRANK Next's codec and none of its pins.
+
+  The TLV320 answers 0x18 here too - on GP10/GP11 rather than GP2/GP3 -
+  so tier 1 leaves this board, FRANK Next and FRANK ZX standing and the
+  signature has to choose. The card is what does it. It is SPI on the
+  fleet's GP4-7, with a 10K on DAT0, CD/DAT3 and CMD and none on CLK, so
+  GP6 floats where the other two have DAT2 behind 10K, and GP0/GP1 are
+  bare header pins where theirs are the card's CMD and CLK.
+
+  GP28, GP43 and GP45 are bare header pins as well. GP43 and GP45 are
+  what FRANK Next pulls up and GP28 is what the PiZero does, which keeps
+  this board clear of both if the codec ever fails to answer and tier 1
+  lets the whole class through.
+
+  Nothing from the codec's own pins. GP23-26 go straight into its inputs
+  and float exactly as an unused pad does, which says nothing, and
+  GP10/GP11 are the I2C pair that pinsig_score() will not probe.
+
+  Drawn from the netlist; confirm with FRANK_DUMP_PINSIG on the first
+  board. Scored against the netlists of the other two: 10/12 for ZX
+  and 5/9 for Next on this board; 8/10 for this one on a ZX and 6/10
+  on a Next.
+signature_inline_notes:
+- J1 pins 13/36, bare
+- SD DAT0, CD/DAT3, 10K
+- SD CLK, no pull
+- SD CMD, 10K
+- J1 pin 38, bare
+- J1 pins 19/16, bare
+- PSRAM CE, 10K

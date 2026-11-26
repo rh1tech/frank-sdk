@@ -1,0 +1,45 @@
+# zeroFRANK: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 5
+id: FRANK_BOARD_ZEROFRANK
+name: zeroFRANK
+slug: zero
+mcu: rp2350a
+role: single
+target: null
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_AUDIO_I2S
+- CAP_USB_DEVICE
+- CAP_PIO_USB
+- CAP_LED_PLAIN
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 0
+  uart_rx: 1
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  i2s_data: 9
+  i2s_clk_base: 10
+  video_base: 12
+  psram_cs: 8
+  led_plain: 25
+  pio_usb_dp: 20
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_zerofrank
+signature:
+  2: float
+  3: float
+  8: high
+  20: high
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: null
+signature_inline_notes:
+- PIO-USB D+, 1.5K to 3V3

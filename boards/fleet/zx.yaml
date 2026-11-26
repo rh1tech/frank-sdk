@@ -1,0 +1,181 @@
+# FRANK ZX: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 12
+id: FRANK_BOARD_ZX
+name: FRANK ZX
+slug: zx
+mcu: rp2350b
+role: single
+target: null
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_SD_4BIT
+- CAP_VIDEO_HDMI
+- CAP_AUDIO_I2S
+- CAP_AUDIO_CODEC_I2C
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_USB_HUB
+- CAP_USB_MUX
+- CAP_TAPE_IN
+- CAP_I2C
+- CAP_ESP01
+- CAP_LED_WS2812
+- CAP_LED_PLAIN
+- CAP_KBD_MATRIX
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 46
+  uart_rx: 45
+  sd_dat0: 4
+  sd_cs: 7
+  sd_clk: 1
+  sd_cmd: 0
+  sd_dat1: 5
+  sd_dat2: 6
+  i2s_data: 11
+  i2s_clk_base: 9
+  i2s_mclk: 8
+  video_base: 12
+  psram_cs: 47
+  led_ws2812: 35
+  led_plain: 34
+  esp_uart_tx: 36
+  esp_uart_rx: 37
+  esp_reset: 38
+  esp_gpio0: 39
+  tape_in: 44
+  i2c_sda: 2
+  i2c_scl: 3
+  kbd_col_base: 20
+  kbd_row_base: 30
+  kbd_col_len: 10
+  kbd_row_len: 4
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_zx
+signature:
+  0: high
+  1: float
+  4: high
+  5: high
+  6: high
+  7: high
+  40: float
+  41: float
+  42: float
+  43: float
+  45: float
+  47: high
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: 'S9 selects the USB mux: the USB-C port, or the hub and its three USB-A ports. The ESP-01''s
+  RST and GPIO0 are on GP38/GP39, so a silent module is reset once before the row gives up. The keyboard
+  is Tests > ZX Keyboard; CAPS SHIFT + SPACE closes it from the board itself.'
+inline_notes:
+- |-
+  FRANK ZX: one RP2350B, a Spectrum's forty keys, and FRANK Next's
+  peripherals without its second processor.
+
+  Everything below GP20 is FRANK Next's master pin for pin — SDIO on
+  GP0-7, the TLV320DAC3100 on I2C GP2/GP3 with its I2S on GP8-11 (each
+  through 33R here), HDMI on GP12-19 — and so are the console on J2
+  (GP46/GP45), PSRAM CE on GP47 and the tape input on GP44, though a
+  CD4069 squares it here rather than a BC850. There is no DS3231.
+
+  Where the link was, there is a keyboard. Ten columns on GP20-29
+  (GP28/29 through 100R) and four rows on GP30-33, one MX switch and
+  one 1N4148W per key, cathode to the column. K<row><col> on the
+  board, and the switches sit on a plain 4x10 grid in that order —
+  the Spectrum's own arrangement, so row 0 is 1-0, row 3 is CAPS
+  SHIFT to SPACE. The legends are not in the design files; the
+  names in app/dlg_matrix.c are the Spectrum's.
+
+  And an ESP-01 on its own UART, GP36/GP37, with something no other
+  board in the fleet gives it: RST on GP38 and GPIO0 on GP39. CH_PD
+  is a 10K to 3V3 and nothing else.
+
+  Two LEDs, both this chip's: LD2, blue, on GP34 through 1K, and LD1,
+  a WS2812B-2020, on GP35.
+- |-
+  J2, as on FRANK Next, and for the same reason: GP0/GP1
+  are the card's CMD and CLK. Pin 1 of the header is GP45
+  and pin 3 is GP46, which is the other way round from
+  the Core 2's J2 - GP46 is the TX either way, because it
+  is the only one of the two that can be.
+- U2, W25Q128JVPIQ
+- U1, APS6404L
+signature_notes: |-
+  Three entries were here — GP2, GP3 and GP44 — and the reasons for
+  removing them are not the reasons first written here.
+
+  GP44 was simply wrong. It expected high, from reading "R48 is 1K to
+  3V3" and stopping there, which is the mistake sig_oldskoolfrank
+  records at length. There is a BC850 on that collector and with nothing
+  in the tape jack it rests conducting: measured low over SWD. It is
+  left out rather than flipped, because what it reads with a lead
+  plugged in has not been measured either.
+
+  GP2 and GP3 expected high, which is right for a working board — 4K7 to
+  3V3, and nothing else on the net. They are out because of what happens
+  when that is not true. On the first FRANK Next brought up here both
+  pins were shorted to ground; with them in the signature the board
+  scored 9 of 12 and was still identified, but a second fault would have
+  taken it below the line and turned a specific, diagnosable failure —
+  "the I2C bus is dead" — into "unidentified board", which is the least
+  useful thing this firmware can say.
+
+  A signature should be drawn from pins whose idle state is a property
+  of the board rather than of its health. The SD pull-up field is that;
+  a bus with parts hanging off it is not.
+
+  pinsig_score() also declines to probe a descriptor's I2C pins now, for
+  an unrelated reason that stands on its own: phase B drives a pad low
+  for ten microseconds, and doing that to SDA while SCL is high is an
+  I2C START.
+
+  frank_zx, which is FRANK Next's master with the link taken out and a
+  keyboard put in - and that resemblance is the whole problem.
+
+  Below GP20 the two are the same board: SDIO on GP0-7 with a 10K on
+  every line but the clock, the TLV320 behind 4K7 on GP2/GP3, its I2S on
+  GP8-11, HDMI on GP12-19. Both answer 0x18 on the bus, so tier 1 leaves
+  exactly these two standing and the signature has to choose. sig_next's
+  first seven entries are true of this board as well.
+
+  What separates them is the top of the package. GP43 is the Core 2's
+  famous slave-RUN pull-up, kept on FRANK Next and routed to nothing
+  here; GP45 is FRANK Next's ESP mux input behind 10K and a 100R into a
+  bare header pin here; GP40-42 are FRANK Next's link handshakes and
+  unconnected here.
+
+  GP38 and GP39 would separate them too - 4K7 pull-ups here, bus B's
+  clock and valid there - and are left out on purpose. They are the
+  ESP-01's RST and GPIO0, and phase B's way of asking about a pin is to
+  drive it low: a reset pulse into the module, with its bootloader strap
+  pulled low beside it on the next probe. Nothing tells the module the
+  question was not meant for it.
+
+  The rows and columns of the matrix are not here either: with no key
+  down they float exactly as FRANK Next's link lines do, and a pin that
+  reads the same on both boards is the dilution the note at the top of
+  this section warns against.
+
+  GP45 has a known way to be wrong. A USB-UART adapter on J2 drives its
+  TX into that pin and holds it high. That costs one entry of twelve and
+  is the one sig_next gets right on this board, which makes the scores
+  11/12 against 8/9 - closer than without the adapter (12/12 against
+  7/9), and still this board's.
+
+  Drawn from the netlist; confirm with FRANK_DUMP_PINSIG on the first
+  board.
+signature_inline_notes:
+- SD CMD, 10K
+- SD CLK
+- SD DAT0-2, CD/DAT3, 10K
+- unconnected
+- where FRANK Next has 10K
+- J2 RX through 100R
+- PSRAM CE, 10K

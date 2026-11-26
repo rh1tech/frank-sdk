@@ -1,0 +1,140 @@
+# OldSkoolFRANK: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 6
+id: FRANK_BOARD_OLDSKOOLFRANK
+name: OldSkoolFRANK
+slug: oldskool
+mcu: rp2350b
+role: single
+target: null
+caps:
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_VIDEO_VGA
+- CAP_AUDIO_I2S
+- CAP_AUDIO_AMP
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_USB_HUB
+- CAP_USB_MUX
+- CAP_PS2
+- CAP_GAMEPAD_DB9
+- CAP_TAPE_IN
+- CAP_ESP01
+- CAP_LED_PLAIN
+pico_socket: false
+module_memory: true
+pins:
+  uart_tx: 0
+  uart_rx: 1
+  ps2_kb_clk: 2
+  ps2_kb_dat: 3
+  ps2_ms_clk: 0
+  ps2_ms_dat: 1
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  i2s_data: 9
+  i2s_clk_base: 10
+  video_base: 12
+  led_plain: 25
+  esp_uart_tx: 38
+  esp_uart_rx: 39
+  esp_gpio0: 24
+  esp_gpio2: 23
+  pad_latch: 21
+  pad_clk: 20
+  pad_d1: 26
+  pad_d2: 27
+  tape_in: 22
+video_default: vga
+i2s_lr_swapped: true
+signature_name: sig_oldskoolfrank
+signature:
+  0: high
+  1: high
+  2: high
+  3: high
+  23: high
+  24: high
+  28: float
+  30: float
+  47: high
+flash_bytes: 0
+psram_bytes: 0
+manual_note: 'Video is chosen by solder jumpers JP3/JP4/JP5, not by firmware: closed is VGA on J11, open
+  is HDMI on J10. VGA is what comes up unasked; hold H at boot for the other. The DAC is a TDA1545A, not
+  a TDA1387, into an LM358 rather than a PAM8403. S2 selects the USB mux.'
+inline_notes:
+- |-
+  PGA2350, so the 8 MB that answers on GP47 belongs to the module
+  and not to this carrier. Without saying so, that PSRAM vetoed this
+  descriptor out of its own identification and the board reported
+  itself as a FRANK.
+- |-
+  HDMI and VGA are the same eight pins, and which socket they reach
+  is decided by three solder jumpers.
+
+  GP12-19 each drive a 220R resistor. On the HDMI side the eight
+  legs are four differential pairs; JP3, JP4 and JP5 short each
+  colour pair's two legs together, which turns them into one node
+  feeding one pin of the DSUB-15 — blue on GP12/13, green on GP14/15,
+  red on GP16/17, with GP18 and GP19 going straight to HSYNC and
+  VSYNC. That is the fleet's ladder order, B0 B1 G0 G1 R0 R1 HS VS,
+  so the HSTX VGA backend drives it unmodified.
+
+  The two resistors per colour are equal rather than weighted, so
+  the four codes give three levels and not four: 01 and 10 are the
+  same voltage. Worth knowing when the greys look coarser here than
+  on megafrank, which uses a real 2R/R ladder.
+
+  Both outputs are declared, because either can be jumpered and an
+  operator can still ask for the other by holding H at boot. Which
+  one comes up unasked is video_default below.
+- |-
+  The one board whose ESP-01S strapping pins reach the
+  MCU. Recorded so the short sweep leaves them alone and
+  so the signature's claim on them has a stated source;
+  nothing drives them, because with CH_PD unconnected and
+  RST on SW3 there is no way to make the part sample
+  them.
+- |-
+  VGA unless somebody says otherwise. The detector cannot see a
+  solder jumper, so on this board alone the descriptor knows better
+  than the probe - see board_desc.h and video_select.h.
+- |-
+  The TDA1545A calls word-select high the left channel where I2S
+  calls it the right, so left and right came out of the sides they
+  are not named after. Heard on the bench; the board's own wiring
+  from the DAC to the jack was traced and is conventional.
+signature_notes: |-
+  This said "oldskoolfrank drives PS/2 through bare 1K series resistors
+  with no pull-up to 3V3, so GP0..3 float where frank_pga's are held
+  high", and expected all four to float. Every part of that is wrong,
+  and it was wrong when it was written rather than overtaken by a board
+  revision — the netlist has not changed.
+
+  R10-R13 are 1K to +3V3, not series resistors into the connector. The
+  generator prints one hop, so `GPIO0 -> R10[1K].pin1` says nothing
+  about where R10's other end goes, and it was read as though it went to
+  the MDC-036. It goes to the rail. All four pins are held high, exactly
+  as frank_pga's are through its 10K.
+
+  The cost was not four wrong entries, it was the identification: with
+  GP0-3 high and everything else in the old signature agreeing, a real
+  oldskoolfrank matched frank_pga's whole signature and only three of
+  its own seven. It reported itself as a FRANK PGA, confidently, and
+  would have gone on doing so.
+
+  What actually separates the two is the ESP-01S strapping. Both boards
+  carry an ESP-01S on the same UART, but oldskoolfrank alone brings
+  GPIO2 and GPIO0 back to the MCU — GP23 and GP24, through 1K, each with
+  a 10K pull-up to 3V3 of its own (R1/R3 and R2/R4). Both read high, and
+  they do so with no module fitted, because those four resistors are on
+  the carrier rather than on the ESP. frank_pga leaves both pins
+  unconnected.
+signature_inline_notes:
+- R10-R13, 1K to 3V3
+- ESP GPIO2/GPIO0, 1K+10K
+- the module's PSRAM CS

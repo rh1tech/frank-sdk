@@ -49,6 +49,21 @@ def board(board_id: str) -> dict:
 
 
 @server.tool()
+def fleet(slug: str = "") -> list[dict] | dict:
+    """frank-test's run-time board descriptors (boards/fleet/*.yaml): every FRANK
+    board detection can identify, with all its pins, capabilities, the pin
+    signature and the notes from the netlists. No slug lists them."""
+    data = json.loads((BOARDS_JSON.parent / "fleet.json").read_text())
+    if not slug:
+        return [{"slug": d["slug"], "name": d["name"], "mcu": d["mcu"], "role": d["role"],
+                 "target": d.get("target")} for d in data]
+    for d in data:
+        if d["slug"] == slug:
+            return d
+    return {"error": f"no fleet board {slug}; one of {', '.join(d['slug'] for d in data)}"}
+
+
+@server.tool()
 def pin(board_id: str, gpio: int) -> str:
     """What a GPIO is on a board (and whether something else may claim it)."""
     b = _boards().get(board_id.upper())

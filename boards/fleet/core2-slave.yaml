@@ -1,0 +1,68 @@
+# Core 2 / FRANK Next (slave): frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 8
+id: FRANK_BOARD_CORE2
+name: Core 2 / FRANK Next (slave)
+slug: core2-slave
+mcu: rp2350a
+role: slave
+target: SL
+caps:
+- CAP_PSRAM_QMI
+- CAP_USB_DEVICE
+- CAP_LINK
+- CAP_LED_WS2812
+- CAP_LED_PLAIN
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 24
+  uart_rx: 25
+  psram_cs: 0
+  led_ws2812: 27
+  led_plain: 26
+  link_a_data: 1
+  link_b_data: 11
+  link_fs: 21
+  link_db_out: 23
+  link_db_in: 22
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_core2_slave
+signature:
+  0: high
+  4: float
+  5: float
+  6: float
+  7: float
+  8: float
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: Covers the Core 2, Core 2U and FRANK Next slaves, which are pin-identical and cannot be told
+  apart from this half. LD2 (WS2812B, GP27) is on FRANK Next only - on either Core 2 that row has nothing
+  to light.
+inline_notes:
+- |-
+  One entry for three boards' slave halves, for the reason the Core
+  2 and Core 2U masters are one entry: they are the same chip wired
+  the same way, and asking the operator to choose between them is
+  asking a question with no answer.
+
+  FRANK Next's slave joined them. It is pin-identical — PSRAM on
+  GP0, the two buses on GP1-GP23, UART on GP24/25, LD1 on GP26 — and
+  everything that makes a FRANK Next a FRANK Next is on the other
+  chip, which this one cannot see. Given its own descriptor it
+  scored exactly what this one scores, on the same six pins, and
+  turned every Core 2 slave into a tie the operator had to break by
+  hand.
+
+  The cost is LD2, in the usual direction: it exists on FRANK Next
+  and on neither Core 2, so the WS2812 row has nothing to find on
+  two boards out of three. The manual note says so.
+signature_notes: |-
+  The core2/core2u slave: PSRAM on GP0 rather than GP8, and the link
+  buses on GP1..GP23 carry no pull resistors at all. Tier 1's PSRAM
+  probe on CS 0 is what actually confirms this — the signature alone
+  cannot separate it from `frank`, since both show GP8 floating.
+signature_inline_notes:
+- PSRAM CE, 10K

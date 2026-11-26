@@ -1,0 +1,134 @@
+# FRANK Next: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 9
+id: FRANK_BOARD_NEXT
+name: FRANK Next
+slug: next
+mcu: rp2350b
+role: master
+target: NX
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_SD_4BIT
+- CAP_VIDEO_HDMI
+- CAP_AUDIO_I2S
+- CAP_AUDIO_CODEC_I2C
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_USB_HUB
+- CAP_USB_MUX
+- CAP_TAPE_IN
+- CAP_RTC_DS3231
+- CAP_I2C
+- CAP_ESP01
+- CAP_LINK
+- CAP_LINK_RUN
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 46
+  uart_rx: 45
+  sd_dat0: 4
+  sd_cs: 7
+  sd_clk: 1
+  sd_cmd: 0
+  sd_dat1: 5
+  sd_dat2: 6
+  i2s_data: 11
+  i2s_clk_base: 9
+  i2s_mclk: 8
+  video_base: 12
+  psram_cs: 47
+  esp_uart_tx: 46
+  esp_uart_rx: 45
+  tape_in: 44
+  i2c_sda: 2
+  i2c_scl: 3
+  link_a_data: 20
+  link_b_data: 30
+  link_fs: 40
+  link_db_out: 41
+  link_db_in: 42
+  link_run: 43
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_next
+signature:
+  0: high
+  1: float
+  4: high
+  5: high
+  6: high
+  7: high
+  43: high
+  45: high
+  47: high
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: 'JP2 is two switches: UART_SEL gives the ESP8266 to this chip or to the CH343P, and USB_SEL
+  gives the USB-C port to the CH343P or to the slave. The ESP row can only pass with UART_SEL on the RP
+  side. S7 selects the master''s USB between the hub and the second port.'
+notes: |-
+  FRANK Next, second design, and almost nothing of the first survives.
+
+  It was one RP2350B with an ESP32 on SPI; it is now the Core 2's
+  arrangement — an RP2350B master and an RP2350A slave across two
+  eight-bit buses — carrying the FRANK Next peripherals. Video on
+  GP12-19, the TLV320DAC3100 and the DS3231 are the only things that
+  stayed on the pins they were on. The SD moved, the I2C moved, the I2S
+  master clock moved, the tape input moved, the LEDs moved to the other
+  chip, the DS2401 and the gamepad ports are gone, the single PSRAM
+  became one per MCU, and the ESP32 became an ESP8266EX on a UART.
+
+  The old descriptor is not kept alongside this one. Both designs are
+  called FRANK Next, both would answer to the same name in a dialog, and
+  the fleet has no first-design boards left to test.
+inline_notes:
+- |-
+  GP46/GP45 (J2), because GP0/GP1 are the SD card's CMD
+  and CLK here. GP46 is UART0 TX only at the B package's
+  alternate function — see boards/frank_next.h.
+- |-
+  SDIO 4-bit, and not on the GP4-7 SPI convention: CMD and
+  CLK sit below the data lines rather than among them.
+- |-
+  TLV320DAC3100: BCLK/WCLK/DIN, not the TDA's
+  DATA/SCLK/LRCK order. Hence the explicit fields.
+- |-
+  A BC850 squaring the tape input, where the rest of the
+  fleet uses a CD4069.
+- |-
+  The console UART's own pins. The 8266 hangs off the same
+  pair through U26, so the two cannot talk at once and
+  neither can be reached while JP2 gives the mux to the
+  CH343P.
+- |-
+  A real net here, unlike on the Core 2, where the same
+  pin is drawn to the slave's RUN and connected to
+  nothing. The reset test still goes through FS: that
+  path is the one both boards have, and it proves the
+  slave's firmware is listening rather than only that its
+  RUN pin works. Recorded so that nothing drives it by
+  accident — see the field's note in board_desc.h.
+signature_notes: |-
+  The FRANK Next master. It shares the whole of its link — GP20-42, two
+  eight-bit buses and their handshakes — with the Core 2 master, and
+  those pins carry no pull resistors on either board, so none of them
+  can tell the two apart. What does is everything below GP20: the Core 2
+  master's microSD is SPI on GP4-7 with no pulls and its I2C does not
+  exist, while this board's is SDIO with a 10K on every line but the
+  clock, and its I2C sits on GP2/GP3 behind 4K7.
+
+  GP1 is in here as a float on purpose. It is the only SD line without a
+  pull-up — the card does not need one on CLK — and stating that is what
+  makes the five highs either side of it evidence of an SDIO card socket
+  rather than of a pull-up field.
+signature_inline_notes:
+- SD CMD, 10K
+- SD CLK, deliberately not
+- SD DAT0-2, CD/DAT3, 10K
+- slave RUN, 10K — and on
+- this board it is wired
+- ESP mux 1Y1, 10K
+- PSRAM CE, 10K

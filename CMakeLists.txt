@@ -232,3 +232,9 @@ if(FRANK_BOARD_PAIR OR FRANK_BOARD_ROLE STREQUAL "slave")
     pico_generate_pio_header(frank_link ${FRANK_SDK_DIR}/drivers/link/link_bus.pio)
     target_link_libraries(frank_link INTERFACE frank_platform hardware_dma hardware_pio hardware_clocks)
 endif()
+
+# ---- the fleet: frank-test's run-time board table (board_desc.h), generated from
+#      boards/fleet/*.yaml, for firmware that finds its board at run time ----
+add_library(frank_fleet INTERFACE)
+target_sources(frank_fleet INTERFACE ${FRANK_SDK_DIR}/boards/gen/frank_fleet.c ${FRANK_SDK_DIR}/fleet/fleet.c)
+target_include_directories(frank_fleet INTERFACE ${FRANK_SDK_DIR}/fleet/include)

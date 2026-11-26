@@ -1,0 +1,5 @@
+FRANK universal test firmware
+
+Copyright (c) 2026 Mikhail Matveev <xtreme@rh1.tech>
+https://github.com/rh1tech/frank-test
+SPDX-License-Identifier: GPL-3.0-or-later

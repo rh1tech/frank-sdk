@@ -329,7 +329,15 @@ def load_all():
 def render():
     files = {}
     index = {}
-    for b in load_all():
+    boards = load_all()
+    # the fleet: frank-test's run-time descriptors, cross-checked against these targets
+    sys.path.insert(0, os.path.join(ROOT, "tools", "fleet"))
+    import gen_fleet
+    fleet_files, fleet_errs = gen_fleet.render({b["id"]: b for b in boards})
+    if fleet_errs:
+        raise BoardError("the fleet:\n  " + "\n  ".join(fleet_errs))
+    files.update(fleet_files)
+    for b in boards:
         claims = pin_claims(b)
         bases, owner = check(b, claims)
         bid = b["id"].lower()

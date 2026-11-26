@@ -115,3 +115,45 @@ def test_scaffold_full_features(tmp_path):
 def test_link_only_on_pairs(tmp_path):
     with pytest.raises(Exception, match="no link"):
         scaffold.new_firmware(str(tmp_path / "fw"), "fw", ["M2"], features=["link"], sdk="local")
+
+
+# ---- the fleet (frank-test's run-time table) ----
+sys.path.insert(0, str(SDK / "tools" / "fleet"))
+import fleetlib  # noqa: E402
+import gen_fleet  # noqa: E402
+
+
+def _targets():
+    return {b["id"]: b for b in gen_boards.load_all()}
+
+
+def test_fleet_validates_and_cross_checks():
+    files, errs = gen_fleet.render(_targets())
+    assert not errs, errs
+    assert "frank_board_table[]" in files["boards/gen/frank_fleet.c"]
+
+
+def test_fleet_cross_check_catches_drift(tmp_path, monkeypatch):
+    boards, fb = gen_fleet.load()
+    nx = next(d for d in boards if d["slug"] == "next")
+    bad = copy.deepcopy(nx)
+    bad["pins"]["sd_clk"] = 9
+    errs = gen_fleet.cross_check(bad, _targets())
+    assert any("sd_clk" in e for e in errs), errs
+
+
+@pytest.mark.skipif(not shutil.which("cc"), reason="no host C compiler")
+def test_fleet_c_round_trip(tmp_path):
+    """the generated C, compiled and dumped, says what the YAML says"""
+    boards, fb = gen_fleet.load()
+    unit = tmp_path / "both.c"
+    unit.write_text(f'#include "{SDK / "boards/gen/frank_fleet.c"}"\n#include "{SDK / "fleet/fleet.c"}"\n')
+    dumped = fleetlib.dump(unit)
+    assert len(dumped["table"]) == len(boards)
+    fields = fleetlib.pin_fields()
+    for d, e in zip(boards, dumped["table"]):
+        assert e["slug"] == d["slug"] and e["name"] == d["name"]
+        for typ, n in fields:
+            assert e["pins"][n] == d.get("pins", {}).get(n, -1 if typ == "int8_t" else 0), (d["slug"], n)
+        assert [p for p, _ in e["sig"]] == [int(p) for p in (d.get("signature") or {})]
+        assert e["manual_note"] == d.get("manual_note")

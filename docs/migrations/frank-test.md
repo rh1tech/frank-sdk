@@ -1,6 +1,6 @@
 # Moving frank-test onto frank-sdk — the plan
 
-Status: **approved 2026-11-26; phase 1 under way** (frank-sdk only). frank-test unchanged so far.
+Status: **phase 1 done (2026-11-26)**, in frank-sdk; frank-test unchanged so far. Next: phase 2.
 
 ## Why frank-test is different
 
@@ -60,6 +60,37 @@ So the move is not "replace the board header". It is:
 - **Acceptance:** a host program built twice, once with frank-test's `board_table.c`
   and once with the generated table, dumps both as JSON. The dumps must be identical
   (every pin, cap, signature entry and string).
+
+### Phase 1: what was done
+
+- `boards/fleet/*.yaml`: frank-test's 14 descriptors and the fallback, imported by
+  `tools/fleet/import_fleet.py` from a host build of `core/board_table.c` (frank-test
+  239a330), with every comment of that file kept as `notes` / `inline_notes` /
+  `signature_notes`, in table order (`order`).
+- `fleet/include/`: frank-test's `board_desc.h`, `frank_caps.h`, `video_mode.h`, unchanged
+  but for the licence line; `fleet/fleet.c`: its lookups, unchanged.
+- `tools/gen_boards.py` (through `tools/fleet/gen_fleet.py`) writes `boards/gen/frank_fleet.c`
+  (5.4 KB of flash, `-Wall -Wextra` clean), `boards/gen/fleet.json` (the MCP's `fleet` tool)
+  and `docs/fleet.md`, and cross-checks every fleet board against its `target`.
+- **Acceptance:** `tools/fleet/compare_fleet.py` dumps frank-test's table and the generated
+  one: 15 descriptors, identical but for the Z0pa changes below. The C round trip and the
+  drift check are in the tests (`mcp/tests`).
+
+The cross-check found on its first run, and what became of it:
+
+| Board | Found | Now |
+|---|---|---|
+| FRANK, PGA, miniFRANK | `pwm_l/r` NC here, 11/10 in M2 | the same wiring, two conventions: frank-test records PWM pins only where a board has no I2S; listed in `target_differences` |
+| FRANK, PGA | `psram_cs` NC here, 47 in M2 | the PSRAM is on the module (`module_memory`); listed |
+| MegaFRANK | `psram_cs` 31 (bit-banged SPI on GP31-34) | **not an M2 board** for PSRAM: an M2 firmware would look on GP47. `target` cleared until it has a target of its own |
+| Z0pa (Waveshare PiZero) | PS/2, NES pad and PWM pins disagreed with frank-sdk's Z0 (murmnes / SpeccyP vs frank-dos / frank-quake2) | **the user's decision: frank-dos's wiring.** Z0pa now has PS/2 keyboard 2/3, mouse 0/1, NES clk 4 / latch 7 / data 6, PWM 10/11 |
+| Z0pa | no PIO-USB declared | the board's own PIO-USB socket added: D+ GP28 (`CAP_PIO_USB`), already the GP28 HIGH of its signature |
+
+frank-test's table now differs from its own repository only in Z0pa: phase 3 takes the
+generated table, so frank-test's PiZero tests move to the new pins then.
+
+Not in the fleet yet: M1 (M1P2), PC (Olimex PICO-PC) and FN (FRANK Nano), which frank-test
+does not know. They go in when frank-test gets descriptors (and signatures) for them.
 
 ## Phase 2: a run-time board mode in frank-sdk
 

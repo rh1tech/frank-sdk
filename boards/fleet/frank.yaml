@@ -1,0 +1,83 @@
+# FRANK: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 0
+id: FRANK_BOARD_FRANK
+name: FRANK
+slug: frank
+mcu: any
+role: single
+target: M2
+target_differences:
+    psram_cs: the PSRAM, if any, is on the module in the socket (module_memory); the M2 target
+      looks for it at GP47 (RP2350B) or GP8 (RP2350A) at run time
+    pwm_l: frank-test sets pwm_* only on boards with no I2S at all; here PWM reaches the same
+      I2S pins through the audio mux, which is what boards/m2.yaml audio.pwm records
+    pwm_r: as pwm_l
+caps:
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_VIDEO_VGA
+- CAP_VIDEO_COMPOSITE
+- CAP_AUDIO_I2S
+- CAP_AUDIO_AMP
+- CAP_AUDIO_MUX
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_USB_HUB
+- CAP_PS2
+- CAP_GAMEPAD_NES
+- CAP_TAPE_IN
+- CAP_TAPE_DIP_GATED
+- CAP_ESP01
+- CAP_LED_PLAIN
+- CAP_DIPSWITCH
+pico_socket: true
+module_memory: true
+pins:
+  uart_tx: 0
+  uart_rx: 1
+  ps2_kb_clk: 2
+  ps2_kb_dat: 3
+  ps2_ms_clk: 0
+  ps2_ms_dat: 1
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  i2s_data: 9
+  i2s_clk_base: 10
+  video_base: 12
+  led_plain: 25
+  esp_uart_tx: 20
+  esp_uart_rx: 21
+  pad_latch: 21
+  pad_clk: 20
+  pad_d1: 26
+  pad_d2: 27
+  tape_in: 22
+  dip: 22
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_frank_a
+signature:
+  2: high
+  3: high
+  8: float
+  22: dontcare
+flash_bytes: 0
+psram_bytes: 0
+manual_note: 'JP1: pin6-7 closes tape onto GP22; pin1 selects the audio mux; pin4 un-shuts the PAM8403.'
+inline_notes:
+- |-
+  Either package, because the socket decides.
+
+  This said RP2350A on the reasoning that only a Pico 2 is ever
+  fitted. A Pimoroni Pico Plus 2 is an RP2350B in the same
+  footprint, and one is fitted, so the assumption was simply wrong.
+  The board is whatever module is in the socket, which is exactly
+  what FRANK_MCU_ANY is for.
+- lives on the module
+signature_notes: |-
+  frank: PS/2 pull-ups present, but no PSRAM.
+signature_inline_notes:
+- depends on the DIP

@@ -1,0 +1,83 @@
+# The descriptor detection falls back to: deliberately outside the table.
+order: -1
+id: FRANK_BOARD_UNKNOWN
+name: Unidentified board
+slug: unknown
+mcu: any
+role: single
+target: null
+caps:
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_VIDEO_VGA
+- CAP_VIDEO_COMPOSITE
+- CAP_AUDIO_I2S
+- CAP_USB_DEVICE
+- CAP_PS2
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 0
+  uart_rx: 1
+  ps2_kb_clk: 2
+  ps2_kb_dat: 3
+  ps2_ms_clk: 0
+  ps2_ms_dat: 1
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  i2s_data: 9
+  i2s_clk_base: 10
+  video_base: 12
+video_default: auto
+i2s_lr_swapped: false
+signature_name: null
+signature: {}
+flash_bytes: 0
+psram_bytes: 0
+manual_note: 'SELECT A BOARD before testing:  Board > Set Board (Alt+B).  Until then only the pin conventions
+  common to the whole fleet are assumed - video GP12-19, PS/2 GP2-3, microSD GP4-7, I2S GP9-11 - enough
+  to draw this screen and not enough to test anything.'
+notes: |-
+  FRANK universal test firmware
+
+  Copyright (c) 2026 Mikhail M
+
+  v <xtreme@rh1.tech>
+  https://github.com/rh1tech/frank-test
+  SPDX-
+
+  se-Identifier: GPL-3.0-or-later
+  /
+
+  /*
+  board_table.c — the descr
+
+  .
+
+  Source of truth: the KiCad netlists, exported with
+
+      kicad-cli sch export netlist --format kicadsexpr -o b.net b.kicad_sch
+
+  and joined pin-to-net by tools/parse.py + tools/gpio2.py. docs/pinouts.txt
+  is that output; every number below can be found in it. Do not "tidy" a
+  pin here without regenerating that file — the whole point of the
+  generator is that the table cannot quietly drift from the schematic.
+
+  Three findings from the extraction are worth stating up front, because
+  they contradict what the board diagrams suggest:
+
+   1. GP22 is the tape input on every board that has one, except the
+      Core 2U revision (GP45), frank_next (GP44, and a BC850 doing the
+      squaring rather than a CD4069) and frank_zx (GP44, CD4069).
+      On frank, megafrank and minifrank the CD4069 output does
+      not reach the MCU directly — a config switch bridges it onto GP22
+      (JP1 6<->7, S1 9<->3, S2 1<->4 respectively). The pin is therefore
+      only the tape input when the operator has closed that switch, which
+      is what CAP_TAPE_DIP_GATED records.
+
+   2. Every audio mux, USB mux and amplifier-shutdown line in the fleet
+      is driven by a physical switch or jumper, not by a GPIO. Firmware
+      cannot select those paths. The tests can only verify whichever
+      path the switch currently

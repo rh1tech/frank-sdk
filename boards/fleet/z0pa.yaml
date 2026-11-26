@@ -1,0 +1,151 @@
+# Z0pa: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 10
+id: FRANK_BOARD_Z0PA
+name: Z0pa
+slug: z0pa
+mcu: rp2350b
+role: single
+target: Z0
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_AUDIO_I2S
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_PIO_USB
+- CAP_PS2
+- CAP_GAMEPAD_NES
+- CAP_I2C
+- CAP_LED_PLAIN
+- CAP_AUDIO_PCM5122
+pico_socket: false
+module_memory: false
+pins:
+  uart_tx: 0
+  uart_rx: 1
+  ps2_kb_clk: 2
+  ps2_kb_dat: 3
+  ps2_ms_clk: 0
+  ps2_ms_dat: 1
+  sd_dat0: 40
+  sd_cs: 43
+  sd_clk: 30
+  sd_cmd: 31
+  i2s_data: 10
+  i2s_clk_base: 11
+  pwm_l: 11
+  pwm_r: 10
+  pcm_i2s_data: 21
+  pcm_i2s_clk_base: 18
+  video_base: 32
+  psram_cs: 47
+  led_plain: 25
+  pad_latch: 7
+  pad_clk: 4
+  pad_d1: 6
+  i2c_sda: 2
+  i2c_scl: 3
+  pio_usb_dp: 28
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_z0pa
+signature:
+  47: high
+  43: high
+  28: high
+  30: high
+  31: high
+  32: high
+  35: high
+  39: high
+  12: float
+  46: float
+flash_bytes: 0
+psram_bytes: 0
+manual_note: Waveshare RP2350-PiZero. HDMI is driven from the PIO on GP32-39, not HSTX, and shows the
+  text page rather than the desktop - 320x240 is what that driver scans. The PCM5122 audio hat, if fitted,
+  sits on I2S GP18/19 with I2C on GP2/GP3.
+inline_notes:
+- |-
+  2026-11-26 (frank-sdk, the user's decision): the accessory wiring is
+  frank-dos's (BOARD_Z2) and frank-quake2's, not murmnes' / SpeccyP's
+  WS_ZERO2 any more. PS/2 keyboard on GP2/GP3 and mouse on GP0/GP1 (the
+  mouse shares the UART, as on M2), the NES pad clock 4 / latch 7 / data
+  6 (a second pad not wired), PWM right GP10 / left GP11 through the
+  audio mux on the I2S pins. With the keyboard on GP2/GP3 the PCM5122
+  hat's I2C (also GP2/GP3) cannot be used with a PS/2 keyboard: one or
+  the other. Added the board's own "PIO-USB" USB-C socket: D+ GP28,
+  D- GP29 (CAP_PIO_USB); its pull-up is the GP28 HIGH in the signature.
+- |-
+  Waveshare RP2350-PiZero, "Z0pa" here. Not a FRANK board: a Pi
+  Zero form factor carrier that the fleet's firmware targets as
+  another platform, so the rig should be able to check one.
+
+  Video is the thing to know about. Its HDMI connector is on
+  GP32-39, and HSTX on the RP2350 is fixed to GP12-19, so the HSTX
+  backends cannot drive it at all. It is served by the PIO HDMI
+  driver instead, vendored from murmnes, which already drives this
+  board - see ui/ui_video_pio_hdmi.c. The two HDMI backends tell
+  each other apart by video_base and refuse what they cannot serve.
+
+  That path scans a 320x240 indexed framebuffer, so this board gets
+  the text page rather than the desktop, exactly as composite does.
+
+  Pins from murmnes' board_z0.h, which is where this board is
+  already supported.
+- 'SD is on SPI1: pins above GP29 have no SPI0 mapping.'
+- The onboard I2S pair, not the PCM5122 hat's.
+- |-
+  The hat's, which are different pins entirely - data on
+  GP21, BCK GP18, LRCK GP19, and no master clock at all.
+  From SpeccyP's WS_ZERO2 board file, which drives this
+  hat on this board and moves PS/2 to GP14/15 to make room
+  for it - which is where this descriptor already has it.
+- |-
+  I2C1 on GP2/GP3. It configures the PCM5122 on the audio
+  hat, which is why this board must NOT declare
+  CAP_AUDIO_CODEC_I2C: detection vetoes any board whose
+  codec claim disagrees with what answered on the bus, so
+  claiming a part that lives on an optional accessory
+  ruled this board out of its own identification on every
+  unit without the hat fitted - which is most of them.
+- |-
+  The HDMI connector, which HSTX cannot reach - the PIO
+  backend takes this board on the strength of this pin
+  being above 31.
+- |-
+  Zero, like the PSRAM below, because this board ships in more than
+  one configuration - 4 MB and 16 MB parts are both about - and the
+  Flash ID row reports a mismatch against whatever a descriptor
+  declares. Detection measures the part; a fixed figure here would
+  flag half the boards of this type as wrong.
+- |-
+  Left at zero rather than guessed. Detection measures what is
+  actually on CS and fills this in; the PiZero ships in variants
+  with and without PSRAM, and a descriptor claiming eight megabytes
+  would turn an absent part into a failure.
+signature_notes: |-
+  --- RP2350B class -------------------------------------------------
+signature_inline_notes:
+- |-
+  Measured on the board rather than inferred from what each pin is
+  for. The first attempt was written from murmnes' pin assignments,
+  which say what a pin does and nothing about how it idles - it
+  scored below core2, the board came up unidentified, and video
+  opened on HSTX pins that go nowhere here.
+
+  What actually distinguishes it: everything from GP28 up idles
+  high, and everything below GP28 floats. A core2 master matches
+  five of its own six entries on this board and disagrees only at
+  GP28, which is why the two tied.
+- PSRAM CE
+- SD CS
+- the one core2 calls
+- float - the tiebreak
+- SD on SPI1
+- the HDMI block, which
+- is where core2 floats
+- and where core2's own
+- video sits

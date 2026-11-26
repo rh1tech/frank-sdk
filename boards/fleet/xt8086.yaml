@@ -1,0 +1,162 @@
+# xt8086: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 11
+id: FRANK_BOARD_XT8086
+name: xt8086
+slug: xt8086
+mcu: rp2350b
+role: single
+target: null
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_VIDEO_VGA
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_USB_HUB
+- CAP_USB_MUX
+- CAP_RTC_DS3231
+- CAP_I2C
+- CAP_AUDIO_PWM
+- CAP_HOST_8086
+pico_socket: false
+module_memory: false
+pins:
+  sd_dat0: 40
+  sd_cs: 41
+  sd_clk: 42
+  sd_cmd: 43
+  pwm_l: 46
+  pwm_r: 44
+  video_base: 30
+  psram_cs: 47
+  i2c_sda: 38
+  i2c_scl: 39
+  host_bus_base: 0
+  host_bus_len: 30
+  host_clk: 29
+  host_reset: 28
+  host_ready: 27
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_xt8086
+signature:
+  36: float
+  37: float
+  38: high
+  39: high
+  40: high
+  41: high
+  42: float
+  43: high
+  45: float
+  47: high
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: 'The 8086 (U5) has no clock unless firmware makes one on GP29, and R69 holds it in reset
+  unless GP28 is driven, so it executes nothing and its bus stays high-Z - which is what lets the rig
+  test the rest of the board. Nothing here starts it. Video is VGA through the MS9288A to the HDMI socket;
+  there is no VGA connector. S2-1/S2-2 put left/right onto the HDMI audio, S2-3 turns on the speaker,
+  which gets the two mixed - only the jack tells left from right. JP4-JP6 bridge the same three. S1 selects
+  the USB mux. No UART header: the console is SWD on J5 only. D1 is on GP25/BHE and belongs to the CPU.'
+inline_notes:
+- |-
+  xt8086, and the first board in the fleet where the RP2350 is not
+  the computer.
+
+  U5 is a real 8086 in minimum mode and the RP2350B is its entire
+  chipset: clock generator, wait-state logic, memory and every
+  peripheral. That takes GP0-29, which is why nothing this firmware
+  normally expects is where it normally is — microSD moves to
+  GP40-43, I2C to GP38/39 and video to GP30-37.
+
+  This is the current revision, and it is not the one this entry was
+  first written from. The old descriptor is not kept beside it, on
+  the reasoning that retired the first FRANK Next's: both answer to
+  the same name, and its signature would now claim pins that read
+  the other way. What changed:
+
+    - Sound is stereo: GP46 left, GP44 right, each through 1K and
+      10 nF into half an LM358. It was one pin, GP46.
+    - The console header J1 is gone. GP44 was its TX and is now the
+      right channel; GP45 was its RX and goes nowhere. J5 is SWD and
+      nothing else. See boards/frank_xt8086.h.
+    - The DSUB-15 is gone, so the only video socket is HDMI.
+    - The microSD lines gained pull-ups, which is what sig_xt8086
+      now reads.
+    - The 8086's clock goes through a 74HCT04 to reach 5 V, and its
+      RESET has a 10K pull-up, so a GP28 left alone holds the CPU in
+      reset as well as unclocked.
+
+  VIDEO IS VGA, ON AN HDMI SOCKET.
+
+  GP30-37 drive a resistor ladder — 806R/402R per channel, two bits
+  each, syncs on GP36/37 through 100R — into U15, an MS9288A, which
+  digitises that analogue VGA and sends it out as TMDS on J9. There is
+  no other connector. So the firmware generates VGA and the operator
+  plugs in an HDMI cable, and it has no HDMI path of its own to offer:
+  CAP_VIDEO_HDMI is not declared, and video_detect.c's "a VGA-only
+  board is the one case where the verdict still stands" applies here
+  and nowhere else.
+
+  The pin order is the fleet's, one octave up: B0 B1 G0 G1 R0 R1 HS
+  VS from video_base, which is the same byte the HSTX VGA backend
+  builds. What is different is the base. HSTX is hard-wired to
+  GP12-19 on this silicon and those pins are AD12-A19 here, so the
+  hardware backend cannot serve this board and must not try — see
+  ui_video_vga.c, which refuses any base but 12. The PIO VGA backend
+  takes it instead, exactly as PIO HDMI took the PiZero, and like
+  that path it scans 320x240 and so draws the text page rather than
+  the desktop.
+
+  NO TAPE INPUT.
+
+  dino_z80, which shares much of this layout, has one on GP45. This
+  board does not: GP45 is a bare pad. Nor is dino_z80 a board this
+  descriptor can stand in for - its GP38/39 are the Z80's INT and
+  NMI rather than an I2C bus, and its clock and reset are the other
+  way round on GP28/29.
+- |-
+  No console UART. J1 was GP44/45 and is gone; GP44 is the
+  right channel now.
+- |-
+  SPI1 — GP40-43 have no SPI0 mapping. Same DAT0 / CD-DAT3
+  / CLK / CMD order as the rest of the fleet, four pins
+  higher up.
+- |-
+  GP0-29 belong to U5. Declared as a run so the short
+  sweep skips them; the individual lines are in
+  docs/pinouts.txt.
+- U7, W25Q128JVPIQ
+- U8, ESP-PSRAM64H
+signature_notes: |-
+  xt8086, and the constraint that shapes it: every pin below GP30 is
+  wired to a real 8086, so none of them may appear here.
+
+  pinsig.c's second phase drives a pad low for ten microseconds to tell
+  a pull-up from a floating pin. Doing that to AD0-15 is contention with
+  a CPU that may be driving them, and doing it to GP28 or GP29 is
+  poking that CPU's reset and clock. The signature is therefore drawn
+  entirely from GP36 upward.
+
+  Redrawn for the current revision, which changed three things this
+  reads. The microSD lines gained pull-ups - 10K on DAT0, CD/DAT3 and
+  CMD, none on CLK - so GP40, 41 and 43 read high where they used to
+  float, and GP42 between them is kept as a float for the same reason
+  sig_next keeps its SD clock: it is what makes the highs either side a
+  card socket rather than a pull-up field. The console header went, so
+  GP45 is a bare pad. And GP44 became the right channel's PWM, into 1K
+  and 10 nF: a pad that phase B discharges and a capacitor then holds
+  low, which would read as whatever the RC happened to do. Left out,
+  like GP46 for the same reason.
+
+  All of it from the netlist; confirm with FRANK_DUMP_PINSIG on the
+  first board of this revision.
+signature_inline_notes:
+- HS/VS into U15, no pulls
+- I2C to the DS3231, 4K7
+- SD DAT0, CD/DAT3, 10K
+- SD CLK, deliberately not
+- SD CMD, 10K
+- nothing at all now
+- PSRAM CE, 10K

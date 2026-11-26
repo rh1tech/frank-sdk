@@ -1,0 +1,96 @@
+# MegaFRANK: frank-test's run-time descriptor. Imported from frank-test
+# core/board_table.c; edit here, gen_boards.py writes the C table.
+order: 2
+id: FRANK_BOARD_MEGAFRANK
+name: MegaFRANK
+slug: mega
+mcu: rp2350b
+role: single
+target: null   # not M2: its PSRAM is bit-banged SPI on GP31-34 (CAP_PSRAM_SOFTSPI), M2 firmware would look on GP47
+caps:
+- CAP_PSRAM_SOFTSPI
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_VIDEO_VGA
+- CAP_VIDEO_COMPOSITE
+- CAP_AUDIO_I2S
+- CAP_AUDIO_AMP
+- CAP_AUDIO_MUX
+- CAP_TURBOSOUND
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_USB_HUB
+- CAP_USB_MUX
+- CAP_PS2
+- CAP_GAMEPAD_NES
+- CAP_TAPE_IN
+- CAP_TAPE_DIP_GATED
+- CAP_RTC_DS3231
+- CAP_ONEWIRE_DS2401
+- CAP_I2C
+- CAP_ESP01
+- CAP_LED_PLAIN
+- CAP_DIPSWITCH
+pico_socket: false
+module_memory: true
+pins:
+  uart_tx: 0
+  uart_rx: 1
+  ps2_kb_clk: 2
+  ps2_kb_dat: 3
+  ps2_ms_clk: 0
+  ps2_ms_dat: 1
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  i2s_data: 9
+  i2s_clk_base: 10
+  video_base: 12
+  psram_cs: 31
+  psram_soft_sclk: 32
+  psram_soft_mosi: 33
+  psram_soft_miso: 34
+  led_plain: 25
+  esp_uart_tx: 38
+  esp_uart_rx: 39
+  pad_latch: 21
+  pad_clk: 20
+  pad_d1: 26
+  pad_d2: 27
+  tape_in: 22
+  i2c_sda: 28
+  i2c_scl: 29
+  onewire: 30
+  ay_rclk: 9
+  ay_srclk: 10
+  ay_ser: 11
+  dip: 22
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_megafrank
+signature:
+  0: high
+  2: high
+  28: high
+  29: high
+  30: high
+  47: high
+flash_bytes: 0
+psram_bytes: 8388608
+manual_note: 'S1-1 and S1-2 are the two SELECT BITS of the audio mux, not two enables: 10=TDA/I2S, 01=TurboSound,
+  00=PWM, 11=GROUND (silence). Turning both on is silence. S1-6 un-shuts the PAM8403; S1 9-3 closes tape
+  onto GP22. S10 connects the SPI PSRAM''s SO to GP34 - with it off the part cannot answer. S9 selects
+  the USB mux.'
+inline_notes:
+- |-
+  PGA2350: the QMI PSRAM found on GP47 is the module's. This board's
+  own PSRAM is the bit-banged SPI part on GP31-34.
+- via S10
+- |-
+  The AY latch shares the I2S pins; which one reaches the
+  amplifier is decided by the audio mux, i.e. by S1.
+signature_inline_notes:
+- I2C, 4.7K
+- DS2401, 4.7K
+- the module's PSRAM CS
