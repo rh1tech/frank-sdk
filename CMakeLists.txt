@@ -226,6 +226,12 @@ target_include_directories(frank_audio INTERFACE ${FRANK_SDK_DIR}/drivers/audio/
 pico_generate_pio_header(frank_audio ${FRANK_SDK_DIR}/drivers/audio/audio_i2s.pio)
 target_link_libraries(frank_audio INTERFACE frank_platform hardware_pio hardware_dma hardware_pwm hardware_i2c hardware_irq)
 
+# ---- the wall clock: DS3231 or RV-3032, on the board's I2C or the caller's bus (frank/rtc.h) ----
+add_library(frank_rtc INTERFACE)
+target_sources(frank_rtc INTERFACE ${FRANK_SDK_DIR}/drivers/rtc/rtc.c)
+target_include_directories(frank_rtc INTERFACE ${FRANK_SDK_DIR}/drivers/rtc/include)
+target_link_libraries(frank_rtc INTERFACE pico_stdlib hardware_i2c)
+
 # ---- input: USB host (native or PIO-USB), PS/2, NES pads (frank/input.h) ----
 add_library(frank_input INTERFACE)
 target_sources(frank_input INTERFACE ${FRANK_SDK_DIR}/drivers/input/frank_input.c)

@@ -7,6 +7,7 @@
  *   ~C tone HZ~                 the test tone (0: silence)
  *   ~C astat~                   audio frames played (the real rate)
  *   ~C keys~                    input events seen (keyboard, mouse, pads)
+ *   ~C rtc [set ...]~           the wall clock (DS3231 or RV-3032)
  * plus the platform's (help, clocks, mem, psram, bootinfo...).
  *
  * Copyright (c) 2026 Mikhail Matveev <xtreme@rh1.tech>
@@ -19,6 +20,7 @@
 #include "pico.h"   /* the board header first: the FRANK_HAS_* below come from it */
 #include "frank/audio.h"
 #include "frank/platform.h"
+#include "frank/rtc.h"
 #ifdef FRANK_HAS_SD
 #include "frank/storage.h"
 #endif
@@ -116,6 +118,33 @@ static void core1_main(void) {
 }
 #endif
 
+/* ---- the wall clock ---- */
+static frank_rtc_t rtc;
+
+static void cmd_rtc(const char *a) {
+    if (rtc.chip == FRANK_RTC_NONE && frank_rtc_init_board(&rtc) == FRANK_RTC_NONE) {
+        printf("rtc: none answers on this board's I2C\n");
+        return;
+    }
+    frank_rtc_time_t t;
+    unsigned y, mo, d, h, mi, s;
+    if (!strncmp(a, "set ", 4)) {
+        if (sscanf(a + 4, "%u-%u-%u %u:%u:%u", &y, &mo, &d, &h, &mi, &s) != 6) {
+            printf("rtc set YYYY-MM-DD hh:mm:ss\n");
+            return;
+        }
+        t = (frank_rtc_time_t){(uint16_t)y, (uint8_t)mo, (uint8_t)d, (uint8_t)h, (uint8_t)mi, (uint8_t)s};
+        printf("rtc set: %s\n", frank_rtc_set(&rtc, &t) ? "ok" : "FAILED (a real date, 2000..2099?)");
+    }
+    bool lost;
+    if (!frank_rtc_read(&rtc, &t, &lost)) {
+        printf("rtc: %s does not answer\n", frank_rtc_chip_name(rtc.chip));
+        return;
+    }
+    printf("rtc: %s %04u-%02u-%02u %02u:%02u:%02u%s\n", frank_rtc_chip_name(rtc.chip), t.year, t.mon, t.day,
+           t.hour, t.min, t.sec, lost ? " (lost: the battery ran out or was never fitted; rtc set)" : "");
+}
+
 #ifdef DIAG_INPUT
 static void cmd_keys(const char *a) {
     (void)a;
@@ -128,6 +157,7 @@ int main(void) {
     frank_console_add("tone", cmd_tone, "HZ: the test tone (0: silence)");
     frank_console_add("astat", cmd_astat, "audio frames played and their rate");
     frank_console_add("audio", cmd_audio, "i2s|pwm|hdmi|auto: reboot into that output");
+    frank_console_add("rtc", cmd_rtc, "[set YYYY-MM-DD hh:mm:ss]: the wall clock (DS3231, RV-3032)");
 #ifdef FRANK_HAS_SD
     frank_console_add("sdtest", cmd_sdtest, "write, read back and check a 1 MB file");
 #endif

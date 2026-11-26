@@ -13,7 +13,7 @@ pico_sdk_init()
 add_subdirectory(${FRANK_SDK_DIR} frank-sdk)
 
 add_executable(diag main.c)
-target_link_libraries(diag frank_audio)
+target_link_libraries(diag frank_audio frank_rtc)
 if(FRANK_BOARD_SD_MODE)
     target_link_libraries(diag frank_storage)
 endif()

@@ -26,7 +26,8 @@ add_executable(frank_app
     ${CMAKE_CURRENT_LIST_DIR}/frank_host.c
     ${CMAKE_CURRENT_LIST_DIR}/ff_host.c
     ${CMAKE_CURRENT_LIST_DIR}/host_dir.c
-    ${FRANK_SDK_DIR}/platform/console.c)
+    ${FRANK_SDK_DIR}/platform/console.c
+    ${FRANK_SDK_DIR}/drivers/rtc/rtc.c)   # no I2C here: frank_rtc_init_board() finds none
 set_source_files_properties(${APP_SOURCES} PROPERTIES COMPILE_DEFINITIONS "main=frank_app_main")
 target_include_directories(frank_app PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
@@ -34,6 +35,7 @@ target_include_directories(frank_app PRIVATE
     ${FRANK_SDK_DIR}/drivers/video/include
     ${FRANK_SDK_DIR}/drivers/audio/include
     ${FRANK_SDK_DIR}/drivers/input/include
+    ${FRANK_SDK_DIR}/drivers/rtc/include
     ${FRANK_SDK_DIR}/drivers/storage/include
     ${FRANK_SDK_DIR}/drivers/storage/fatfs)
 target_compile_definitions(frank_app PRIVATE FRANK_SDK_VERSION="${FRANK_SDK_VERSION}"
