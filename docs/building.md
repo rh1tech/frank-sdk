@@ -29,8 +29,9 @@ frank_firmware(myfw)                          # the platform, linker script, con
 
 | Option | Values | Default |
 |---|---|---|
-| `FRANK_BOARD` | M1 M2 NX C2 SL FZ FN Z0 PC | (required) |
-| `FRANK_CONSOLE` | `usb` (CDC on the native port), `uart` | the board's |
+| `FRANK_BOARD` | M1 M2 NX C2 SL FZ FN Z0 PC, or GA GB XT (run time) | (required) |
+| `FRANK_CONSOLE` | `usb` (CDC on the native port), `uart`, `none` | the board's |
+| `FRANK_RUNTIME_BOARD` | `ON`, `OFF` | `ON` for GA, GB, XT |
 | `FRANK_USB_HOST` | `native`, `pio`, `none` | PIO-USB where the board has it and the console is USB; the native port with a UART console; else none |
 | `FRANK_VIDEO_OUT` | `hdmi`, `vga`, `composite` | `hdmi` |
 | `FRANK_HDMI_BACKEND` | `hstx`, `pio` | the board's (PIO is the only one off GPIO12-19) |
@@ -39,6 +40,23 @@ frank_firmware(myfw)                          # the platform, linker script, con
 The native USB port cannot be the console and the host at once: the build refuses
 `FRANK_CONSOLE=usb` with `FRANK_USB_HOST=native`. With the host on PIO-USB the USB console
 is frank-dos's dual-role one (TinyUSB device + host).
+
+## Boards found at run time
+
+frank-test's way: one image per package that identifies the board itself (its pin
+signatures) from the fleet table (`frank_fleet`, `board_desc.h`). Build for `GA`
+(RP2350A), `GB` (RP2350B), `XT` (xt8086: no console), or any target with
+`-DFRANK_RUNTIME_BOARD=ON` to keep its console pins (the Next's GP46/45). The boot then
+does nothing board-specific: no clock raised, no PSRAM chip select driven, no watchdog
+unless `FRANK_RUNTIME_BOOT_GUARD`. Once the board is known:
+
+```c
+frank_clocks_apply(mhz, vreg, flash_mhz, -1);            // the clock it chose
+size_t n = frank_psram_init_cs(d->pins.psram_cs, 133);   // the descriptor's CS
+frank_heap_add_psram(n);                                 // malloc grows into it
+```
+
+`examples/runtime` does it from the console (`~C board next~`).
 
 ## Boards
 

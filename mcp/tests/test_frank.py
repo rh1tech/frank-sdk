@@ -29,7 +29,7 @@ def test_generated_files_are_current():
     assert r.returncode == 0, r.stderr
 
 
-@pytest.mark.parametrize("bid", ["M1", "M2", "NX", "C2", "SL", "FZ", "FN", "Z0", "PC"])
+@pytest.mark.parametrize("bid", ["M1", "M2", "NX", "C2", "SL", "FZ", "FN", "Z0", "PC", "GA", "GB", "XT"])
 def test_every_board_checks(bid):
     b = load(bid)
     gen_boards.check(b, gen_boards.pin_claims(b))

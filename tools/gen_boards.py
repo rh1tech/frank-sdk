@@ -41,7 +41,7 @@ VREG = {1.10: "1_10", 1.15: "1_15", 1.20: "1_20", 1.25: "1_25", 1.30: "1_30",
 NOT_PINS = {"inst", "spi", "bytes", "cpu_mhz", "psram_mhz", "flash_mhz",
             "psram_rxdelay", "flash_rxdelay", "vreg"}
 # sections that are metadata, not hardware
-META = {"id", "name", "covers", "mcu", "role", "pair", "sources", "pio", "shared"}
+META = {"id", "name", "covers", "mcu", "role", "pair", "sources", "pio", "shared", "runtime"}
 
 
 class BoardError(Exception):
@@ -251,8 +251,10 @@ def header(b, bases):
     if "flash_rxdelay" in c:
         dflt("FRANK_FLASH_RXDELAY", c["flash_rxdelay"])
     con = b.get("console", {}).get("default", "uart")
-    L += ["", "// the console: 1 = USB CDC on the native port, 0 = the UART above"]
+    L += ["", "// the console: 1 = USB CDC on the native port, 0 = the UART above (or none)"]
     dflt("FRANK_CONSOLE_USB", 1 if con == "usb" else 0)
+    L += ["", "// 1: the firmware finds the board at run time (boards/fleet): nothing board-specific at boot"]
+    dflt("FRANK_RUNTIME_BOARD", 1 if b.get("runtime") else 0)
 
     L += ["", "// pins and capabilities, named after their path in the YAML"]
     out = []

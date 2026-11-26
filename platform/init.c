@@ -38,16 +38,31 @@ extern void frank_console_builtins(void);
 static bool early_done, clock_ok;
 static size_t psram_bytes;
 
+/* A run-time board (FRANK_RUNTIME_BOARD: the firmware identifies the board
+ * itself, as frank-test does) gets nothing board-specific here: no clock, no
+ * PSRAM chip select driven, no watchdog unless asked for
+ * (FRANK_RUNTIME_BOOT_GUARD). Its detection reads idle pins and its overclock
+ * campaign picks the clock; frank_clocks_apply(), frank_psram_init_cs() and
+ * frank_heap_add_psram() are its to call. */
 static void __attribute__((constructor(101))) frank_early_init(void) {
     if (early_done || get_core_num() != 0) return;
     early_done = true;
+#if FRANK_RUNTIME_BOARD
+#if FRANK_RUNTIME_BOOT_GUARD
+    frank_boot_guard();
+#endif
+    clock_ok = true;
+#else
     frank_boot_guard();
     clock_ok = frank_clocks_init();
 #ifdef FRANK_HAS_PSRAM
     psram_bytes = frank_psram_init();
 #endif
+#endif
     frank_heap_init(psram_bytes);
 }
+
+void frank_heap_note_psram(size_t bytes) { psram_bytes = bytes; }
 
 void frank_init(const char *name, const char *version) {
     frank_early_init();
@@ -68,7 +83,9 @@ void frank_init(const char *name, const char *version) {
     frank_report_boot();
     if (!clock_ok) printf("boot: %d MHz unreachable, running at 252 MHz\n", FRANK_CPU_MHZ);
     frank_clocks_report();
-#ifdef FRANK_HAS_PSRAM
+#if FRANK_RUNTIME_BOARD
+    printf("board: found at run time (%s build)\n", FRANK_BOARD_ID);
+#elif defined(FRANK_HAS_PSRAM)
     if (psram_bytes) {
         uint8_t mf, kgd;
         frank_psram_id(&mf, &kgd);

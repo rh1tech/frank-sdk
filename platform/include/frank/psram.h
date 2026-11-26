@@ -40,6 +40,11 @@ unsigned frank_psram_cs(void);
  * every later frank_psram_retime(). Returns the size found (0: no PSRAM). */
 size_t frank_psram_init(void);
 
+/* The same on a chip select and clock found at run time (FRANK_RUNTIME_BOARD:
+ * the firmware has identified the board). Then frank_heap_add_psram() to let
+ * malloc use it. Nothing may touch .psram_bss / .psram_data before this. */
+size_t frank_psram_init_cs(unsigned cs, unsigned max_mhz);
+
 /* After clk_sys changed: the timing for the new clock, at most max_mhz
  * (and at most the cap). From RAM, with interrupts off inside. */
 void frank_psram_retime(unsigned max_mhz);

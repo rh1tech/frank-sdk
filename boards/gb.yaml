@@ -1,0 +1,19 @@
+# Generic RP2350B: the package and the console, nothing else. For firmware that
+# finds its board at run time (frank-test's rp2350b image) from boards/fleet.
+id: GB
+name: Generic RP2350B (board found at run time)
+covers: [FRANK (Pico Plus 2), FRANK PGA, MegaFRANK, OldSkoolFRANK, Core 2 / 2U, Z0pa, FRANK ZX]
+mcu: rp2350b
+role: single
+runtime: true
+sources:
+  - frank-test boards/frank_b.h
+flash: {bytes: 16M}
+clocks:
+  cpu_mhz: 252
+  vreg: 1.10
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: uart
+  uart: {inst: 0, tx: 0, rx: 1}

@@ -138,20 +138,31 @@ int __no_inline_not_in_flash_func(frank_flash_ensure_qe)(uint8_t *jedec_mfr) {
 static uint32_t peri_div;
 
 bool frank_clocks_init(void) {
-    boot_m0_timing = qmi_hw->m[0].timing;
-    boot_m0_hz = clock_get_hz(clk_sys);
+    return frank_clocks_apply(FRANK_CPU_MHZ, FRANK_VREG, FRANK_FLASH_MHZ, FRANK_FLASH_RXDELAY);
+}
 
-    /* QE before anything raises a clock: on QE=0 flash both fail */
-    uint8_t mfr;
-    uint32_t irq = save_and_disable_interrupts();
-    int qe = frank_flash_ensure_qe(&mfr);
-    restore_interrupts(irq);
-    if (qe == 1) {   /* xrip's writer leaves quad mode at divider 12: the new base */
+bool frank_clocks_apply(unsigned cpu_mhz, unsigned vreg, unsigned flash_mhz, int flash_rxdelay) {
+    static bool first = true;
+    if (first) {   /* the boot ROM's / boot2's flash timing, the base for the rules */
+        first = false;
         boot_m0_timing = qmi_hw->m[0].timing;
+        boot_m0_hz = clock_get_hz(clk_sys);
+    }
+
+    /* QE before anything raises a clock (on QE=0 flash both fail), once a boot */
+    static bool qe_done;
+    if (!qe_done) {
+        qe_done = true;
+        uint8_t mfr;
+        uint32_t irq = save_and_disable_interrupts();
+        int qe = frank_flash_ensure_qe(&mfr);
+        restore_interrupts(irq);
+        if (qe == 1)   /* xrip's writer leaves quad mode at divider 12: the new base */
+            boot_m0_timing = qmi_hw->m[0].timing;
     }
 
     vreg_disable_voltage_limit();
-    vreg_set_voltage(FRANK_VREG);
+    vreg_set_voltage((enum vreg_voltage)vreg);
     busy_wait_ms(10);
 
     /* set_sys_clock_khz runs clk_sys from the USB PLL (48 MHz) while it sets the
@@ -160,10 +171,10 @@ bool frank_clocks_init(void) {
      * (the delay is over half the slower clock's cycle), which faulted the boot
      * (frank-shadowwarrior). */
     flash_write_timing(5u, 3u);
-    bool ok = set_sys_clock_khz(FRANK_CPU_MHZ * 1000u, false);
+    bool ok = set_sys_clock_khz(cpu_mhz * 1000u, false);
     if (!ok) set_sys_clock_khz(252u * 1000u, true);
     const uint32_t sys_hz = clock_get_hz(clk_sys);
-    frank_flash_set_timing(sys_hz, FRANK_FLASH_MHZ, FRANK_FLASH_RXDELAY);
+    frank_flash_set_timing(sys_hz, flash_mhz, flash_rxdelay);
 
     /* clk_peri from clk_sys, at most 150 MHz: 126 MHz from 252/378/504, so the
      * SD card's SPI is not stuck at the USB PLL's 48 MHz / 2 */

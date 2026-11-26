@@ -492,6 +492,94 @@
    }
   }
  },
+ "GA": {
+  "clocks": {
+   "cpu_mhz": 252,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.1
+  },
+  "console": {
+   "default": "uart",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "FRANK (Pico 2)",
+   "miniFRANK",
+   "microFRANK",
+   "zeroFRANK",
+   "the Core 2 / Next slave"
+  ],
+  "flash": {
+   "bytes": "4M"
+  },
+  "gpio": {
+   "0": [
+    "console.uart"
+   ],
+   "1": [
+    "console.uart"
+   ]
+  },
+  "id": "GA",
+  "mcu": "rp2350a",
+  "name": "Generic RP2350A (board found at run time)",
+  "pio_gpio_base": {},
+  "role": "single",
+  "runtime": true,
+  "sources": [
+   "frank-test boards/frank_a.h"
+  ]
+ },
+ "GB": {
+  "clocks": {
+   "cpu_mhz": 252,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.1
+  },
+  "console": {
+   "default": "uart",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "FRANK (Pico Plus 2)",
+   "FRANK PGA",
+   "MegaFRANK",
+   "OldSkoolFRANK",
+   "Core 2 / 2U",
+   "Z0pa",
+   "FRANK ZX"
+  ],
+  "flash": {
+   "bytes": "16M"
+  },
+  "gpio": {
+   "0": [
+    "console.uart"
+   ],
+   "1": [
+    "console.uart"
+   ]
+  },
+  "id": "GB",
+  "mcu": "rp2350b",
+  "name": "Generic RP2350B (board found at run time)",
+  "pio_gpio_base": {},
+  "role": "single",
+  "runtime": true,
+  "sources": [
+   "frank-test boards/frank_b.h"
+  ]
+ },
  "M1": {
   "audio": {
    "i2s": {
@@ -1502,6 +1590,33 @@
   "usb": {
    "native": "device"
   }
+ },
+ "XT": {
+  "clocks": {
+   "cpu_mhz": 252,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.1
+  },
+  "console": {
+   "default": "none"
+  },
+  "covers": [
+   "xt8086"
+  ],
+  "flash": {
+   "bytes": "16M"
+  },
+  "gpio": {},
+  "id": "XT",
+  "mcu": "rp2350b",
+  "name": "xt8086 (board found at run time, no console)",
+  "pio_gpio_base": {},
+  "role": "single",
+  "runtime": true,
+  "sources": [
+   "frank-test boards/frank_xt8086.h, boards/fleet/xt8086.yaml"
+  ]
  },
  "Z0": {
   "audio": {

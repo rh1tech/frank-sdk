@@ -57,7 +57,7 @@ static void sram_init(void) {
 /* after frank_psram_init() */
 void frank_heap_init(size_t psram_bytes) {
     if (!sram_msp) sram_init();
-    if (!psram_bytes) return;
+    if (!psram_bytes || psram_msp) return;   /* once: a run-time board adds it after detection */
     uintptr_t pb = ((uintptr_t)__psram_heap_start__ + 4095) & ~(uintptr_t)4095;
     psram_end = FRANK_PSRAM_BASE + psram_bytes;
     if (pb + 64 * 1024 > psram_end) return;
@@ -100,6 +100,16 @@ static inline void unlock(void) { spin_unlock_unsafe(HEAP_LOCK); }
 #define LOCKED(expr) ({ lock(); __typeof__(expr) _r = (expr); unlock(); _r; })
 
 void *frank_sram_malloc(size_t n) { return LOCKED(sram_nl(n)); }
+
+/* a run-time board, after detection: under the lock, as the other core may
+ * be allocating already */
+void frank_heap_add_psram(size_t bytes) {
+    extern void frank_heap_note_psram(size_t bytes);
+    lock();
+    frank_heap_init(bytes);
+    unlock();
+    frank_heap_note_psram(bytes);
+}
 void *frank_psram_malloc(size_t n) { return LOCKED(psram_nl(n)); }
 
 static volatile int sram_only;   /* a C++ exception is being allocated: see below */

@@ -1,6 +1,6 @@
 # Moving frank-test onto frank-sdk — the plan
 
-Status: **phase 1 done (2026-11-26)**, in frank-sdk; frank-test unchanged so far. Next: phase 2.
+Status: **phases 1 and 2 done (2026-11-26)**, in frank-sdk; frank-test unchanged so far. Next: phase 3.
 
 ## Why frank-test is different
 
@@ -105,6 +105,23 @@ does not know. They go in when frank-test gets descriptors (and signatures) for 
 - The console protocol, watchdog, crumbs, stall watcher, safe mode and reboot all work
   unchanged. They need no pins. The console UART is chosen at run time, as frank-test
   does now; the U key and the stored setting stay frank-test's.
+
+### Phase 2: what was done
+
+- Targets `GA`, `GB` (generic RP2350A / B, the console on GP0/1) and `XT` (xt8086, no
+  console: `console: none`), `runtime: true`; any target can be built with
+  `-DFRANK_RUNTIME_BOARD=ON` (the Next image: its console on GP46/45).
+- In run-time mode the constructor does nothing board-specific: no clock, no PSRAM, no
+  watchdog unless `FRANK_RUNTIME_BOOT_GUARD`. New: `frank_clocks_apply(mhz, vreg,
+  flash_mhz, rxdelay)` (the clock sequence of `frank_clocks_init`, with the numbers
+  given: frank-test's overclock campaign can call it), `frank_psram_init_cs(cs, mhz)`,
+  `frank_heap_add_psram(bytes)` (under the heap lock). The boards' tuned PSRAM RXDELAY
+  applies only outside run-time mode.
+- `examples/runtime`. **On FRANK Next** (NX, run-time): the boot left clk_sys at the SDK's
+  150 MHz and 1.10 V, no PSRAM in the heap, and every PSRAM chip select of the fleet
+  (GP0, 8, 31, 47) unclaimed; `~C board next~` took the descriptor: 252 MHz, PSRAM on CS47
+  8192 KB ID 0D 5D, the heap grown, the test ok. 5/5 warm reboots from QPI mode came back
+  with PSRAM intact, and none put PSRAM in the heap before a board was chosen.
 
 ## Phase 3: frank-test on frank-sdk's platform (frank-test branch)
 

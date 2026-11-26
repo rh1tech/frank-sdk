@@ -84,9 +84,14 @@ pico_board_cmake_set_default(PICO_RP2350_A2_SUPPORTED, 1)
 #define FRANK_FLASH_RXDELAY 5
 #endif
 
-// the console: 1 = USB CDC on the native port, 0 = the UART above
+// the console: 1 = USB CDC on the native port, 0 = the UART above (or none)
 #ifndef FRANK_CONSOLE_USB
 #define FRANK_CONSOLE_USB 1
+#endif
+
+// 1: the firmware finds the board at run time (boards/fleet): nothing board-specific at boot
+#ifndef FRANK_RUNTIME_BOARD
+#define FRANK_RUNTIME_BOARD 0
 #endif
 
 // pins and capabilities, named after their path in the YAML

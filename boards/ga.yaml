@@ -1,0 +1,19 @@
+# Generic RP2350A: the package and the console, nothing else. For firmware that
+# finds its board at run time (frank-test's rp2350a image) from boards/fleet.
+id: GA
+name: Generic RP2350A (board found at run time)
+covers: [FRANK (Pico 2), miniFRANK, microFRANK, zeroFRANK, the Core 2 / Next slave]
+mcu: rp2350a
+role: single
+runtime: true
+sources:
+  - frank-test boards/frank_a.h
+flash: {bytes: 4M}      # the smallest; the image reads the real size
+clocks:                 # boot defaults only: the firmware applies its own
+  cpu_mhz: 252
+  vreg: 1.10
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: uart
+  uart: {inst: 0, tx: 0, rx: 1}   # where a debug header exists (PINS_UART01)

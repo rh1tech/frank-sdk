@@ -36,8 +36,10 @@
 static uint8_t psram_id[2];
 static unsigned freq_cap_mhz;
 static size_t detected;
+static int active_cs = -1;   /* the CS frank_psram_init_cs() set up */
 
 unsigned frank_psram_cs(void) {
+    if (active_cs >= 0) return (unsigned)active_cs;
     const bool rp2350a = *((io_ro_32 *)(SYSINFO_BASE + SYSINFO_PACKAGE_SEL_OFFSET)) & 1u;
 #ifdef FRANK_PSRAM_CS_RP2350A
     if (rp2350a) return FRANK_PSRAM_CS_RP2350A;
@@ -46,7 +48,11 @@ unsigned frank_psram_cs(void) {
     if (!rp2350a) return FRANK_PSRAM_CS_RP2350B;   /* an RP2350B module in an RP2350A socket board */
 #endif
     (void)rp2350a;
+#ifdef FRANK_PSRAM_CS
     return FRANK_PSRAM_CS;
+#else
+    return 0xFFu;   /* a run-time board: no PSRAM until frank_psram_init_cs() */
+#endif
 }
 
 /* One direct-mode transfer with CS1 held for its whole length. In quad mode
@@ -118,7 +124,7 @@ static void __no_inline_not_in_flash_func(setup_qpi)(unsigned cs, unsigned mhz) 
     if (divisor == 1 && clock_hz > 100000000) divisor = 2;
     int rxdelay = divisor;
     if (clock_hz / divisor > 100000000) rxdelay += 1;
-#ifdef FRANK_PSRAM_RXDELAY
+#if defined(FRANK_PSRAM_RXDELAY) && !FRANK_RUNTIME_BOARD
     if (!freq_cap_mhz) rxdelay = FRANK_PSRAM_RXDELAY;   /* tuned for the board's own clock */
 #endif
     if (rxdelay > 7) rxdelay = 7;                        /* a 3-bit field */
@@ -190,13 +196,19 @@ extern uint8_t __psram_data_start__[], __psram_data_end__[], __psram_data_load__
 extern uint8_t __psram_bss_start__[], __psram_bss_end__[];
 
 size_t frank_psram_init(void) {
-    const unsigned cs = frank_psram_cs();
+    return frank_psram_init_cs(frank_psram_cs(), FRANK_PSRAM_MHZ);
+}
+
+size_t frank_psram_init_cs(unsigned cs, unsigned max_mhz) {
+    if (cs >= 48u) return detected = 0;
+    active_cs = (int)cs;
+    freq_cap_mhz = 0;
     reset_and_read_id(cs);
-    setup_qpi(cs, FRANK_PSRAM_MHZ);
+    setup_qpi(cs, max_mhz);
     detected = detect_size();
     static const unsigned fallback[] = {84, 66, 33};
     for (unsigned i = 0; detected < (1u << 20) && i < sizeof(fallback) / sizeof(fallback[0]); i++) {
-        if (fallback[i] >= FRANK_PSRAM_MHZ) continue;
+        if (fallback[i] >= max_mhz) continue;
         freq_cap_mhz = fallback[i];
         setup_qpi(cs, fallback[i]);
         detected = detect_size();

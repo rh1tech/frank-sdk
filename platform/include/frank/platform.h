@@ -14,6 +14,11 @@
  *                         a hang, the stall watcher
  *   frank_boot_ok()       the firmware is up: this boot counts as good
  * Then feed the watchdog and tick the crumb from the main loop.
+ *
+ * FRANK_RUNTIME_BOARD builds (generic targets GA, GB, or any target with
+ * -DFRANK_RUNTIME_BOARD=ON): the constructor does nothing board-specific. The
+ * firmware identifies the board, then calls frank_clocks_apply(),
+ * frank_psram_init_cs() and frank_heap_add_psram() itself.
  */
 #pragma once
 
@@ -104,6 +109,9 @@ bool frank_prof_dump_if_done(void);
 /* Blocks up to FRANK_SRAM_SMALL (14 KB) come from SRAM, larger ones from
  * PSRAM; when one side is full the other is tried. These force a side. */
 void *frank_sram_malloc(size_t n);
+/* A run-time board (FRANK_RUNTIME_BOARD): give malloc the PSRAM that
+ * frank_psram_init_cs() found. Until then everything comes from SRAM. */
+void frank_heap_add_psram(size_t bytes);
 void *frank_psram_malloc(size_t n);
 void frank_heap_report(void);
 size_t frank_sram_free(void);

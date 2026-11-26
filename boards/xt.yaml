@@ -1,0 +1,19 @@
+# xt8086: the RP2350B is a real 8086's whole chipset. GP0-29 are the CPU bus,
+# so there is no console UART at all (its old TX, GP44, is now the right audio
+# channel): the log is only reachable over SWD. For frank-test's xt8086 image.
+id: XT
+name: xt8086 (board found at run time, no console)
+covers: [xt8086]
+mcu: rp2350b
+role: single
+runtime: true
+sources:
+  - frank-test boards/frank_xt8086.h, boards/fleet/xt8086.yaml
+flash: {bytes: 16M}
+clocks:
+  cpu_mhz: 252
+  vreg: 1.10
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: none
