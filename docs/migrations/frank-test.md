@@ -1,6 +1,6 @@
 # Moving frank-test onto frank-sdk — the plan
 
-Status: **phases 1, 2, 3a and 3c done, 3b in progress (2026-11-26).** frank-test: branch `frank-sdk` (worktree `frank-test-sdk/`), 3c is commit 098a44d, not pushed. See "Phase 3c" and "Phase 3b" below.
+Status: **phases 1-3 done (2026-11-26), and the RTC part of phase 4.** frank-test: branch `frank-sdk` (worktree `frank-test-sdk/`), commits 776cab0 (3a), 098a44d (3c), a710afa (3b + RTC), not pushed. Next: the rest of phase 4, its own review.
 
 ## Why frank-test is different
 
@@ -199,7 +199,7 @@ Unchanged in this step: `tests/`, `ui/`, `app/` dialogs, `core/detect.c`, `pinsi
 - Not from this work: `master/` does not configure on main either (5346c35 removed
   drivers/fatfs/CMakeLists.txt, which master/CMakeLists.txt still adds).
 
-### Phase 3b: frank-sdk's platform under frank-test (in progress)
+### Phase 3b: frank-sdk's platform under frank-test (a710afa)
 
 frank-test links `frank_platform` (not `frank_firmware()`: its console and output names stay
 its own) as a run-time board: no boot guard, no watchdog, nothing board-specific before
@@ -227,6 +227,24 @@ main(); the overclock campaign keeps the watchdog and scratch[0..3].
   Same flash timing at stock (/4, read delay 4); at 504 MHz the read delay no longer
   overflows into a reserved bit; clk_peri moves from 48 MHz to 126 MHz (the SD SPI clock
   is 12.6 MHz instead of 12); an unreachable clock falls back to 252 MHz, not 126.
+- **Verified on the Next:** the report equals the baseline row for row after each step;
+  8 warm `~RST~` reboots in a row, PSRAM back each time; `frank check` clean on all six
+  images (the lint now takes a measured stack of 4 KB+ in frank-sdk's layout, and no boot
+  guard on a run-time board). One reboot in 8 lost the end of a reply sent just before it:
+  `frank_reboot()` now gives a USB console 100 ms to drain, and `frank console` reads
+  while it sends.
+- **Not applicable here:** the forced-hang test (verification 4). frank-test sets no
+  crumbs and has no boot guard, so frank-sdk's safe mode stays off: its watchdog belongs
+  to the overclock campaign, where a hang is the expected outcome of a bad candidate.
+
+### Phase 4, the RTC part (a710afa)
+
+frank-sdk's `frank_rtc` (DS3231 and RV-3032, the bus passed in) is frank-test's DS3231
+code; `core/rtc_ds3231.c` keeps its API and its bit-banged bus on top of it. The menu
+bar clock on the Next reads through it. **Still to do for the FRANK mini's RV-3032:**
+detection's I2C scan has to look at 0x51 (and `CAP_RTC_RV3032` gate the RTC tests),
+which changes how every board is identified, so it waits for a mini on the bench. The
+RV-3032 code itself is untried on a board.
 
 ## Phase 4 (later, its own review): drivers
 
