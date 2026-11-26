@@ -1,0 +1,41 @@
+# Waveshare RP2350-PiZero. Called Z0 in frank-quake2 / frank-ecat, Z2 in frank-dos.
+# Not FRANK Z0, which is target FZ.
+id: Z0
+name: Waveshare RP2350-PiZero
+covers: [Waveshare RP2350-PiZero]
+mcu: rp2350b
+role: single
+sources:
+  - frank-quake2 CMakeLists.txt, README.md, boards/frank_z0_rp2350b.h
+  - frank-dos src/board_config.h BOARD_Z2, drivers/hdmi/hdmi.h (lane order)
+  - "frank-ecat bench notes: HSTX cannot reach GPIO32-39; only frank-quake2's PIO HDMI locks here"
+flash: {bytes: 16M}
+psram: {cs: 47, bytes: 8M}
+clocks:                 # PSRAM untuned on this board: 504 / 4 = 126 MHz, derived read delay
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 126
+  flash_rxdelay: 5
+console:
+  default: usb          # the debug UART (GPIO0/1) is not on its header
+  uart: {inst: 0, tx: 0, rx: 1}
+usb: {native: host, pio_usb_dp: 28}   # "PIO-USB" USB-C socket, D- = GPIO29
+video:
+  hdmi: {backend: pio, base: 32, clk: 38, data: 32, rgb_not_bgr: false, invert_pairs: false}
+sd: {mode: spi, spi: 1, clk: 30, cmd: 31, dat0: 40, dat3: 43}
+audio:
+  i2s: {data: 10, bclk: 11, lrck: 12, dac: PCM5102A module}
+  pwm: {right: 10, left: 11, beeper: 12}   # the same pins, without the DAC module (frank-dos BOARD_Z2)
+ps2: {kbd_clk: 2, kbd_dat: 3, mouse_clk: 0, mouse_dat: 1}
+nespad: {clk: 4, data: 6, latch: 7}
+pio:
+  video: 0              # the known-good PiZero assignment
+  ps2: 1
+  pio_usb: 1            # only when PS/2 is compiled out
+  i2s: 2
+  nespad: 2
+shared:
+  - [console.uart, ps2.mouse]
+  - [ps2, usb.pio_usb]
+  - [audio.i2s, audio.pwm]

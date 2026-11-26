@@ -1,0 +1,53 @@
+# frank-sdk CI: generated board files current, MCP tests, every example on every board.
+name: build
+on: [push, pull_request]
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install pyyaml "mcp>=2.3" pyserial pytest && pip install -e mcp
+      - run: python tools/gen_boards.py --check
+      - run: pytest -q mcp/tests/test_frank.py
+  examples:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [M1, M2, NX, C2, SL, FZ, FN, Z0, PC]
+        example: [hello, video, diag]
+        exclude:
+          - {board: SL, example: video}   # the slave has no HDMI
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
+      - run: git clone --depth 1 --branch 2.2.0 https://github.com/raspberrypi/pico-sdk.git /tmp/pico-sdk && git -C /tmp/pico-sdk submodule update --init --depth 1 lib/tinyusb
+      - run: cmake -S examples/${{ matrix.example }} -B b -G Ninja -DFRANK_BOARD=${{ matrix.board }} -DPICO_SDK_PATH=/tmp/pico-sdk
+      - run: cmake --build b 2>&1 | tee build.log; ! grep -q "warning:" build.log
+  variants:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {board: M2, example: video, opts: "-DFRANK_VIDEO_OUT=vga"}
+          - {board: M2, example: video, opts: "-DFRANK_VIDEO_OUT=composite"}
+          - {board: M2, example: video, opts: "-DFRANK_HDMI_BACKEND=pio"}
+          - {board: M2, example: diag, opts: "-DFRANK_CONSOLE=uart"}
+          - {board: NX, example: dual, opts: ""}
+          - {board: SL, example: dual, opts: ""}
+          - {board: C2, example: dual, opts: ""}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi
+      - run: git clone --depth 1 --branch 2.2.0 https://github.com/raspberrypi/pico-sdk.git /tmp/pico-sdk && git -C /tmp/pico-sdk submodule update --init --depth 1 lib/tinyusb
+      - run: cmake -S examples/${{ matrix.example }} -B b -G Ninja -DFRANK_BOARD=${{ matrix.board }} ${{ matrix.opts }} -DPICO_SDK_PATH=/tmp/pico-sdk
+      - run: cmake --build b 2>&1 | tee build.log; ! grep -q "warning:" build.log
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev
+      - run: for ex in hello video diag; do cmake -S host -B b-$ex -DAPP_DIR=$PWD/examples/$ex && cmake --build b-$ex || exit 1; done

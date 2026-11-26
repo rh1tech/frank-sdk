@@ -1,0 +1,22 @@
+[project]
+name = "frank-mcp"
+version = "0.1.0"
+description = "frank-sdk's MCP servers and bench CLI for the FRANK RP2350 boards"
+requires-python = ">=3.11"
+dependencies = ["mcp>=2.3", "pyserial>=3.5", "pyyaml>=6"]
+license = "MIT"
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+frank-docs-mcp = "frank_mcp.docs_server:main"
+frank-dev-mcp = "frank_mcp.dev_server:main"
+frank = "frank_mcp.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["frank_mcp"]

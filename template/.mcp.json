@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "frank-docs": { "command": "frank-sdk/mcp/.venv/bin/frank-docs-mcp", "args": [] },
+    "frank-dev": { "command": "frank-sdk/mcp/.venv/bin/frank-dev-mcp", "args": [] }
+  }
+}

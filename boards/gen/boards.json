@@ -1,0 +1,1696 @@
+{
+ "C2": {
+  "audio": {
+   "i2s": {
+    "bclk": 10,
+    "dac": "TDA1387",
+    "data": 9,
+    "lrck": 11
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 101,
+   "flash_rxdelay": 3,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "uart",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "FRANK Core 2",
+   "FRANK Core 2U",
+   "FRANK Core 2 Proto"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVPIQ"
+  },
+  "gpio": {
+   "0": [
+    "console.uart"
+   ],
+   "1": [
+    "console.uart"
+   ],
+   "10": [
+    "audio.i2s"
+   ],
+   "11": [
+    "audio.i2s"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "20": [
+    "link"
+   ],
+   "21": [
+    "link"
+   ],
+   "22": [
+    "link"
+   ],
+   "23": [
+    "link"
+   ],
+   "24": [
+    "link"
+   ],
+   "25": [
+    "link"
+   ],
+   "26": [
+    "link"
+   ],
+   "27": [
+    "link"
+   ],
+   "28": [
+    "link"
+   ],
+   "29": [
+    "link"
+   ],
+   "30": [
+    "link"
+   ],
+   "31": [
+    "link"
+   ],
+   "32": [
+    "link"
+   ],
+   "33": [
+    "link"
+   ],
+   "34": [
+    "link"
+   ],
+   "35": [
+    "link"
+   ],
+   "36": [
+    "link"
+   ],
+   "37": [
+    "link"
+   ],
+   "38": [
+    "link"
+   ],
+   "39": [
+    "link"
+   ],
+   "4": [
+    "sd"
+   ],
+   "40": [
+    "link"
+   ],
+   "41": [
+    "link"
+   ],
+   "42": [
+    "link"
+   ],
+   "46": [
+    "led"
+   ],
+   "47": [
+    "psram"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd"
+   ],
+   "9": [
+    "audio.i2s"
+   ]
+  },
+  "id": "C2",
+  "led": {
+   "ws2812": 46
+  },
+  "link": {
+   "a_data": 20,
+   "b_data": 30,
+   "db_in": 42,
+   "db_out": 41,
+   "fs": 40,
+   "side": "master"
+  },
+  "mcu": "rp2350b",
+  "name": "FRANK Core 2 (master)",
+  "pair": "SL",
+  "pio": {
+   "i2s": 2,
+   "link": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 16,
+   "1": 0,
+   "2": 0
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47,
+   "part": "APS6404L"
+  },
+  "role": "master",
+  "sd": {
+   "clk": 6,
+   "cmd": 7,
+   "dat0": 4,
+   "dat3": 5,
+   "mode": "spi",
+   "spi": 0
+  },
+  "sources": [
+   "frank-test core/board_table.c FRANK_BOARD_CORE2 (netlist)",
+   "frank-dos src/board_config.h BOARD_C2",
+   "frank-blood common/frank.cmake (clocks)"
+  ],
+  "usb": {
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   }
+  }
+ },
+ "FN": {
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb"
+  },
+  "covers": [
+   "FRANK Nano"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVPIQ"
+  },
+  "gpio": {
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "20": [
+    "usb.pio_usb"
+   ],
+   "21": [
+    "usb.pio_usb"
+   ],
+   "25": [
+    "led"
+   ],
+   "4": [
+    "sd"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd"
+   ],
+   "8": [
+    "psram"
+   ]
+  },
+  "id": "FN",
+  "led": {
+   "plain": 25
+  },
+  "mcu": "rp2350a",
+  "name": "FRANK Nano",
+  "pio": {
+   "pio_usb": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 8,
+   "part": "APS6404L-3SQR"
+  },
+  "role": "single",
+  "sd": {
+   "clk": 6,
+   "cmd": 7,
+   "dat0": 4,
+   "dat3": 5,
+   "mode": "spi",
+   "spi": 0
+  },
+  "sources": [
+   "frank-lab frank_nano/frank_nano.kicad_sch netlist (kicad-cli sch export netlist, 2026-11-26)"
+  ],
+  "usb": {
+   "native": "device",
+   "pio_usb_dp": 20
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   }
+  }
+ },
+ "FZ": {
+  "audio": {
+   "i2s": {
+    "bclk": 25,
+    "dac": "TLV320DAC3100",
+    "data": 23,
+    "lrck": 26,
+    "mclk": 24
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 378,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.5
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 1,
+    "rx": 9,
+    "tx": 8
+   }
+  },
+  "covers": [
+   "FRANK Z0"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVPIQ"
+  },
+  "gpio": {
+   "10": [
+    "i2c"
+   ],
+   "11": [
+    "i2c"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "20": [
+    "led"
+   ],
+   "21": [
+    "usb.pio_usb"
+   ],
+   "22": [
+    "usb.pio_usb"
+   ],
+   "23": [
+    "audio.i2s"
+   ],
+   "24": [
+    "audio.i2s"
+   ],
+   "25": [
+    "audio.i2s"
+   ],
+   "26": [
+    "audio.i2s"
+   ],
+   "4": [
+    "sd"
+   ],
+   "47": [
+    "psram"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd"
+   ],
+   "8": [
+    "console.uart"
+   ],
+   "9": [
+    "console.uart"
+   ]
+  },
+  "i2c": {
+   "devices": {
+    "TLV320DAC3100": 24
+   },
+   "inst": 1,
+   "scl": 11,
+   "sda": 10
+  },
+  "id": "FZ",
+  "led": {
+   "plain": 20
+  },
+  "mcu": "rp2350b",
+  "name": "FRANK Z0",
+  "pio": {
+   "i2s": 2,
+   "pio_usb": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0,
+   "2": 0
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47,
+   "part": "APS6404L"
+  },
+  "role": "single",
+  "sd": {
+   "clk": 6,
+   "cmd": 7,
+   "dat0": 4,
+   "dat3": 5,
+   "mode": "spi",
+   "spi": 0
+  },
+  "sources": [
+   "frank-test core/board_table.c FRANK_BOARD_Z0 (netlist), boards/frank_z0.h"
+  ],
+  "usb": {
+   "native": "device",
+   "pio_usb_dp": 21
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   }
+  }
+ },
+ "M1": {
+  "audio": {
+   "i2s": {
+    "bclk": 27,
+    "dac": "TDA1387",
+    "data": 26,
+    "lrck": 28
+   },
+   "pwm": {
+    "beeper": 28,
+    "left": 27,
+    "right": 26
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "Murmulator 1.x",
+   "M1P2",
+   "FRANK M1"
+  ],
+  "flash": {
+   "bytes": "4M"
+  },
+  "gpio": {
+   "0": [
+    "console.uart",
+    "ps2"
+   ],
+   "1": [
+    "console.uart",
+    "ps2"
+   ],
+   "10": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "11": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "12": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "13": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "14": [
+    "ps2",
+    "nespad"
+   ],
+   "15": [
+    "ps2",
+    "nespad"
+   ],
+   "16": [
+    "nespad"
+   ],
+   "19": [
+    "psram"
+   ],
+   "2": [
+    "sd"
+   ],
+   "25": [
+    "led"
+   ],
+   "26": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "27": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "28": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "3": [
+    "sd"
+   ],
+   "4": [
+    "sd"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "7": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "8": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "9": [
+    "video.hdmi",
+    "video.vga"
+   ]
+  },
+  "id": "M1",
+  "led": {
+   "plain": 25
+  },
+  "mcu": "rp2350a",
+  "name": "Murmulator 1 pinout, Pico 2 (M1P2)",
+  "nespad": {
+   "clk": 14,
+   "data": 16,
+   "latch": 15
+  },
+  "pio": {
+   "i2s": 2,
+   "nespad": 2,
+   "ps2": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0,
+   "2": 0
+  },
+  "ps2": {
+   "kbd_clk": 0,
+   "kbd_dat": 1,
+   "mouse_clk": 14,
+   "mouse_dat": 15
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 19,
+   "cs_rp2350b": 47
+  },
+  "role": "single",
+  "sd": {
+   "clk": 2,
+   "cmd": 3,
+   "dat0": 4,
+   "dat3": 5,
+   "mode": "spi",
+   "spi": 0
+  },
+  "shared": [
+   [
+    "console.uart",
+    "ps2.kbd"
+   ],
+   [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   [
+    "video.hdmi",
+    "video.vga"
+   ],
+   [
+    "ps2",
+    "nespad"
+   ]
+  ],
+  "sources": [
+   "frank-dos src/board_config.h BOARD_M1 (images m1p2-*), CMakeLists.txt",
+   "frank-dos drivers/hdmi/hdmi.h (the M1/M2 lane order: clock first, RGB, inverted)"
+  ],
+  "usb": {
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "pio",
+    "base": 6,
+    "clk": 6,
+    "data": 8,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   },
+   "vga": {
+    "base": 6
+   }
+  }
+ },
+ "M2": {
+  "audio": {
+   "i2s": {
+    "bclk": 10,
+    "dac": "TDA1387",
+    "data": 9,
+    "lrck": 11
+   },
+   "pwm": {
+    "beeper": 9,
+    "left": 11,
+    "right": 10
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 126,
+   "flash_rxdelay": 5,
+   "psram_mhz": 168,
+   "psram_rxdelay": 6,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "FRANK",
+   "FRANK PGA",
+   "MegaFRANK",
+   "miniFRANK",
+   "Murmulator 2"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JV"
+  },
+  "gpio": {
+   "0": [
+    "console.uart",
+    "ps2"
+   ],
+   "1": [
+    "console.uart",
+    "ps2"
+   ],
+   "10": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "11": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "12": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "13": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "14": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "15": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "16": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "17": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "18": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "19": [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ],
+   "2": [
+    "ps2"
+   ],
+   "20": [
+    "nespad"
+   ],
+   "21": [
+    "nespad"
+   ],
+   "25": [
+    "led"
+   ],
+   "26": [
+    "nespad"
+   ],
+   "27": [
+    "nespad"
+   ],
+   "3": [
+    "ps2"
+   ],
+   "4": [
+    "sd"
+   ],
+   "47": [
+    "psram"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd"
+   ],
+   "9": [
+    "audio.i2s",
+    "audio.pwm"
+   ]
+  },
+  "id": "M2",
+  "led": {
+   "plain": 25
+  },
+  "mcu": "rp2350b",
+  "name": "FRANK M2 (Murmulator 2.0 pinout)",
+  "nespad": {
+   "clk": 20,
+   "data": 26,
+   "data2": 27,
+   "latch": 21
+  },
+  "pio": {
+   "i2s": 2,
+   "nespad": 2,
+   "ps2": 0,
+   "sd": 1,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0,
+   "2": 0
+  },
+  "ps2": {
+   "kbd_clk": 2,
+   "kbd_dat": 3,
+   "mouse_clk": 0,
+   "mouse_dat": 1
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47,
+   "cs_rp2350a": 8,
+   "part": "APS6404L"
+  },
+  "role": "single",
+  "sd": {
+   "clk": 6,
+   "cmd": 7,
+   "dat0": 4,
+   "dat3": 5,
+   "mode": "spi",
+   "spi": 0
+  },
+  "shared": [
+   [
+    "console.uart",
+    "ps2.mouse"
+   ],
+   [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   [
+    "video.hdmi",
+    "video.vga",
+    "video.composite"
+   ]
+  ],
+  "sources": [
+   "frank-test core/board_table.c (netlist), PINS_* conventions",
+   "frank-dos src/board_config.h BOARD_M2",
+   "frank-quake2 CMakeLists.txt (clocks tuned with its diag firmware)"
+  ],
+  "usb": {
+   "native": "host"
+  },
+  "video": {
+   "composite": {
+    "base": 12
+   },
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   },
+   "vga": {
+    "base": 12
+   }
+  }
+ },
+ "NX": {
+  "audio": {
+   "i2s": {
+    "bclk": 9,
+    "dac": "TLV320DAC3100",
+    "data": 11,
+    "lrck": 10,
+    "mclk": 8
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 45,
+    "tx": 46
+   }
+  },
+  "covers": [
+   "FRANK Next"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVPIQ"
+  },
+  "gpio": {
+   "0": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "1": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "10": [
+    "audio.i2s"
+   ],
+   "11": [
+    "audio.i2s"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "2": [
+    "i2c"
+   ],
+   "20": [
+    "link"
+   ],
+   "21": [
+    "link"
+   ],
+   "22": [
+    "link"
+   ],
+   "23": [
+    "link"
+   ],
+   "24": [
+    "link"
+   ],
+   "25": [
+    "link"
+   ],
+   "26": [
+    "link"
+   ],
+   "27": [
+    "link"
+   ],
+   "28": [
+    "link"
+   ],
+   "29": [
+    "link"
+   ],
+   "3": [
+    "i2c"
+   ],
+   "30": [
+    "link"
+   ],
+   "31": [
+    "link"
+   ],
+   "32": [
+    "link"
+   ],
+   "33": [
+    "link"
+   ],
+   "34": [
+    "link"
+   ],
+   "35": [
+    "link"
+   ],
+   "36": [
+    "link"
+   ],
+   "37": [
+    "link"
+   ],
+   "38": [
+    "link"
+   ],
+   "39": [
+    "link"
+   ],
+   "4": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "40": [
+    "link"
+   ],
+   "41": [
+    "link"
+   ],
+   "42": [
+    "link"
+   ],
+   "43": [
+    "link"
+   ],
+   "44": [
+    "tape_in"
+   ],
+   "45": [
+    "console.uart"
+   ],
+   "46": [
+    "console.uart"
+   ],
+   "47": [
+    "psram"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "8": [
+    "audio.i2s"
+   ],
+   "9": [
+    "audio.i2s"
+   ]
+  },
+  "i2c": {
+   "devices": {
+    "DS3231": 104,
+    "TLV320DAC3100": 24
+   },
+   "inst": 1,
+   "scl": 3,
+   "sda": 2
+  },
+  "id": "NX",
+  "link": {
+   "a_data": 20,
+   "b_data": 30,
+   "db_in": 42,
+   "db_out": 41,
+   "fs": 40,
+   "run": 43,
+   "side": "master"
+  },
+  "mcu": "rp2350b",
+  "name": "FRANK Next (master)",
+  "pair": "SL",
+  "pio": {
+   "i2s": 1,
+   "link": 2,
+   "sd": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0,
+   "2": 16
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47,
+   "part": "APS6404L"
+  },
+  "role": "master",
+  "sd": {
+   "clk": 1,
+   "cmd": 0,
+   "dat0": 4,
+   "mode": "sdio"
+  },
+  "sd_spi_fallback": {
+   "clk": 1,
+   "cmd": 0,
+   "dat0": 4,
+   "dat3": 7
+  },
+  "shared": [
+   [
+    "sd",
+    "sd_spi_fallback"
+   ]
+  ],
+  "sources": [
+   "frank-test core/board_table.c FRANK_BOARD_NEXT (netlist)",
+   "frank-dos src/board_config.h BOARD_NX, boards/frank_next_master.h",
+   "frank-duke3d common/platform/clocks.c (504 MHz on both halves)"
+  ],
+  "tape_in": 44,
+  "usb": {
+   "hub": true,
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   }
+  }
+ },
+ "PC": {
+  "audio": {
+   "pwm": {
+    "left": 28,
+    "right": 27
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "Olimex PICO-PC"
+  ],
+  "flash": {
+   "bytes": "4M"
+  },
+  "gpio": {
+   "0": [
+    "console.uart",
+    "ps2"
+   ],
+   "1": [
+    "console.uart",
+    "ps2"
+   ],
+   "12": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "13": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "14": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "15": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "16": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "17": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "18": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "19": [
+    "video.hdmi",
+    "video.vga"
+   ],
+   "2": [
+    "ps2"
+   ],
+   "20": [
+    "nespad"
+   ],
+   "21": [
+    "nespad"
+   ],
+   "22": [
+    "sd"
+   ],
+   "25": [
+    "led"
+   ],
+   "27": [
+    "audio.pwm"
+   ],
+   "28": [
+    "audio.pwm"
+   ],
+   "3": [
+    "ps2"
+   ],
+   "4": [
+    "sd"
+   ],
+   "5": [
+    "nespad"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd"
+   ],
+   "8": [
+    "psram"
+   ],
+   "9": [
+    "nespad"
+   ]
+  },
+  "id": "PC",
+  "led": {
+   "plain": 25
+  },
+  "mcu": "rp2350a",
+  "name": "Olimex PICO-PC (Pico 2)",
+  "nespad": {
+   "clk": 5,
+   "data": 20,
+   "data2": 21,
+   "latch": 9
+  },
+  "pio": {
+   "nespad": 2,
+   "ps2": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0,
+   "2": 0
+  },
+  "ps2": {
+   "kbd_clk": 0,
+   "kbd_dat": 1,
+   "mouse_clk": 2,
+   "mouse_dat": 3
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 8
+  },
+  "role": "single",
+  "sd": {
+   "clk": 6,
+   "cmd": 7,
+   "dat0": 4,
+   "dat3": 22,
+   "mode": "spi",
+   "spi": 0
+  },
+  "shared": [
+   [
+    "console.uart",
+    "ps2.kbd"
+   ],
+   [
+    "video.hdmi",
+    "video.vga"
+   ]
+  ],
+  "sources": [
+   "pico-speccy cmake/board-pins.cmake PICO_PC",
+   "frank-dos src/board_config.h BOARD_PC"
+  ],
+  "usb": {
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   },
+   "vga": {
+    "base": 12
+   }
+  }
+ },
+ "SL": {
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "uart",
+   "uart": {
+    "inst": 1,
+    "rx": 25,
+    "tx": 24
+   }
+  },
+  "covers": [
+   "FRANK Next slave",
+   "FRANK Core 2 slave",
+   "FRANK Core 2U slave"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVPIQ"
+  },
+  "gpio": {
+   "0": [
+    "psram"
+   ],
+   "1": [
+    "link"
+   ],
+   "10": [
+    "link"
+   ],
+   "11": [
+    "link"
+   ],
+   "12": [
+    "link"
+   ],
+   "13": [
+    "link"
+   ],
+   "14": [
+    "link"
+   ],
+   "15": [
+    "link"
+   ],
+   "16": [
+    "link"
+   ],
+   "17": [
+    "link"
+   ],
+   "18": [
+    "link"
+   ],
+   "19": [
+    "link"
+   ],
+   "2": [
+    "link"
+   ],
+   "20": [
+    "link"
+   ],
+   "21": [
+    "link"
+   ],
+   "22": [
+    "link"
+   ],
+   "23": [
+    "link"
+   ],
+   "24": [
+    "console.uart"
+   ],
+   "25": [
+    "console.uart"
+   ],
+   "26": [
+    "led"
+   ],
+   "27": [
+    "led"
+   ],
+   "3": [
+    "link"
+   ],
+   "4": [
+    "link"
+   ],
+   "5": [
+    "link"
+   ],
+   "6": [
+    "link"
+   ],
+   "7": [
+    "link"
+   ],
+   "8": [
+    "link"
+   ],
+   "9": [
+    "link"
+   ]
+  },
+  "id": "SL",
+  "led": {
+   "plain": 26,
+   "ws2812": 27
+  },
+  "link": {
+   "a_data": 1,
+   "b_data": 11,
+   "db_in": 22,
+   "db_out": 23,
+   "fs": 21,
+   "side": "slave"
+  },
+  "mcu": "rp2350a",
+  "name": "FRANK Next / Core 2 (slave)",
+  "pio": {
+   "link": 0
+  },
+  "pio_gpio_base": {
+   "0": 0
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 0,
+   "part": "ESP-PSRAM64H"
+  },
+  "role": "slave",
+  "sources": [
+   "frank-test core/board_table.c \"Core 2 / FRANK Next (slave)\" (netlist)",
+   "frank-react drivers/link/link_pins.h"
+  ],
+  "usb": {
+   "native": "device"
+  }
+ },
+ "Z0": {
+  "audio": {
+   "i2s": {
+    "bclk": 11,
+    "dac": "PCM5102A module",
+    "data": 10,
+    "lrck": 12
+   },
+   "pwm": {
+    "beeper": 12,
+    "left": 11,
+    "right": 10
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 126,
+   "flash_rxdelay": 5,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "Waveshare RP2350-PiZero"
+  ],
+  "flash": {
+   "bytes": "16M"
+  },
+  "gpio": {
+   "0": [
+    "console.uart",
+    "ps2"
+   ],
+   "1": [
+    "console.uart",
+    "ps2"
+   ],
+   "10": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "11": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "12": [
+    "audio.i2s",
+    "audio.pwm"
+   ],
+   "2": [
+    "ps2"
+   ],
+   "28": [
+    "usb.pio_usb"
+   ],
+   "29": [
+    "usb.pio_usb"
+   ],
+   "3": [
+    "ps2"
+   ],
+   "30": [
+    "sd"
+   ],
+   "31": [
+    "sd"
+   ],
+   "32": [
+    "video.hdmi"
+   ],
+   "33": [
+    "video.hdmi"
+   ],
+   "34": [
+    "video.hdmi"
+   ],
+   "35": [
+    "video.hdmi"
+   ],
+   "36": [
+    "video.hdmi"
+   ],
+   "37": [
+    "video.hdmi"
+   ],
+   "38": [
+    "video.hdmi"
+   ],
+   "39": [
+    "video.hdmi"
+   ],
+   "4": [
+    "nespad"
+   ],
+   "40": [
+    "sd"
+   ],
+   "43": [
+    "sd"
+   ],
+   "47": [
+    "psram"
+   ],
+   "6": [
+    "nespad"
+   ],
+   "7": [
+    "nespad"
+   ]
+  },
+  "id": "Z0",
+  "mcu": "rp2350b",
+  "name": "Waveshare RP2350-PiZero",
+  "nespad": {
+   "clk": 4,
+   "data": 6,
+   "latch": 7
+  },
+  "pio": {
+   "i2s": 2,
+   "nespad": 2,
+   "pio_usb": 1,
+   "ps2": 1,
+   "video": 0
+  },
+  "pio_gpio_base": {
+   "0": 16,
+   "1": 0,
+   "2": 0
+  },
+  "ps2": {
+   "kbd_clk": 2,
+   "kbd_dat": 3,
+   "mouse_clk": 0,
+   "mouse_dat": 1
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47
+  },
+  "role": "single",
+  "sd": {
+   "clk": 30,
+   "cmd": 31,
+   "dat0": 40,
+   "dat3": 43,
+   "mode": "spi",
+   "spi": 1
+  },
+  "shared": [
+   [
+    "console.uart",
+    "ps2.mouse"
+   ],
+   [
+    "ps2",
+    "usb.pio_usb"
+   ],
+   [
+    "audio.i2s",
+    "audio.pwm"
+   ]
+  ],
+  "sources": [
+   "frank-quake2 CMakeLists.txt, README.md, boards/frank_z0_rp2350b.h",
+   "frank-dos src/board_config.h BOARD_Z2, drivers/hdmi/hdmi.h (lane order)",
+   "frank-ecat bench notes: HSTX cannot reach GPIO32-39; only frank-quake2's PIO HDMI locks here"
+  ],
+  "usb": {
+   "native": "host",
+   "pio_usb_dp": 28
+  },
+  "video": {
+   "hdmi": {
+    "backend": "pio",
+    "base": 32,
+    "clk": 38,
+    "data": 32,
+    "invert_pairs": false,
+    "rgb_not_bgr": false
+   }
+  }
+ }
+}

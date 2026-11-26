@@ -1,0 +1,42 @@
+# UNVERIFIED, not built: pico-speccy's PICO_DV values put the NES pad's clock and
+# latch (GPIO8/9) inside the HDMI pins (6-13), and its pin comments are copied
+# from the Olimex board. Needs the Pico DV Demo Base schematic before it moves up.
+# Pimoroni Pico DV Demo Base with a Pico 2 (pico-speccy PICO_DV). HDMI on GPIO6-13
+# (PIO: out of HSTX's reach), SD by PIO SPI, PS/2 keyboard on 14/15, no PSRAM.
+id: DV
+name: Pimoroni Pico DV Demo Base (Pico 2)
+covers: [Pimoroni Pico DV Demo Base]
+mcu: rp2350a
+role: single
+sources:
+  - pico-speccy cmake/board-pins.cmake PICO_DV, src/drivers/hdmi/hdmi.h (lane order)
+flash: {bytes: 4M}
+clocks:
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb
+  uart: {inst: 1, tx: 20, rx: 21}   # pico-speccy's TX-only debug UART on GP20 (shared with the pad)
+usb: {native: host}
+video:
+  hdmi: {backend: pio, base: 6, clk: 6, data: 8, rgb_not_bgr: true, invert_pairs: true}
+  vga: {base: 6}
+sd: {mode: spi, spi: 1, clk: 5, cmd: 18, dat0: 19, dat3: 22}   # not an SPI block's pins: PIO SPI
+audio:
+  i2s: {data: 26, bclk: 27, lrck: 28, dac: PCM5100A}
+  pwm: {right: 26, left: 27}
+ps2: {kbd_clk: 14, kbd_dat: 15}
+nespad: {clk: 8, latch: 9, data: 20, data2: 21}
+led: {plain: 25}
+pio:
+  ps2: 0
+  sd: 0
+  video: 1
+  i2s: 2
+  nespad: 2
+shared:
+  - [audio.i2s, audio.pwm]
+  - [video.hdmi, video.vga]
+  - [console.uart, nespad]

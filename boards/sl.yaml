@@ -1,0 +1,30 @@
+# The slave half of FRANK Next and FRANK Core 2 / 2U: pin-identical on all three.
+id: SL
+name: FRANK Next / Core 2 (slave)
+covers: [FRANK Next slave, FRANK Core 2 slave, FRANK Core 2U slave]
+mcu: rp2350a
+role: slave
+sources:
+  - frank-test core/board_table.c "Core 2 / FRANK Next (slave)" (netlist)
+  - frank-react drivers/link/link_pins.h
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 0, bytes: 8M, part: ESP-PSRAM64H}   # GPIO0: the SDK's default UART0 TX would drive it
+clocks:
+  cpu_mhz: 504          # the master's clock, always
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: uart
+  uart: {inst: 1, tx: 24, rx: 25}   # J4
+usb: {native: device}
+led: {plain: 26, ws2812: 27}        # LD2 WS2812 on FRANK Next only
+link:
+  side: slave
+  a_data: 1             # bus A in: GPIO1-8, CLK 9, VALID 10
+  b_data: 11            # bus B out: GPIO11-18, CLK 19, VALID 20
+  fs: 21
+  db_in: 22
+  db_out: 23
+pio:
+  link: 0

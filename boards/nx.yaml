@@ -1,0 +1,45 @@
+# FRANK Next rev 1.00 — the master half. The slave half is boards/sl.yaml.
+id: NX
+name: FRANK Next (master)
+covers: [FRANK Next]
+mcu: rp2350b
+role: master
+pair: SL
+sources:
+  - frank-test core/board_table.c FRANK_BOARD_NEXT (netlist)
+  - frank-dos src/board_config.h BOARD_NX, boards/frank_next_master.h
+  - frank-duke3d common/platform/clocks.c (504 MHz on both halves)
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 47, bytes: 8M, part: APS6404L}
+clocks:
+  cpu_mhz: 504          # both halves must agree: the link's receive PIO is timed from clk_sys
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66         # divider 8; RXDELAY at most half an SCK period (7 here). 6 at divider 5 hung
+console:
+  default: usb          # build with CDC on the master's USB: J2's RX does not reach the RP on the bench
+  uart: {inst: 0, tx: 46, rx: 45}   # J2; GPIO46 is UART0 TX only at the B package's alternate function
+usb: {native: host, hub: true}
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+sd: {mode: sdio, cmd: 0, clk: 1, dat0: 4}        # DAT0-3 = GPIO4-7; GPIO1 is no SPI0 SCK pin
+sd_spi_fallback: {clk: 1, cmd: 0, dat0: 4, dat3: 7}   # the same card in SPI mode, PIO SPI
+audio:
+  i2s: {data: 11, bclk: 9, lrck: 10, mclk: 8, dac: TLV320DAC3100}   # BCLK/WCLK/DIN order; MCLK not driven
+i2c: {inst: 1, sda: 2, scl: 3, devices: {TLV320DAC3100: 0x18, DS3231: 0x68}}
+tape_in: 44
+link:
+  side: master
+  a_data: 20            # bus A master->slave GPIO20-27, CLK 28, VALID 29
+  b_data: 30            # bus B slave->master GPIO30-37, CLK 38, VALID 39
+  fs: 40
+  db_out: 41
+  db_in: 42
+  run: 43               # the slave's RUN: never drive it by accident
+pio:
+  sd: 0                 # SDIO: 16 + up to 9 instructions, so nothing else fits on PIO0
+  video: 1
+  i2s: 1                # beside HDMI (2 SMs, 15 instructions) on PIO1
+  link: 2               # needs a whole instance at gpio base 16 (bus B reaches GPIO39)
+shared:
+  - [sd, sd_spi_fallback]

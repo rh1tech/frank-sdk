@@ -1,0 +1,11 @@
+# builds
+build*/
+release/
+# Python
+mcp/.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+# machines
+.DS_Store
+*.swp

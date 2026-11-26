@@ -1,0 +1,31 @@
+# FRANK Z0 (frank-lab frank_z0) — a Pi Zero footprint FRANK. Not the Waveshare
+# RP2350-PiZero, which is target Z0 (boards/z0.yaml), and not ZeroFRANK.
+id: FZ
+name: FRANK Z0
+covers: [FRANK Z0]
+mcu: rp2350b
+role: single
+sources:
+  - frank-test core/board_table.c FRANK_BOARD_Z0 (netlist), boards/frank_z0.h
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 47, bytes: 8M, part: APS6404L}
+clocks:                 # untuned: tune with examples/diag before raising
+  cpu_mhz: 378
+  vreg: 1.50
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb          # J8 is the native USB (device only, and the power input)
+  uart: {inst: 1, tx: 8, rx: 9}   # the Pi header J1 pins 8/10
+usb: {native: device, pio_usb_dp: 21}   # J7: PIO-USB host, D- = GPIO22
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+sd: {mode: spi, spi: 0, clk: 6, cmd: 7, dat0: 4, dat3: 5}
+audio:
+  i2s: {data: 23, bclk: 25, lrck: 26, mclk: 24, dac: TLV320DAC3100}   # MCLK recorded, never driven
+i2c: {inst: 1, sda: 10, scl: 11, devices: {TLV320DAC3100: 0x18}}
+led: {plain: 20}        # LD2 blue; LD1 is power
+pio:
+  video: 1
+  i2s: 2
+  pio_usb: 0

@@ -1,0 +1,37 @@
+# Olimex PICO-PC with a Pico 2 in its socket (pico-speccy PICO_PC, frank-dos BOARD_PC).
+# The Olimex RP2350pc (its own RP2350B, SD on 10/11/24/9, no PS/2) is another board.
+id: PC
+name: Olimex PICO-PC (Pico 2)
+covers: [Olimex PICO-PC]
+mcu: rp2350a
+role: single
+sources:
+  - pico-speccy cmake/board-pins.cmake PICO_PC
+  - frank-dos src/board_config.h BOARD_PC
+flash: {bytes: 4M}
+psram: {cs: 8, bytes: 8M}   # none on a stock Pico 2: frank_psram_init() finds 0 and the firmware runs from SRAM
+clocks:
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb
+  uart: {inst: 0, tx: 0, rx: 1}   # DBG1 header, shared with the PS/2 keyboard
+usb: {native: host}
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+  vga: {base: 12}
+sd: {mode: spi, spi: 0, clk: 6, cmd: 7, dat0: 4, dat3: 22}
+audio:
+  pwm: {right: 27, left: 28}   # two PWM slices: each channel gets its own DMA
+ps2: {kbd_clk: 0, kbd_dat: 1, mouse_clk: 2, mouse_dat: 3}   # mouse on QWST1
+nespad: {clk: 5, latch: 9, data: 20, data2: 21}            # UEXT1 10/5/3/4
+led: {plain: 25}
+pio:
+  video: 1
+  ps2: 0
+  nespad: 2
+shared:
+  - [console.uart, ps2.kbd]
+  - [video.hdmi, video.vga]

@@ -1,0 +1,12 @@
+# Copy to ~/.config/frank/bench.yaml (machine-local, never committed).
+# Boards by target id; serial = the board's own USB serial (its CDC console and
+# BOOTSEL device); probe = the debug probe on it, for the SWD BOOTSEL fallback.
+boards:
+  NX: {serial: 0123456789ABCDEF, probe: FEDCBA9876543210}
+#  M2: {serial: ...}
+#  SL: {probe: 0011223344556677}
+capture:
+  video: USB Video            # the MS2109 HDMI stick, by AVFoundation name
+  audio: USB Digital Audio
+  size: 640x480
+  fps: 30

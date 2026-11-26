@@ -1,0 +1,44 @@
+# FRANK M2 — the Murmulator 2.0 pinout, which most of the FRANK fleet shares.
+id: M2
+name: FRANK M2 (Murmulator 2.0 pinout)
+covers: [FRANK, FRANK PGA, MegaFRANK, miniFRANK, Murmulator 2]
+mcu: rp2350b            # a Pico 2 (RP2350A) in a socketed board: PSRAM CS moves to GPIO8
+role: single
+sources:
+  - frank-test core/board_table.c (netlist), PINS_* conventions
+  - frank-dos src/board_config.h BOARD_M2
+  - frank-quake2 CMakeLists.txt (clocks tuned with its diag firmware)
+flash: {bytes: 16M, part: W25Q128JV}
+psram: {cs: 47, cs_rp2350a: 8, bytes: 8M, part: APS6404L}
+clocks:
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 168        # 504 / 3
+  psram_rxdelay: 6      # derived rule gives 4, which misreads at 168 MHz (frank-war2, frank-quake2)
+  flash_mhz: 126
+  flash_rxdelay: 5
+console:
+  default: usb          # USB CDC on the native port: the bench has no probe UART on the M2
+  uart: {inst: 0, tx: 0, rx: 1}   # shares GPIO0/1 with the PS/2 mouse
+usb: {native: host}     # keyboard/mouse host in release builds; CDC console in dev builds
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+  vga: {base: 12}       # the same eight pins through the resistor ladder (RGB + syncs)
+  composite: {base: 12} # the same eight pins: a DAC ladder, sync on base + 6 (frank-test drivers/tv)
+sd: {mode: spi, spi: 0, clk: 6, cmd: 7, dat0: 4, dat3: 5}
+audio:
+  i2s: {data: 9, bclk: 10, lrck: 11, dac: TDA1387}
+  pwm: {beeper: 9, right: 10, left: 11}   # the same pins, through the audio mux
+ps2: {kbd_clk: 2, kbd_dat: 3, mouse_clk: 0, mouse_dat: 1}
+nespad: {clk: 20, latch: 21, data: 26, data2: 27}   # clock 20, latch 21: swapped once, no button worked
+led: {plain: 25}
+pio:                    # the PIO instance each driver takes on this board
+  video: 1
+  i2s: 2
+  ps2: 0
+  sd: 1
+  nespad: 2
+shared:                 # pins two functions may claim; a build picks one
+  - [console.uart, ps2.mouse]
+  - [audio.i2s, audio.pwm]
+  - [video.hdmi, video.vga, video.composite]

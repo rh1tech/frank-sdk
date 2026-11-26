@@ -1,0 +1,27 @@
+# FRANK Nano rev 1.00 (frank-lab frank_nano): an RP2350A with HDMI, microSD,
+# PSRAM and two USB-C ports (native and PIO-USB). No audio codec, no UART header:
+# sound goes over HDMI, the console is USB CDC on the native port.
+id: FN
+name: FRANK Nano
+covers: [FRANK Nano]
+mcu: rp2350a
+role: single
+sources:
+  - frank-lab frank_nano/frank_nano.kicad_sch netlist (kicad-cli sch export netlist, 2026-11-26)
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 8, bytes: 8M, part: APS6404L-3SQR}
+clocks:                 # untuned: tune with examples/diag before raising
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb          # native USB-C (UC); there is no UART header
+usb: {native: device, pio_usb_dp: 20}   # PU: PIO-USB host, D+ GPIO20, D- GPIO21 (22R each)
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+sd: {mode: spi, spi: 0, clk: 6, cmd: 7, dat0: 4, dat3: 5}
+led: {plain: 25}
+pio:
+  video: 1
+  pio_usb: 0

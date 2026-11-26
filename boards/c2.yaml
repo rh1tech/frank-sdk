@@ -1,0 +1,40 @@
+# FRANK Core 2 / Core 2U — the master half. The slave half is boards/sl.yaml.
+id: C2
+name: FRANK Core 2 (master)
+covers: [FRANK Core 2, FRANK Core 2U, FRANK Core 2 Proto]
+mcu: rp2350b
+role: master
+pair: SL
+sources:
+  - frank-test core/board_table.c FRANK_BOARD_CORE2 (netlist)
+  - frank-dos src/board_config.h BOARD_C2
+  - frank-blood common/frank.cmake (clocks)
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 47, bytes: 8M, part: APS6404L}
+clocks:
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 101        # /5 = 100.8 MHz
+  flash_rxdelay: 3      # 2-4 read right and survive a soft reset; the derived 6 bricks the boot (frank-blood)
+console:
+  default: uart
+  uart: {inst: 0, tx: 0, rx: 1}   # J2
+usb: {native: host}
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+sd: {mode: spi, spi: 0, clk: 6, cmd: 7, dat0: 4, dat3: 5}   # hardware SPI0 pins: no PIO SPI needed
+audio:
+  i2s: {data: 9, bclk: 10, lrck: 11, dac: TDA1387}
+led: {ws2812: 46}       # LD1 through 330R: not a plain LED, never PICO_DEFAULT_LED_PIN
+link:
+  side: master
+  a_data: 20
+  b_data: 30
+  fs: 40                # also the reboot request: GPIO43's RUN net is absent on the Core 2
+  db_out: 41
+  db_in: 42
+pio:
+  link: 0               # with HDMI; a VGA build moves the link to PIO1
+  video: 1
+  i2s: 2

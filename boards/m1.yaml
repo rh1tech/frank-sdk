@@ -1,0 +1,41 @@
+# M1P2: the Murmulator 1.x pinout with a Pico 2 in its socket. HDMI on GPIO6-13
+# is out of HSTX's reach (GPIO12-19): PIO HDMI, with sound or as DVI.
+id: M1
+name: Murmulator 1 pinout, Pico 2 (M1P2)
+covers: [Murmulator 1.x, M1P2, FRANK M1]
+mcu: rp2350a            # a Pico 2; an RP2350B module in the socket has its PSRAM on GPIO47
+role: single
+sources:
+  - frank-dos src/board_config.h BOARD_M1 (images m1p2-*), CMakeLists.txt
+  - "frank-dos drivers/hdmi/hdmi.h (the M1/M2 lane order: clock first, RGB, inverted)"
+flash: {bytes: 4M}      # the Pico 2's; a 16 MB module reports its own
+psram: {cs: 19, cs_rp2350b: 47, bytes: 8M}
+clocks:                 # 504 MHz: PIO HDMI wants a 252 MHz multiple (frank-dos boosts to it)
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb
+  uart: {inst: 0, tx: 0, rx: 1}   # shares GPIO0/1 with the PS/2 keyboard
+usb: {native: host}
+video:
+  hdmi: {backend: pio, base: 6, clk: 6, data: 8, rgb_not_bgr: true, invert_pairs: true}
+  vga: {base: 6}
+sd: {mode: spi, spi: 0, clk: 2, cmd: 3, dat0: 4, dat3: 5}
+audio:
+  i2s: {data: 26, bclk: 27, lrck: 28, dac: TDA1387}
+  pwm: {right: 26, left: 27, beeper: 28}   # the same pins, through the audio mux
+ps2: {kbd_clk: 0, kbd_dat: 1, mouse_clk: 14, mouse_dat: 15}
+nespad: {clk: 14, latch: 15, data: 16}
+led: {plain: 25}
+pio:
+  video: 1
+  ps2: 0
+  i2s: 2
+  nespad: 2
+shared:
+  - [console.uart, ps2.kbd]
+  - [audio.i2s, audio.pwm]
+  - [video.hdmi, video.vga]
+  - [ps2, nespad]
