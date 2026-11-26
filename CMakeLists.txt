@@ -150,6 +150,26 @@ function(frank_firmware target)
     pico_add_extra_outputs(${target})
 endfunction()
 
+# frank_linker_script(<target> STACK_KB <n>): frank-sdk's linker script with a
+# main stack of n KB instead of 32 (a power of two, 4..64), for a firmware
+# that needs the SRAM and has measured its stack (frank-test: 8 KB, where it
+# ran on 4). frank_firmware() sets the 32 KB script; call this after it.
+function(frank_linker_script target)
+    cmake_parse_arguments(LS "" "STACK_KB" "" ${ARGN})
+    if(NOT LS_STACK_KB MATCHES "^(4|8|16|32|64)$")
+        message(FATAL_ERROR "frank_linker_script: STACK_KB must be 4, 8, 16, 32 or 64")
+    endif()
+    file(READ ${FRANK_SDK_DIR}/ld/memmap_frank.ld _ld)
+    math(EXPR _origin "0x20080000 - ${LS_STACK_KB} * 1024" OUTPUT_FORMAT HEXADECIMAL)
+    string(REPLACE "LENGTH = 512k - 32k" "LENGTH = 512k - ${LS_STACK_KB}k" _ld "${_ld}")
+    string(REPLACE "ORIGIN = 0x20078000, LENGTH = 32k" "ORIGIN = ${_origin}, LENGTH = ${LS_STACK_KB}k" _ld "${_ld}")
+    string(REPLACE "32 KB main stack" "${LS_STACK_KB} KB main stack" _ld "${_ld}")
+    string(REPLACE ". = . + 32K;" ". = . + ${LS_STACK_KB}K;" _ld "${_ld}")
+    set(_out ${CMAKE_CURRENT_BINARY_DIR}/${target}_memmap_frank.ld)
+    file(WRITE ${_out} "${_ld}")
+    pico_set_linker_script(${target} ${_out})
+endfunction()
+
 # frank_console_wrap_getchar(<target>): every getchar_timeout_us() in the
 # target gets the console with the protocol (~BOOT~, ~RST~, ~C ...~) taken
 # out and acted on, for firmware whose own code reads the console as keys.
