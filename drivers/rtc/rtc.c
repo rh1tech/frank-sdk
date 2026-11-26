@@ -105,6 +105,53 @@ bool frank_rtc_reg_write(const frank_rtc_t *r, uint8_t reg, uint8_t v) {
     return r && r->chip != FRANK_RTC_NONE && r->wr(r->ctx, addr_of(r->chip), w, sizeof(w));
 }
 
+/* RV-3032 configuration and EEPROM (application manual: the PMU byte's BSM
+ * field, bits 5:4, 00/11 off, 01 direct, 10 level switching; Control 1's EERD
+ * stops the automatic EEPROM refresh while the EEPROM is written; command
+ * 0x11 at 0x3F copies the configuration RAM into it; EEbusy and EEF in the
+ * temperature LSB register) */
+#define RV_PMU 0xC0u
+#define RV_BSM_MASK 0x30u
+#define RV_BSM_LEVEL 0x20u
+#define RV_CTRL1 0x10u
+#define RV_EERD 0x04u
+#define RV_EECMD 0x3Fu
+#define RV_EE_UPDATE 0x11u
+#define RV_TEMP_LSB 0x0Eu
+#define RV_EEBUSY 0x04u
+#define RV_EEF 0x08u
+
+bool frank_rtc_backup_on(const frank_rtc_t *r) {
+    if (!r || r->chip == FRANK_RTC_NONE) return false;
+    if (r->chip == FRANK_RTC_DS3231) return true;
+    uint8_t pmu;
+    if (!frank_rtc_reg_read(r, RV_PMU, &pmu)) return false;
+    const uint8_t bsm = pmu & RV_BSM_MASK;
+    return bsm == 0x10u || bsm == 0x20u;
+}
+
+bool frank_rtc_enable_backup(const frank_rtc_t *r, bool persist) {
+    if (!r || r->chip == FRANK_RTC_NONE) return false;
+    if (r->chip == FRANK_RTC_DS3231) return true;
+    uint8_t pmu, ctrl1, t = 0;
+    if (!frank_rtc_reg_read(r, RV_PMU, &pmu) || !frank_rtc_reg_read(r, RV_CTRL1, &ctrl1)) return false;
+    pmu = (uint8_t)((pmu & ~RV_BSM_MASK) | RV_BSM_LEVEL);
+    if (!persist) return frank_rtc_reg_write(r, RV_PMU, pmu);
+    /* the refresh off, the RAM byte, the RAM copied into the EEPROM, wait */
+    bool ok = frank_rtc_reg_write(r, RV_CTRL1, (uint8_t)(ctrl1 | RV_EERD)) &&
+              frank_rtc_reg_write(r, RV_PMU, pmu) &&
+              frank_rtc_reg_write(r, RV_EECMD, RV_EE_UPDATE);
+    bool busy = true;
+    for (int i = 0; ok && busy && i < 200; i++) {   /* a write takes ~10 ms, up to 50 */
+        sleep_ms(1);
+        ok = frank_rtc_reg_read(r, RV_TEMP_LSB, &t);
+        busy = ok && (t & RV_EEBUSY);
+    }
+    ok = ok && !busy && !(t & RV_EEF);
+    /* the refresh back on whatever happened */
+    return frank_rtc_reg_write(r, RV_CTRL1, (uint8_t)(ctrl1 & ~RV_EERD)) && ok;
+}
+
 bool frank_rtc_set(const frank_rtc_t *r, const frank_rtc_time_t *t) {
     if (!r || r->chip == FRANK_RTC_NONE || !frank_rtc_time_valid(t)) return false;
     const bool ds = r->chip == FRANK_RTC_DS3231;

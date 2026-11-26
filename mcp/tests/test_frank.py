@@ -131,6 +131,19 @@ def test_lint_boot_guard_optional_at_run_time(tmp_path, monkeypatch):
     assert lint.check(_fake_elf(tmp_path, monkeypatch, s))["ok"]
 
 
+def test_console_falls_back_to_the_probe_uart(monkeypatch):
+    from frank_mcp import bench
+    ports = [{"device": "/dev/cdc", "serial": "BOARD", "probe": False},
+             {"device": "/dev/probe-uart", "serial": "PROBE", "probe": True}]
+    monkeypatch.setattr(bench, "serial_ports", lambda: ports)
+    cfg = {"serial": "BOARD", "probe": "PROBE"}
+    assert bench.uart_port(cfg) == "/dev/probe-uart"
+    assert bench.uart_port({"serial": "BOARD"}) is None
+    assert bench.console_port("BOARD") == "/dev/cdc"
+    ports.pop(0)   # the board's CDC gone: only the probe's UART is left
+    assert bench.console_port("BOARD") is None and bench.uart_port(cfg) == "/dev/probe-uart"
+
+
 def test_scaffold_full_features(tmp_path):
     r = scaffold.new_firmware(str(tmp_path / "fw"), "fw-full", ["M2", "NX"], features=["video", "audio", "storage", "input"], sdk="local")
     d = Path(r["path"])

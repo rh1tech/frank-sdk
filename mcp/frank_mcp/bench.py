@@ -93,6 +93,15 @@ def console_port(serial: str, wait: float = 0) -> str | None:
         time.sleep(0.5)
 
 
+def uart_port(cfg: dict) -> str | None:
+    """the serial port of the board's debug probe (its UART bridge)"""
+    probe = cfg.get("probe")
+    for p in serial_ports() if probe else []:
+        if p["serial"] == probe and p["probe"]:
+            return p["device"]
+    return None
+
+
 def in_bootsel(serial: str) -> bool:
     try:
         r = run(["picotool", "info", "--ser", serial], timeout=8)
@@ -161,10 +170,16 @@ def console(board: str, send: list[str] | None = None, seconds: float = 3.0,
     or until `until` appears. Reading and sending share one open port: the
     console cannot be captured by one process and written by another."""
     import serial as pyserial
-    ser = board_cfg(board)["serial"]
-    port = console_port(ser, wait=10)
+    cfg = board_cfg(board)
+    ser = cfg["serial"]
+    port = uart_port(cfg) if cfg.get("console") == "uart" else console_port(ser, wait=10)
+    if not port and cfg.get("probe"):
+        # no USB CDC (a release build, the native port switched to a hub, the
+        # port in use as a host): the probe's UART, if the firmware keeps it
+        port = uart_port(cfg)
     if not port:
-        raise BenchError(f"{board}: no console port for serial {ser} (in BOOTSEL? a HID build?)")
+        raise BenchError(f"{board}: no console port for serial {ser}, and no probe UART "
+                         "(in BOOTSEL? a HID build?)")
     out = b""
     try:
         with pyserial.Serial(port, 115200, timeout=0.1) as s:

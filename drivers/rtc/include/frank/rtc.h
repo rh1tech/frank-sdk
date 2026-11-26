@@ -73,6 +73,17 @@ bool frank_rtc_read(const frank_rtc_t *r, frank_rtc_time_t *out, bool *lost);
 bool frank_rtc_set(const frank_rtc_t *r, const frank_rtc_time_t *t);
 bool frank_rtc_clear_lost(const frank_rtc_t *r);
 
+/* Whether the battery takes over when the supply goes. The DS3231 always
+ * switches; the RV-3032 only with backup switchover on in its PMU byte
+ * (0xC0), and it leaves the factory with it off: a fitted coin cell then
+ * keeps nothing (found on the FRANK mini, 2026-11-27). */
+bool frank_rtc_backup_on(const frank_rtc_t *r);
+
+/* Switchover on (RV-3032: level switching, trickle charge left as it is),
+ * and with persist into the chip's EEPROM as well, so it survives the chip
+ * losing both supplies. A DS3231 needs nothing: true. */
+bool frank_rtc_enable_backup(const frank_rtc_t *r, bool persist);
+
 /* One register, for the bench (the RV-3032's PMU byte at 0xC0: backup
  * switchover, trickle charge) */
 bool frank_rtc_reg_read(const frank_rtc_t *r, uint8_t reg, uint8_t *v);
