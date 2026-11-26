@@ -52,6 +52,10 @@ void frank_boot_ok(void);
  * main-loop pass. Returns the last byte read, or -1. */
 int frank_console_poll(void (*on_char)(int ch), void (*on_cmd)(const char *line));
 
+/* Firmware whose own code reads the console as keys: frank_console_wrap_getchar()
+ * in CMake, and every getchar_timeout_us() returns only the bytes that are not
+ * the protocol; the protocol is acted on wherever keys are read. */
+
 /* Feed one received byte (frank_console_poll does it for stdio input). */
 void frank_console_feed(int ch);
 

@@ -150,6 +150,14 @@ function(frank_firmware target)
     pico_add_extra_outputs(${target})
 endfunction()
 
+# frank_console_wrap_getchar(<target>): every getchar_timeout_us() in the
+# target gets the console with the protocol (~BOOT~, ~RST~, ~C ...~) taken
+# out and acted on, for firmware whose own code reads the console as keys.
+function(frank_console_wrap_getchar target)
+    target_compile_definitions(${target} PRIVATE FRANK_CONSOLE_WRAP_GETCHAR=1)
+    target_link_options(${target} PRIVATE -Wl,--wrap=getchar_timeout_us)
+endfunction()
+
 # -fno-short-enums for these sources only (see frank_firmware); the linker's
 # enum-size warning is expected then and silenced for the target.
 function(frank_no_short_enums target)

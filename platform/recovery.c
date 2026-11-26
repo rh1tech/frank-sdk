@@ -48,8 +48,16 @@ static volatile uint32_t __attribute__((section(".uninitialized_data"))) crash_i
 
 /* ---- reboot ---- */
 
+static bool guard_on;   /* frank_boot_guard() ran this boot: scratch[0] is its */
+
 void __attribute__((noreturn)) frank_reboot(bool bootsel) {
     fflush(stdout);
+    /* the console's last words out first, but not from a fault handler: the
+     * USB stack may be what faulted */
+    if (__get_current_exception() == 0) {
+        stdio_flush();
+        busy_wait_ms(20);
+    }
     if (get_core_num() == 0) {
         /* Core 1 off: it may be reading PSRAM. Not multicore_reset_core1(),
          * which waits for core 1's boot ROM on the FIFO and hung there once.
@@ -74,7 +82,9 @@ void __attribute__((noreturn)) frank_reboot_clean(bool bootsel) {
     watchdog_hw->scratch[5] = (uint32_t)(uintptr_t)__builtin_return_address(0);
     watchdog_hw->scratch[6] = REBOOT_TAG | get_core_num();
     crumbs[0] = 0;
-    watchdog_hw->scratch[0] = BOOT_MAGIC;   /* not a failed boot */
+    /* not a failed boot. Only with the guard on: a run-time board without it
+     * keeps scratch[0] for itself (frank-test's overclock campaign) */
+    if (guard_on) watchdog_hw->scratch[0] = BOOT_MAGIC;
     frank_reboot(bootsel);
 }
 
@@ -136,12 +146,22 @@ static unsigned boot_failures;
 static uint32_t boot_chip_reset, boot_wd_reason, last_crash[12];
 static uint32_t asked_from, asked_tag;
 
-void frank_boot_guard(void) {
+static bool boot_captured;
+
+/* why this boot happened: read once, at the guard or (without it) the report */
+static void boot_capture(void) {
+    if (boot_captured) return;
+    boot_captured = true;
     boot_chip_reset = powman_hw->chip_reset;
     boot_wd_reason = watchdog_hw->reason;
     asked_from = watchdog_hw->scratch[5];
     asked_tag = watchdog_hw->scratch[6];
     watchdog_hw->scratch[6] = 0;
+}
+
+void frank_boot_guard(void) {
+    guard_on = true;
+    boot_capture();
     uint32_t tag = watchdog_hw->scratch[0];
     uint32_t fails = 0;
     if ((tag & 0xFFFF0000u) == BOOT_MAGIC) {
@@ -158,7 +178,7 @@ void frank_boot_guard(void) {
 }
 
 void frank_boot_ok(void) {
-    watchdog_hw->scratch[0] = BOOT_MAGIC;
+    if (guard_on) watchdog_hw->scratch[0] = BOOT_MAGIC;
 }
 
 void frank_report_boot(void) {
@@ -168,8 +188,13 @@ void frank_report_boot(void) {
         {1u << 22, "watchdog(powman-async)"}, {1u << 21, "rescue"}, {1u << 19, "debug-port"},
         {1u << 18, "RUN pin"}, {1u << 17, "brown-out"}, {1u << 16, "power-on"},
     };
-    for (int i = 0; i < 12; i++) last_crash[i] = crash_info[i];
-    crash_info[0] = 0;
+    boot_capture();
+    static bool crash_taken;
+    if (!crash_taken) {   /* the report can be asked for again (~C bootinfo~) */
+        crash_taken = true;
+        for (int i = 0; i < 12; i++) last_crash[i] = crash_info[i];
+        crash_info[0] = 0;
+    }
     printf("boot: reset by");
     for (unsigned i = 0; i < sizeof(why) / sizeof(why[0]); i++)
         if (boot_chip_reset & why[i].bit) printf(" %s", why[i].name);

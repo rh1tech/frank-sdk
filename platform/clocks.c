@@ -21,6 +21,7 @@
 #include "hardware/flash.h"
 #include "hardware/pll.h"
 #include "hardware/structs/clocks.h"
+#include "hardware/structs/powman.h"
 #include "hardware/structs/qmi.h"
 #include "hardware/sync.h"
 #include "hardware/uart.h"
@@ -44,6 +45,17 @@
 #define FRANK_FLASH_RXDELAY -1
 #endif
 
+/* The regulator's 1.30 V ceiling back on. POWMAN sits in the always-on domain:
+ * a voltage raised for one boot (and the ceiling taken off for it) outlives a
+ * watchdog reset, and frank-test measured a Core 2U master at stock clock and
+ * 1.65 V for half an hour after one overclock attempt. POWMAN wants its
+ * password in the top half of the word, so a read-modify-write of the low
+ * half, not hw_clear_bits() (frank-test main.c). */
+static void __no_inline_not_in_flash_func(vreg_limit_on)(void) {
+    powman_hw->vreg_ctrl = POWMAN_PASSWORD_BITS |
+        ((powman_hw->vreg_ctrl & ~(uint32_t)POWMAN_VREG_CTRL_DISABLE_VOLTAGE_LIMIT_BITS) & 0xFFFFu);
+}
+
 /* the flash timing the boot ROM / boot2 left, and the clock it was for */
 static uint32_t boot_m0_timing, boot_m0_hz;
 uint32_t frank_boot_qmi_seen;   /* what the boot found (frank_clocks_report) */
@@ -59,6 +71,7 @@ static void __no_inline_not_in_flash_func(frank_xip_fresh)(void) {
         vreg_set_voltage(VREG_VOLTAGE_DEFAULT);
         for (volatile int i = 0; i < 20000; i++) __asm__ volatile("nop");   /* no timer yet */
     }
+    vreg_limit_on();
 }
 PICO_RUNTIME_INIT_FUNC_HW(frank_xip_fresh, "00001");
 
@@ -161,8 +174,10 @@ bool frank_clocks_apply(unsigned cpu_mhz, unsigned vreg, unsigned flash_mhz, int
             boot_m0_timing = qmi_hw->m[0].timing;
     }
 
-    vreg_disable_voltage_limit();
+    /* the ceiling off only for a voltage above it, and on again otherwise */
+    if (vreg > VREG_VOLTAGE_1_30) vreg_disable_voltage_limit();
     vreg_set_voltage((enum vreg_voltage)vreg);
+    if (vreg <= VREG_VOLTAGE_1_30) vreg_limit_on();
     busy_wait_ms(10);
 
     /* set_sys_clock_khz runs clk_sys from the USB PLL (48 MHz) while it sets the
@@ -205,6 +220,7 @@ void __no_inline_not_in_flash_func(frank_clocks_for_reboot)(void) {
     __asm__ volatile("dmb" ::: "memory");
     for (volatile int i = 0; i < 100; i++) __asm__ volatile("nop");
     vreg_set_voltage(VREG_VOLTAGE_DEFAULT);
+    vreg_limit_on();
     for (volatile int i = 0; i < 20000; i++) __asm__ volatile("nop");
 }
 

@@ -142,6 +142,76 @@ int frank_console_poll(void (*on_char)(int ch), void (*on_cmd)(const char *line)
     return last;
 }
 
+/* ---- the console as keys: getchar_timeout_us() with the protocol taken out ----
+ * For a firmware whose own code reads the console as keys (frank-test's UI):
+ * linked with -Wl,--wrap=getchar_timeout_us and FRANK_CONSOLE_WRAP_GETCHAR=1
+ * (frank_console_wrap_getchar() in CMake), every reader then gets the bytes
+ * that are not the protocol, and the protocol works wherever keys are read.
+ * frank_console_poll() passes each byte on as well, which a key reader
+ * cannot afford: the R of "~RST~" or the A of "~C help~" would press keys.
+ * A byte that may start a sequence is held until the sequence completes or
+ * breaks off; the bytes of a sequence come together, so the wait for the
+ * next one is short. Held bytes that turn out not to be a sequence are
+ * returned in order. */
+#if FRANK_CONSOLE_WRAP_GETCHAR
+int __real_getchar_timeout_us(uint32_t timeout_us);
+
+#define SEQ_GAP_US 50000u   /* the longest wait for a sequence's next byte */
+
+static char held[sizeof(line) + 4];
+static unsigned held_n, held_out;
+
+/* 1: a prefix of a sequence, 2: a whole one, 0: neither */
+static int seq_state(const char *s, unsigned n) {
+    static const char *const words[] = {"~BOOT~", "~RST~", "~VERB~", "~PROF~"};
+    for (unsigned i = 0; i < sizeof(words) / sizeof(words[0]); i++) {
+        const size_t wl = strlen(words[i]);
+        if (n <= wl && !memcmp(s, words[i], n)) return n == wl ? 2 : 1;
+    }
+    if (n <= 3) return !memcmp(s, "~C ", n) ? 1 : 0;
+    if (memcmp(s, "~C ", 3)) return 0;
+    if (s[n - 1] == '~') return 2;
+    return n < sizeof(line) + 3 ? 1 : 0;
+}
+
+static void seq_run(const char *s, unsigned n) {
+    if (s[1] == 'C') {
+        char l[sizeof(line)];
+        memcpy(l, s + 3, n - 4);
+        l[n - 4] = 0;
+        frank_scripted = true;
+        if (!run_builtin(l)) printf("unknown command: %s (~C help~)\n", l);
+        return;
+    }
+    /* the magic words: frank_console_feed() knows what each one does */
+    for (unsigned i = 0; i < n; i++) frank_console_feed((unsigned char)s[i]);
+}
+
+int __wrap_getchar_timeout_us(uint32_t timeout_us) {
+    for (;;) {
+        if (held_out < held_n) return (unsigned char)held[held_out++];
+        held_n = held_out = 0;
+        int c = __real_getchar_timeout_us(timeout_us);
+        if (c != '~') return c;
+        held[held_n++] = '~';
+        int st = 1;
+        while (st == 1) {
+            c = __real_getchar_timeout_us(SEQ_GAP_US);
+            if (c < 0) break;
+            held[held_n++] = (char)c;
+            st = seq_state(held, held_n);
+        }
+        if (st == 2) {
+            seq_run(held, held_n);
+            held_n = 0;
+            return PICO_ERROR_TIMEOUT;   /* the sequence was all there was */
+        }
+        /* not a sequence (or it stopped coming): the held bytes, in order.
+         * A sequence right behind a stray '~' is lost; resend it. */
+    }
+}
+#endif
+
 /* ---- built-in commands ---- */
 
 extern void frank_report_boot(void);
