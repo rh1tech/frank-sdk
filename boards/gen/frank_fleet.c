@@ -151,6 +151,12 @@ static const pinsig_entry_t sig_microfrank[] = {
 };
 
 static const pinsig_entry_t sig_minifrank[] = {
+    /* 2026-11-26 (frank-sdk, from frank-lab frank_mini's netlist): the
+     * current revision adds an RV-3032-C7 RTC (U8) on its own I2C pair,
+     * SDA GP28 / SCL GP29 (CAP_I2C, CAP_RTC_RV3032, address 0x51). Every
+     * other pin is as before. The signature is unchanged on purpose: a
+     * pull-up pair on GP28/29 would read HIGH on this revision and float on
+     * the earlier one, and both must still be identified. */
     /* TXS0104 A-side, 10K */
     /* PSRAM CE */
     /* ESP-01S URXD idles high */
@@ -599,7 +605,7 @@ const frank_board_desc_t frank_board_table[] = {
 {
     .id = FRANK_BOARD_MINIFRANK, .name = "miniFRANK", .slug = "mini",
     .mcu = FRANK_MCU_RP2350A, .role = FRANK_ROLE_SINGLE,
-    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_AUDIO_I2S | CAP_AUDIO_MUX | CAP_USB_DEVICE | CAP_USB_HOST | CAP_USB_HUB | CAP_USB_MUX | CAP_PS2 | CAP_GAMEPAD_NES | CAP_TAPE_IN | CAP_TAPE_DIP_GATED | CAP_ESP01 | CAP_LED_PLAIN | CAP_DIPSWITCH,
+    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_AUDIO_I2S | CAP_AUDIO_MUX | CAP_USB_DEVICE | CAP_USB_HOST | CAP_USB_HUB | CAP_USB_MUX | CAP_PS2 | CAP_GAMEPAD_NES | CAP_TAPE_IN | CAP_TAPE_DIP_GATED | CAP_I2C | CAP_ESP01 | CAP_LED_PLAIN | CAP_DIPSWITCH | CAP_RTC_RV3032,
     .pico_socket = false, .module_memory = false,
     .pins = {
         .uart_tx = 0, .uart_rx = 1, .ps2_kb_clk = 2, .ps2_kb_dat = 3,
@@ -611,7 +617,7 @@ const frank_board_desc_t frank_board_table[] = {
         .led_ws2812 = PIN_NC, .led_plain = 25, .esp_uart_tx = 20, .esp_uart_rx = 21,
         .esp_reset = PIN_NC, .esp_gpio0 = PIN_NC, .esp_gpio2 = PIN_NC, .pad_latch = 21,
         .pad_clk = 20, .pad_d1 = 26, .pad_d2 = 27, .tape_in = 22,
-        .i2c_sda = PIN_NC, .i2c_scl = PIN_NC, .onewire = PIN_NC, .pio_usb_dp = PIN_NC,
+        .i2c_sda = 28, .i2c_scl = 29, .onewire = PIN_NC, .pio_usb_dp = PIN_NC,
         .ay_rclk = PIN_NC, .ay_srclk = PIN_NC, .ay_ser = PIN_NC, .dip = 22,
         .kbd_col_base = PIN_NC, .kbd_row_base = PIN_NC, .kbd_col_len = 0, .kbd_row_len = 0,
         .host_bus_base = PIN_NC, .host_bus_len = 0, .host_clk = PIN_NC, .host_reset = PIN_NC,

@@ -24,6 +24,7 @@ EXPECTED = {
     ("z0pa", "pins.ps2_ms_dat"), ("z0pa", "pins.pwm_l"), ("z0pa", "pins.pwm_r"),
     ("z0pa", "pins.pad_latch"), ("z0pa", "pins.pad_d1"), ("z0pa", "pins.pad_d2"),
     ("z0pa", "pins.pio_usb_dp"),
+    ("mini", "caps"), ("mini", "pins.i2c_sda"), ("mini", "pins.i2c_scl"),
 }
 
 

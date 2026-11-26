@@ -218,6 +218,12 @@ typedef uint64_t frank_caps_t;
  * a person answers by pressing it, which is what the dialog is for. */
 #define CAP_KBD_MATRIX           (1ull << 35)
 
+/* A Micro Crystal RV-3032-C7 (temperature-compensated, I2C 0x51): the new FRANK
+ * mini's clock, on its own I2C pair GP28/GP29 (RT_SDA / RT_SCL in the netlist).
+ * Not a DS3231 (CAP_RTC_DS3231, FRANK Next and MegaFRANK, 0x68): another part,
+ * another register map. frank-sdk, 2026-11-26, from frank-lab frank_mini. */
+#define CAP_RTC_RV3032           (1ull << 36)
+
 /* Any video output at all — convenience mask, not a bit of its own. */
 #define CAP_VIDEO_ANY  (CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_VIDEO_COMPOSITE)
 

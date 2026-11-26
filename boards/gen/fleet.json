@@ -334,9 +334,11 @@
    "CAP_GAMEPAD_NES",
    "CAP_TAPE_IN",
    "CAP_TAPE_DIP_GATED",
+   "CAP_I2C",
    "CAP_ESP01",
    "CAP_LED_PLAIN",
-   "CAP_DIPSWITCH"
+   "CAP_DIPSWITCH",
+   "CAP_RTC_RV3032"
   ],
   "pico_socket": false,
   "module_memory": false,
@@ -363,7 +365,9 @@
    "pad_d1": 26,
    "pad_d2": 27,
    "tape_in": 22,
-   "dip": 22
+   "dip": 22,
+   "i2c_sda": 28,
+   "i2c_scl": 29
   },
   "video_default": "auto",
   "i2s_lr_swapped": false,
@@ -378,6 +382,7 @@
   "psram_bytes": 8388608,
   "manual_note": "S2: 1-4 closes tape onto GP22; 2 selects the audio mux. S1 selects the USB mux. J13 carries I2S off-board to a TurboSound daughtercard.",
   "signature_inline_notes": [
+   "2026-11-26 (frank-sdk, from frank-lab frank_mini's netlist): the\ncurrent revision adds an RV-3032-C7 RTC (U8) on its own I2C pair,\nSDA GP28 / SCL GP29 (CAP_I2C, CAP_RTC_RV3032, address 0x51). Every\nother pin is as before. The signature is unchanged on purpose: a\npull-up pair on GP28/29 would read HIGH on this revision and float on\nthe earlier one, and both must still be identified.",
    "TXS0104 A-side, 10K",
    "PSRAM CE",
    "ESP-01S URXD idles high"
