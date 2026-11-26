@@ -36,6 +36,12 @@ extern void frank_heap_init(size_t psram_bytes);
 extern void frank_console_builtins(void);
 
 static bool early_done, clock_ok;
+
+#if FRANK_RUNTIME_BOARD
+/* in the image's symbols, for frank check: a run-time board, so the boot guard
+ * is optional (FRANK_RUNTIME_BOOT_GUARD) */
+const char frank_runtime_board[] = "found at run time";
+#endif
 static size_t psram_bytes;
 
 /* A run-time board (FRANK_RUNTIME_BOARD: the firmware identifies the board
@@ -84,7 +90,7 @@ void frank_init(const char *name, const char *version) {
     if (!clock_ok) printf("boot: %d MHz unreachable, running at 252 MHz\n", FRANK_CPU_MHZ);
     frank_clocks_report();
 #if FRANK_RUNTIME_BOARD
-    printf("board: found at run time (%s build)\n", FRANK_BOARD_ID);
+    printf("board: %s (%s build)\n", frank_runtime_board, FRANK_BOARD_ID);
 #elif defined(FRANK_HAS_PSRAM)
     if (psram_bytes) {
         uint8_t mf, kgd;

@@ -58,6 +58,19 @@ frank_heap_add_psram(n);                                 // malloc grows into it
 
 `examples/runtime` does it from the console (`~C board next~`).
 
+## CMake helpers
+
+| Function | What it does |
+|---|---|
+| `frank_firmware(t [NAME n])` | the platform, the console, the linker script, panic captured, `<board>_<n>.uf2` |
+| `frank_linker_script(t STACK_KB n)` | the same linker script with an n KB main stack (4..64, default 32): SRAM back for a firmware that measured its stack. After `frank_firmware()` |
+| `frank_console_wrap_getchar(t)` | every `getchar_timeout_us()` returns only the bytes that are not the protocol; `~BOOT~`, `~RST~` and `~C cmd~` are acted on wherever keys are read. For firmware that reads the console as keys instead of calling `frank_console_poll()` |
+| `frank_no_short_enums(t sources...)` | `-fno-short-enums` for those sources (struct layouts read from data files) |
+
+A firmware with its own boot (frank-test) can link `frank_platform` alone and set what
+`frank_firmware()` would: `FRANK_CONSOLE_USB`, `FRANK_RUNTIME_BOARD`, the linker script and
+`-Wl,--wrap=panic`.
+
 ## Boards
 
 Pins live in `boards/*.yaml`; `tools/gen_boards.py` checks them and writes

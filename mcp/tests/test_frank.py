@@ -103,6 +103,34 @@ def test_lint_on_hello(tmp_path):
     assert r["ok"], r["findings"]
 
 
+def _fake_elf(tmp_path, monkeypatch, syms):
+    elf = tmp_path / "fw.elf"
+    elf.write_bytes(b"")
+    monkeypatch.setattr(lint, "_nm", lambda e: [(a, 0, "T", n) for n, a in syms.items()])
+    return str(elf)
+
+
+RECOVERY = {"frank_reboot": 0x10000100, "frank_safe_mode_if_hung": 0x10000200}
+
+
+def test_lint_stack_rules(tmp_path, monkeypatch):
+    # frank-sdk's layout (top at 0x20080000): 8 KB from frank_linker_script is fine
+    s = dict(RECOVERY, frank_boot_guard=0x10000300, __StackLimit=0x2007E000, __StackTop=0x20080000)
+    assert lint.check(_fake_elf(tmp_path, monkeypatch, s))["ok"]
+    s.update(__StackLimit=0x2007F800)   # 2 KB: too small anywhere
+    assert [f["rule"] for f in lint.check(_fake_elf(tmp_path, monkeypatch, s))["findings"]] == ["stack-small"]
+    # the SDK's layout (SCRATCH_Y): under 32 KB runs into core 1's stack
+    s.update(__StackLimit=0x20081800, __StackTop=0x20082000)
+    assert [f["rule"] for f in lint.check(_fake_elf(tmp_path, monkeypatch, s))["findings"]] == ["stack-small"]
+
+
+def test_lint_boot_guard_optional_at_run_time(tmp_path, monkeypatch):
+    s = dict(RECOVERY)
+    assert any("frank_boot_guard" in f["detail"] for f in lint.check(_fake_elf(tmp_path, monkeypatch, s))["findings"])
+    s["frank_runtime_board"] = 0x10000400
+    assert lint.check(_fake_elf(tmp_path, monkeypatch, s))["ok"]
+
+
 def test_scaffold_full_features(tmp_path):
     r = scaffold.new_firmware(str(tmp_path / "fw"), "fw-full", ["M2", "NX"], features=["video", "audio", "storage", "input"], sdk="local")
     d = Path(r["path"])

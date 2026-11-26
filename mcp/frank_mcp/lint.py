@@ -46,9 +46,16 @@ def check(elf: str, irq_roots: list[str] | None = None) -> dict:
             find("mem-in-flash", f"{name} at {s[0]:#x} runs from flash: an IRQ calling it stalls when core 0 saturates XIP")
 
     # stack: core 0's at least 32 KB
+    # (frank-sdk's linker script puts it at the top of main RAM, 0x20080000, where
+    # an overflow runs into the heap's room: there frank_linker_script(STACK_KB)
+    # may make it as small as 4 KB, for a firmware that measured it)
     lim, top = by.get("__StackLimit"), by.get("__StackTop")
-    if lim and top and top[0] - lim[0] < 32 * 1024:
-        find("stack-small", f"core 0 stack {top[0] - lim[0]} bytes: under 32 KB, it overflows into core 1's (frank-blood)")
+    if lim and top:
+        size, frank_layout = top[0] - lim[0], top[0] == 0x20080000
+        if frank_layout and size < 4 * 1024:
+            find("stack-small", f"core 0 stack {size} bytes: under 4 KB")
+        elif not frank_layout and size < 32 * 1024:
+            find("stack-small", f"core 0 stack {size} bytes: under 32 KB, it overflows into core 1's (frank-blood)")
 
     # SRAM left for the heap
     end, heaplim = by.get("end"), by.get("__HeapLimit")
@@ -59,6 +66,10 @@ def check(elf: str, irq_roots: list[str] | None = None) -> dict:
     for name, why in (("frank_reboot", "every software reboot must leave PSRAM QPI mode first"),
                       ("frank_safe_mode_if_hung", "a hang must end in BOOTSEL, not a dead board"),
                       ("frank_boot_guard", "three failed boots must enter BOOTSEL")):
+        # a run-time board (frank-test) may leave the guard out: its overclock
+        # campaign owns the watchdog and fails boots on purpose
+        if name == "frank_boot_guard" and "frank_runtime_board" in by:
+            continue
         if name not in by:
             find("no-recovery", f"{name} missing: {why} (link frank_platform, call frank_init)")
     if "reset_usb_boot" in by and "frank_reboot" not in by:

@@ -171,7 +171,11 @@ def console(board: str, send: list[str] | None = None, seconds: float = 3.0,
             s.dtr = True
             for m in send or []:
                 s.write(m.encode())
-                time.sleep(0.2)
+                # read while waiting: an answer followed by a reboot (~C x~~RST~)
+                # was lost with the port, still in the OS buffer
+                gap = time.time() + 0.2
+                while time.time() < gap:
+                    out += s.read(4096)
             end = time.time() + seconds
             while time.time() < end:
                 out += s.read(4096)

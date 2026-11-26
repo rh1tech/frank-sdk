@@ -1,6 +1,6 @@
 # Moving frank-test onto frank-sdk — the plan
 
-Status: **phases 1, 2 and 3a done (2026-11-26).** frank-test: branch `frank-sdk` (worktree `frank-test-sdk/`), commit 776cab0, not pushed. Next: 3c, then 3b (see below).
+Status: **phases 1, 2, 3a and 3c done, 3b in progress (2026-11-26).** frank-test: branch `frank-sdk` (worktree `frank-test-sdk/`), 3c is commit 098a44d, not pushed. See "Phase 3c" and "Phase 3b" below.
 
 ## Why frank-test is different
 
@@ -174,6 +174,59 @@ Unchanged in this step: `tests/`, `ui/`, `app/` dialogs, `core/detect.c`, `pinsi
   adopt frank-test's rule in `frank_clocks_for_reboot()`.
 - frank-test has no `~BOOT~`: flashing it went through `frank flash`'s SWD fallback (the boot
   ROM's reboot, nothing written over SWD). frank-sdk's console protocol in 3b fixes that.
+
+### Phase 3c: what was done (frank-test 098a44d)
+
+- The app's `PICO_BOARD_HEADER_DIRS` is `frank-sdk/boards/gen`: release.sh builds
+  frank_ga, frank_gb, frank_xt, frank_nx, frank_fz; the default is frank_c2. The old names
+  (frank_a, frank_next, frank_core2u_master...) still configure, mapped with a message.
+  `boards/` keeps only the Core 2U headers of master/, slave/, probe/ and selftest/.
+- Checked image by image against the old headers: function by function, the same code but
+  for pointers moved by the shorter board-name strings; the same five warnings. Three
+  differences, all where detection or the flash cannot settle a question:
+  - the rp2350a image keeps GP25 out of the pin probes (`PICO_DEFAULT_LED_PIN=25` on
+    frank_ga, as frank_a.h had): only the fallback descriptor claims no LED;
+  - the z0 image now keeps GP20 (LD2) out too, because frank-sdk's FZ names it;
+  - the rp2350a image's settings fallback (only when the flash will not identify
+    itself) is the last sector of 4 MB, not 16 MB. On a 4 MB part both are one sector.
+- **Found in frank-sdk:** the generated board headers defined `FRANK_ROLE_SINGLE 1` and
+  `FRANK_BOARD_<ID> 1`, the names of the fleet's enum constants. Included after
+  frank_caps.h, the macro replaced the constant without a word: frank-test's settings
+  defaults got role 1, master, and `FRANK_BOARD_Z0` (the Waveshare target) shadowed the
+  FRANK Z0 id. Renamed `FRANK_TARGET_<ID>` / `FRANK_TARGET_ROLE_<ROLE>`; gen_boards.py now
+  refuses any generated `#define` that is a name in fleet/include (028955e).
+- FRANK Next report: equal to the 239a330 baseline row for row (14/2/4/7).
+- Not from this work: `master/` does not configure on main either (5346c35 removed
+  drivers/fatfs/CMakeLists.txt, which master/CMakeLists.txt still adds).
+
+### Phase 3b: frank-sdk's platform under frank-test (in progress)
+
+frank-test links `frank_platform` (not `frank_firmware()`: its console and output names stay
+its own) as a run-time board: no boot guard, no watchdog, nothing board-specific before
+main(); the overclock campaign keeps the watchdog and scratch[0..3].
+
+- **Console protocol:** `frank_console_wrap_getchar()` (new in frank-sdk) wraps
+  `stdio_getchar_timeout_us`, the function behind the SDK's inline `getchar_timeout_us`.
+  Every key reader then gets only the bytes that are not the protocol, and `~BOOT~`,
+  `~RST~` and `~C cmd~` work wherever the UI reads keys. Verified on the Next: `~C help~`,
+  `bootinfo`, `clocks`, `core1` answer, and `frank flash` reflashes through `~BOOT~` (no
+  SWD). The console is read only between test runs: a command sent during the boot's test
+  pass waits until it ends.
+- **Reboot:** frank-test's `core/reboot.c` is gone; `frank_reboot()` is frank-sdk's, which
+  also puts back the boot clock, flash timing and voltage.
+- **frank-sdk changes it took:** the 1.30 V ceiling restored (earliest init, in
+  `frank_clocks_apply` under it, before a reboot; frank-test's rule); scratch[0] left alone
+  without the boot guard (`~RST~` had wiped the campaign record); the reset reason read
+  without the guard too; `frank_reboot()` flushes stdio first.
+- **Stacks and SRAM:** frank-test ran on about 4 KB of main stack and 2 KB on core 1, and its
+  SRAM is nearly all frame and test buffers: the z0 image did not fit frank-sdk's 32 KB +
+  16 KB. `frank_linker_script(target STACK_KB 8)` (new) and `FRANK_CORE1_STACK=4096`; core 1
+  uses 100 bytes. z0 image 98% of SRAM, next 90%. frank-test never calls malloc, and never
+  gives the PSRAM to the heap: its memory test owns the whole chip.
+- **Clocks:** the boot's voltage, flash timing and clk_sys go through `frank_clocks_apply()`.
+  Same flash timing at stock (/4, read delay 4); at 504 MHz the read delay no longer
+  overflows into a reserved bit; clk_peri moves from 48 MHz to 126 MHz (the SD SPI clock
+  is 12.6 MHz instead of 12); an unreachable clock falls back to 252 MHz, not 126.
 
 ## Phase 4 (later, its own review): drivers
 
