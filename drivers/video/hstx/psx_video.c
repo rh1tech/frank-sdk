@@ -726,8 +726,15 @@ void psxv_start(void)
 
     hstx_ctrl_hw->bit[0] = HSTX_CTRL_BIT0_CLK_BITS | HSTX_CTRL_BIT0_INV_BITS;
     hstx_ctrl_hw->bit[1] = HSTX_CTRL_BIT0_CLK_BITS;
-    for (uint lane = 0; lane < 3; ++lane) {
-        int bit = 2 + (lane * 2);
+    for (uint pair = 0; pair < 3; ++pair) {
+        int bit = 2 + (pair * 2);
+        /* the board's colour order: lane 0 (blue) first after the clock, or
+         * red first (rgb_not_bgr false: the Adafruit Fruit Jam) */
+#if defined(FRANK_VIDEO_HDMI_RGB_NOT_BGR) && !FRANK_VIDEO_HDMI_RGB_NOT_BGR
+        const uint lane = 2 - pair;
+#else
+        const uint lane = pair;
+#endif
         uint32_t lane_data_sel_bits = (lane * 10) << HSTX_CTRL_BIT0_SEL_P_LSB | (lane * 10 + 1)
                                                                                     << HSTX_CTRL_BIT0_SEL_N_LSB;
         hstx_ctrl_hw->bit[bit] = lane_data_sel_bits | HSTX_CTRL_BIT0_INV_BITS;

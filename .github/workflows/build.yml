@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [M1, M2, NX, C2, SL, FZ, FN, Z0, PC]
+        board: [M1, M2, NX, C2, SL, FZ, FN, Z0, PC, TW, AF]
         example: [hello, video, diag]
         exclude:
           - {board: SL, example: video}   # the slave has no HDMI

@@ -94,6 +94,13 @@ static bool start_i2s(uint32_t rate) {
     i2s_set_fill_callback(i2s_fill);
     i2s_start();
 #if FRANK_AUDIO_I2S_DAC_TLV320DAC3100
+#ifdef FRANK_AUDIO_I2S_RESET
+    /* the codec's reset line (Fruit Jam: GPIO22, the ESP32-C6's too): high
+     * to run; it holds the codec silent and deaf to I2C until then */
+    gpio_init(FRANK_AUDIO_I2S_RESET);
+    gpio_set_dir(FRANK_AUDIO_I2S_RESET, GPIO_OUT);
+    gpio_put(FRANK_AUDIO_I2S_RESET, 1);
+#endif
     sleep_ms(20);   /* the codec's PLL locks to BCLK: set it up once the clocks run */
     if (!tlv320_init(FRANK_I2C_SDA, FRANK_I2C_SCL)) return false;
 #endif

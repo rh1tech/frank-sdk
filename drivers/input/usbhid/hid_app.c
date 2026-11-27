@@ -11,6 +11,7 @@
 #include "tusb.h"
 #include "hardware/clocks.h"
 #include "hardware/dma.h"
+#include "hardware/gpio.h"
 #if CFG_TUH_RPI_PIO_USB
 #include "pio_usb.h"
 #endif
@@ -559,6 +560,14 @@ void usbhid_init(void) {
     if (clock_get_hz(clk_sys) % 12000000u)
         printf("WARNING: PIO-USB needs clk_sys a multiple of 12 MHz, have %lu Hz\n",
                (unsigned long)clock_get_hz(clk_sys));
+#ifdef FRANK_USB_PIO_USB_5V_EN
+    /* the host port's 5 V is switched (Fruit Jam: GPIO11): on, or no device
+     * on it is powered to answer */
+    gpio_init(FRANK_USB_PIO_USB_5V_EN);
+    gpio_set_dir(FRANK_USB_PIO_USB_5V_EN, GPIO_OUT);
+    gpio_put(FRANK_USB_PIO_USB_5V_EN, 1);
+    sleep_ms(10);
+#endif
     pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
     pio_cfg.pin_dp = PIO_USB_DP_PIN;
     pio_cfg.pio_tx_num = PIO_USB_PIO;

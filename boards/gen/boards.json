@@ -1,4 +1,226 @@
 {
+ "AF": {
+  "audio": {
+   "i2s": {
+    "bclk": 26,
+    "dac": "TLV320DAC3100",
+    "data": 24,
+    "lrck": 27,
+    "mclk": 25,
+    "reset": 22
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 252,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.1
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 1,
+    "rx": 9,
+    "tx": 8
+   }
+  },
+  "covers": [
+   "Adafruit Fruit Jam"
+  ],
+  "flash": {
+   "bytes": "16M"
+  },
+  "gpio": {
+   "0": [
+    "gpio.button1"
+   ],
+   "1": [
+    "usb.pio_usb"
+   ],
+   "11": [
+    "usb.pio_usb_5v_en"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "2": [
+    "usb.pio_usb"
+   ],
+   "20": [
+    "i2c"
+   ],
+   "21": [
+    "i2c"
+   ],
+   "22": [
+    "audio.i2s"
+   ],
+   "23": [
+    "gpio.esp_irq"
+   ],
+   "24": [
+    "audio.i2s"
+   ],
+   "25": [
+    "audio.i2s"
+   ],
+   "26": [
+    "audio.i2s"
+   ],
+   "27": [
+    "audio.i2s"
+   ],
+   "28": [
+    "gpio.esp_miso"
+   ],
+   "29": [
+    "led"
+   ],
+   "3": [
+    "gpio.esp_busy"
+   ],
+   "30": [
+    "gpio.esp_sck"
+   ],
+   "31": [
+    "gpio.esp_mosi"
+   ],
+   "32": [
+    "led"
+   ],
+   "33": [
+    "gpio.sd_detect"
+   ],
+   "34": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "35": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "36": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "37": [
+    "sd"
+   ],
+   "38": [
+    "sd"
+   ],
+   "39": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "4": [
+    "gpio.button2"
+   ],
+   "46": [
+    "gpio.esp_cs"
+   ],
+   "47": [
+    "psram"
+   ],
+   "5": [
+    "gpio.button3"
+   ],
+   "8": [
+    "console.uart"
+   ],
+   "9": [
+    "console.uart"
+   ]
+  },
+  "i2c": {
+   "devices": {
+    "TLV320DAC3100": 24
+   },
+   "inst": 0,
+   "scl": 21,
+   "sda": 20
+  },
+  "id": "AF",
+  "led": {
+   "plain": 29,
+   "ws2812": 32
+  },
+  "mcu": "rp2350b",
+  "name": "Adafruit Fruit Jam",
+  "pio": {
+   "i2s": 1,
+   "pio_usb": 2,
+   "sd": 0
+  },
+  "pio_gpio_base": {
+   "0": 16,
+   "1": 0,
+   "2": 0
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47
+  },
+  "role": "single",
+  "sd": {
+   "clk": 34,
+   "cmd": 35,
+   "dat0": 36,
+   "mode": "sdio"
+  },
+  "sd_spi_fallback": {
+   "clk": 34,
+   "cmd": 35,
+   "dat0": 36,
+   "dat3": 39
+  },
+  "shared": [
+   [
+    "sd",
+    "sd_spi_fallback"
+   ]
+  ],
+  "sources": [
+   "pico-sdk 2.2.0 src/boards/include/boards/adafruit_fruit_jam.h",
+   "adafruit/circuitpython ports/raspberrypi/boards/adafruit_fruit_jam (mpconfigboard.h, pins.c, board.c)"
+  ],
+  "usb": {
+   "native": "device",
+   "pio_usb_5v_en": 11,
+   "pio_usb_dp": 1
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": false
+   }
+  }
+ },
  "C2": {
   "audio": {
    "i2s": {
@@ -1589,6 +1811,189 @@
   ],
   "usb": {
    "native": "device"
+  }
+ },
+ "TW": {
+  "audio": {
+   "i2s": {
+    "bclk": 10,
+    "dac": "PCM5102A",
+    "data": 22,
+    "lrck": 11
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 100,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "uart",
+   "uart": {
+    "inst": 1,
+    "rx": 9,
+    "tx": 8
+   }
+  },
+  "covers": [
+   "UKTailwind Pico Computer 3"
+  ],
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVSIQ"
+  },
+  "gpio": {
+   "0": [
+    "ps2"
+   ],
+   "1": [
+    "ps2"
+   ],
+   "10": [
+    "audio.i2s"
+   ],
+   "11": [
+    "audio.i2s"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "2": [
+    "ps2"
+   ],
+   "20": [
+    "i2c"
+   ],
+   "21": [
+    "i2c"
+   ],
+   "22": [
+    "audio.i2s"
+   ],
+   "25": [
+    "led"
+   ],
+   "28": [
+    "sd"
+   ],
+   "3": [
+    "ps2"
+   ],
+   "30": [
+    "sd"
+   ],
+   "31": [
+    "sd"
+   ],
+   "33": [
+    "sd"
+   ],
+   "4": [
+    "nespad"
+   ],
+   "47": [
+    "psram"
+   ],
+   "6": [
+    "nespad"
+   ],
+   "7": [
+    "nespad"
+   ],
+   "8": [
+    "console.uart"
+   ],
+   "9": [
+    "console.uart"
+   ]
+  },
+  "i2c": {
+   "devices": {
+    "DS3231": 104
+   },
+   "inst": 0,
+   "scl": 21,
+   "sda": 20
+  },
+  "id": "TW",
+  "led": {
+   "plain": 25
+  },
+  "mcu": "rp2350b",
+  "name": "UKTailwind Pico Computer 3",
+  "nespad": {
+   "clk": 4,
+   "data": 6,
+   "latch": 7
+  },
+  "pio": {
+   "i2s": 2,
+   "nespad": 2,
+   "ps2": 0
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "2": 0
+  },
+  "ps2": {
+   "kbd_clk": 2,
+   "kbd_dat": 3,
+   "mouse_clk": 0,
+   "mouse_dat": 1
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47,
+   "part": "APS6404L-3SQR-SN"
+  },
+  "role": "single",
+  "sd": {
+   "clk": 30,
+   "cmd": 31,
+   "dat0": 28,
+   "dat3": 33,
+   "mode": "spi",
+   "spi": 1
+  },
+  "sources": [
+   "UKTailwind/Pico-Computer-3 PicoComputer3.3Schematic-1.pdf (PicoUSBMotherboardV3.3)",
+   "frank-idtech1 boards/frank_tw_rp2350b.h, src/board_config.h BOARD_TW"
+  ],
+  "usb": {
+   "hub": true,
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   }
   }
  },
  "XT": {

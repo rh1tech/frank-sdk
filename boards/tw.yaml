@@ -1,0 +1,37 @@
+# UKTailwind Pico Computer 3 (PicoUSBMotherboard V3.3): an RP2350B with HDMI,
+# a microSD slot, 8 MB PSRAM, a PCM5102A DAC, a DS3231, a CH340C USB console
+# and a CH334U four-port hub on the native USB.
+id: TW
+name: UKTailwind Pico Computer 3
+covers: [UKTailwind Pico Computer 3]
+mcu: rp2350b
+role: single
+sources:
+  - UKTailwind/Pico-Computer-3 PicoComputer3.3Schematic-1.pdf (PicoUSBMotherboardV3.3)
+  - frank-idtech1 boards/frank_tw_rp2350b.h, src/board_config.h BOARD_TW
+flash: {bytes: 16M, part: W25Q128JVSIQ}
+psram: {cs: 47, bytes: 8M, part: APS6404L-3SQR-SN}
+clocks:                 # frank-idtech1's release setting on this board
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 100
+  flash_mhz: 66
+console:
+  default: uart         # the native USB feeds the hub, not a PC: the CH340C "USB CONSOLE" is it
+  uart: {inst: 1, tx: 8, rx: 9}
+usb: {native: host, hub: true}   # CH334U, four USB-A ports
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}   # the FRANK order
+sd: {mode: spi, spi: 1, clk: 30, cmd: 31, dat0: 28, dat3: 33}
+audio:
+  i2s: {data: 22, bclk: 10, lrck: 11, dac: PCM5102A}
+i2c: {inst: 0, sda: 20, scl: 21, devices: {DS3231: 0x68}}   # INT/SQW on GPIO32, 32 kHz on GPIO27
+# Not on the board: PS/2 and the NES pad are wired to its EXTERNAL I/O header
+# (H4) as frank-idtech1 does it - PS/2 as on the M2, the pad as on the Z0.
+ps2: {kbd_clk: 2, kbd_dat: 3, mouse_clk: 0, mouse_dat: 1}
+nespad: {clk: 4, latch: 7, data: 6}
+led: {plain: 25}        # HEARTBEAT; also the RM2 Wi-Fi module's gSPI CS (RM2: clock 29, data 24, IRQ 23)
+pio:
+  i2s: 2
+  ps2: 0
+  nespad: 2

@@ -14,6 +14,8 @@ hard-won lessons, and MCP servers that build, flash and check firmware on the be
 | `FN` | FRANK Nano | HDMI (HSTX) | HDMI | PIO-USB |
 | `Z0` | Waveshare RP2350-PiZero | HDMI (PIO) | I2S module, PWM, HDMI | USB / PIO-USB, PS/2, NES |
 | `PC` | Olimex PICO-PC + Pico 2 | HDMI (HSTX), VGA | PWM, HDMI | USB, PS/2, NES |
+| `TW` | UKTailwind Pico Computer 3 | HDMI (HSTX) | PCM5102A (I2S), HDMI | USB (hub); PS/2, NES on its I/O header |
+| `AF` | Adafruit Fruit Jam (not yet run here) | HDMI (HSTX) | TLV320 (I2S), HDMI | PIO-USB |
 | `GA`, `GB`, `XT` | any board of the package, found at run time (frank-test's images; XT = xt8086, no console) | the firmware's | the firmware's | the firmware's |
 | `HOST` | the desktop (SDL2): `cmake -S host -DAPP_DIR=...` | window | SDL | keyboard, mouse |
 

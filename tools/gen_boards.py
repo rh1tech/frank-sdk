@@ -86,11 +86,17 @@ def pin_claims(b):
     for key in ("ps2", "nespad", "led", "i2c"):
         if key in b:
             add(key, *[p for k, p in b[key].items() if isinstance(p, int) and k not in NOT_PINS])
+    # gpio: the rest a board wires (buttons, card detect, a co-processor's
+    # lines), one claim each so a clash names the pin's job
+    for name, p in (b.get("gpio") or {}).items():
+        add(f"gpio.{name}", p)
     if "tape_in" in b:
         add("tape_in", b["tape_in"])
     usb = b.get("usb", {})
     if usb.get("pio_usb_dp") is not None:
         add("usb.pio_usb", usb["pio_usb_dp"], usb["pio_usb_dp"] + 1)
+    if usb.get("pio_usb_5v_en") is not None:
+        add("usb.pio_usb_5v_en", usb["pio_usb_5v_en"])
     lk = b.get("link")
     if lk:
         add("link", *range(lk["a_data"], lk["a_data"] + 10), *range(lk["b_data"], lk["b_data"] + 10),

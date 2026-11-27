@@ -1,0 +1,54 @@
+# Adafruit Fruit Jam - Mini RP2350 Computer: an RP2350B with HDMI (DVI) on the
+# HSTX pins, 8 MB PSRAM, a microSD slot wired for SDIO, a TLV320DAC3100 codec,
+# a USB host port on PIO-USB, an ESP32-C6 co-processor, five NeoPixels and
+# three buttons. Not yet run on a board here.
+id: AF
+name: Adafruit Fruit Jam
+covers: [Adafruit Fruit Jam]
+mcu: rp2350b
+role: single
+sources:
+  - pico-sdk 2.2.0 src/boards/include/boards/adafruit_fruit_jam.h
+  - adafruit/circuitpython ports/raspberrypi/boards/adafruit_fruit_jam (mpconfigboard.h, pins.c, board.c)
+flash: {bytes: 16M}
+psram: {cs: 47, bytes: 8M}
+clocks:                 # untuned: 252 MHz until examples/diag has been run on one
+  cpu_mhz: 252
+  vreg: 1.10
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb          # the USB-C is the RP2350's native port, device only
+  uart: {inst: 1, tx: 8, rx: 9}   # shared with the ESP32-C6's UART
+usb: {native: device, pio_usb_dp: 1, pio_usb_5v_en: 11}   # the USB-A host: D+ GPIO1, D- GPIO2, its 5 V switched by GPIO11
+video:
+  # CircuitPython names the pairs CLK 12/13, RED 14/15, GREEN 16/17, BLUE 18/19:
+  # the FRANK order with red and blue exchanged (the SDK header calls 14/15
+  # "D0"; CircuitPython's colour names are the ones a picture has proven).
+  # To check on hardware: red and blue swapped means this is wrong.
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: false, invert_pairs: true}
+sd: {mode: sdio, clk: 34, cmd: 35, dat0: 36}   # DAT0-3 = GPIO36-39
+sd_spi_fallback: {clk: 34, cmd: 35, dat0: 36, dat3: 39}   # SPI0's pins too
+audio:
+  # BCLK 26, WS 27, DIN 24, MCLK 25. GPIO22 resets the codec and the ESP32-C6
+  # together: high to run, CircuitPython drives it so at boot.
+  i2s: {data: 24, bclk: 26, lrck: 27, mclk: 25, reset: 22, dac: TLV320DAC3100}
+i2c: {inst: 0, sda: 20, scl: 21, devices: {TLV320DAC3100: 0x18}}   # STEMMA QT too
+led: {plain: 29, ws2812: 32}   # five NeoPixels on GPIO32
+gpio:                   # the rest the board wires, claimed so nothing else takes them
+  sd_detect: 33         # high with a card in
+  button1: 0            # also BOOT
+  button2: 4
+  button3: 5
+  esp_cs: 46
+  esp_sck: 30
+  esp_mosi: 31
+  esp_miso: 28
+  esp_busy: 3
+  esp_irq: 23
+pio:
+  sd: 0
+  i2s: 1
+  pio_usb: 2
+shared:
+  - [sd, sd_spi_fallback]

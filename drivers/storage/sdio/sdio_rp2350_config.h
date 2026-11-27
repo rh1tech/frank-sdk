@@ -30,6 +30,9 @@ extern int sdio_dma_a, sdio_dma_b;
 /* frank-sdk: the PIO and pins from the board file (boards/<id>.yaml sd, pio.sd) */
 #define SDIO_PIO PIO_INSTANCE(FRANK_PIO_SD)
 #define SDIO_SM 0
+/* the PIO's GPIO window: 16 when the card is above GPIO31 (Fruit Jam, GP34-39) */
+#define SDIO_PIO_IOBASE (FRANK_PIO_SD == 0 ? FRANK_PIO0_GPIO_BASE : FRANK_PIO_SD == 1 ? FRANK_PIO1_GPIO_BASE \
+                                                                           : FRANK_PIO2_GPIO_BASE)
 #define SDIO_GPIO_FUNC (FRANK_PIO_SD == 0 ? GPIO_FUNC_PIO0 : FRANK_PIO_SD == 1 ? GPIO_FUNC_PIO1 : GPIO_FUNC_PIO2)
 #define SDIO_GPIO_SLEW GPIO_SLEW_RATE_FAST
 #define SDIO_GPIO_DRIVE GPIO_DRIVE_STRENGTH_8MA
