@@ -30,13 +30,16 @@ static const pinsig_entry_t sig_frank_pga[] = {
      * oldskoolfrank — which brings its ESP-01S strapping pins back here
      * through 1K. Everything above is now identical on the two: see
      * sig_oldskoolfrank for why GP0-3 stopped being a discriminator. */
-    /* GP28/29: don't care. They were "float, no I2C"; the current frank_pga
-     * (frank-lab, same nets in frank_pga_4layer) has a DS3231MZ (U14) there
-     * with 4.7K pull-ups, so they read high, and detection, finding the
-     * DS3231 at 0x68 on a board that declared none, called a FRANK PGA
-     * MegaFRANK (2026-11-27). Don't care rather than high: a PGA without the
-     * RTC still matches. GP30 (MegaFRANK's 1-Wire, pulled up) and GP23/24
-     * (OldSkoolFRANK's pull-ups) keep the three apart. */
+    /* 2026-11-27, against the current frank_pga (frank-lab; frank_pga_4layer
+     * has the same nets), on hardware. GP23/24 now reach the ESP-01 socket's
+     * GPIO2/GPIO0 through 1K, and a fitted module pulls them high: don't
+     * care. GP28/29 were "float, no I2C"; a DS3231MZ (U14) sits there now
+     * with 4.7K pull-ups, and they read high. With both wrong, and the
+     * DS3231 answering on a board that declared none, detection called a
+     * FRANK PGA MegaFRANK. High, not don't care: it is what keeps a PGA apart
+     * from OldSkoolFRANK (GP28 floats there) now that GP23/24 cannot; a PGA
+     * without the RTC still wins at 8/10 against OldSkoolFRANK's 7/9. GP30
+     * (MegaFRANK's 1-Wire, pulled up there) keeps it apart from MegaFRANK. */
     /* no 1-Wire */
     /* The PGA2350's own PSRAM chip select, pulled up inside the module.
      * This said FLOAT on the reasoning that the carrier fits no PSRAM,
@@ -47,10 +50,10 @@ static const pinsig_entry_t sig_frank_pga[] = {
     { 1, PINSIG_HIGH },
     { 2, PINSIG_HIGH },
     { 3, PINSIG_HIGH },
-    { 23, PINSIG_FLOAT },
-    { 24, PINSIG_FLOAT },
-    { 28, PINSIG_DONTCARE },
-    { 29, PINSIG_DONTCARE },
+    { 23, PINSIG_DONTCARE },
+    { 24, PINSIG_DONTCARE },
+    { 28, PINSIG_HIGH },
+    { 29, PINSIG_HIGH },
     { 30, PINSIG_FLOAT },
     { 47, PINSIG_HIGH },
 };

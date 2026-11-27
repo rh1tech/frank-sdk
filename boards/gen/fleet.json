@@ -146,10 +146,10 @@
    "1": "high",
    "2": "high",
    "3": "high",
-   "23": "float",
-   "24": "float",
-   "28": "dontcare",
-   "29": "dontcare",
+   "23": "dontcare",
+   "24": "dontcare",
+   "28": "high",
+   "29": "high",
    "30": "float",
    "47": "high"
   },
@@ -162,7 +162,7 @@
   "signature_inline_notes": [
    "TXS0104 A-side, 10K",
    "Bare pads, and the only thing left that separates this board from\noldskoolfrank — which brings its ESP-01S strapping pins back here\nthrough 1K. Everything above is now identical on the two: see\nsig_oldskoolfrank for why GP0-3 stopped being a discriminator.",
-   "GP28/29: don't care. They were \"float, no I2C\"; the current frank_pga\n(frank-lab, same nets in frank_pga_4layer) has a DS3231MZ (U14) there\nwith 4.7K pull-ups, so they read high, and detection, finding the\nDS3231 at 0x68 on a board that declared none, called a FRANK PGA\nMegaFRANK (2026-11-27). Don't care rather than high: a PGA without the\nRTC still matches. GP30 (MegaFRANK's 1-Wire, pulled up) and GP23/24\n(OldSkoolFRANK's pull-ups) keep the three apart.",
+   "2026-11-27, against the current frank_pga (frank-lab; frank_pga_4layer\nhas the same nets), on hardware. GP23/24 now reach the ESP-01 socket's\nGPIO2/GPIO0 through 1K, and a fitted module pulls them high: don't\ncare. GP28/29 were \"float, no I2C\"; a DS3231MZ (U14) sits there now\nwith 4.7K pull-ups, and they read high. With both wrong, and the\nDS3231 answering on a board that declared none, detection called a\nFRANK PGA MegaFRANK. High, not don't care: it is what keeps a PGA apart\nfrom OldSkoolFRANK (GP28 floats there) now that GP23/24 cannot; a PGA\nwithout the RTC still wins at 8/10 against OldSkoolFRANK's 7/9. GP30\n(MegaFRANK's 1-Wire, pulled up there) keeps it apart from MegaFRANK.",
    "no 1-Wire",
    "The PGA2350's own PSRAM chip select, pulled up inside the module.\nThis said FLOAT on the reasoning that the carrier fits no PSRAM,\nwhich is true and is not what the pin reads: a Pimoroni PGA2350\nbrings 8 MB on GP47 exactly as a Pico Plus 2 does. Measured high\non hardware."
   ]
