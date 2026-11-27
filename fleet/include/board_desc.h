@@ -327,6 +327,12 @@ typedef struct {
      * the part. */
     bool               i2s_lr_swapped;
 
+    /* The I2S clocks the other way up: LRCK on i2s_clk_base and BCLK on the
+     * pin above it, where the fleet has BCLK first. The Olimex RP2350pc's
+     * codec takes LRCK on GP29 and BCLK on GP30. A wiring fact, unlike
+     * i2s_lr_swapped above. */
+    bool               i2s_clk_swapped;
+
     /* What each GP12-19 pair carries, for HSTX HDMI: 0 is the fleet's
      * layout (CLK, D0, D1, D2 from GP12 up, N on the even pin). Otherwise
      * four nibbles, the low one GP12/13: HDMI_PAIR(signal, p_first) with

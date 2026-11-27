@@ -219,6 +219,8 @@ def entry(d, static_name=None):
         L.append("        " + ", ".join(pl[i:i + 4]) + ",")
     L.append("    },")
     L.append(f"    .video_default = VIDEO_{d['video_default'].upper()}, .i2s_lr_swapped = {str(d['i2s_lr_swapped']).lower()},")
+    if d.get("i2s_clk_swapped"):
+        L.append("    .i2s_clk_swapped = true,")
     if d.get("hdmi_pairs"):
         L.append(f"    .hdmi_pairs = {hdmi_pairs_c(d['hdmi_pairs'])},")
     if d.get("signature_name"):

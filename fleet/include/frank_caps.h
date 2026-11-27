@@ -226,6 +226,12 @@ typedef uint64_t frank_caps_t;
  * another register map. frank-sdk, 2026-11-26, from frank-lab frank_mini. */
 #define CAP_RTC_RV3032           (1ull << 36)
 
+/* An Everest ES8311 mono codec on I2C 0x18 (the Olimex RP2350pc's, U8): the
+ * same address as the TLV320 (CAP_AUDIO_CODEC_I2C), another part - its chip
+ * ID registers 0xFD/0xFE read 0x83 0x11. MCLK at 256 fs from GPOUT on
+ * i2s_mclk; OUTP/OUTN drive the jack's two sides and the amplifier. */
+#define CAP_AUDIO_ES8311         (1ull << 37)
+
 /* Any video output at all — convenience mask, not a bit of its own. */
 #define CAP_VIDEO_ANY  (CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_VIDEO_COMPOSITE)
 

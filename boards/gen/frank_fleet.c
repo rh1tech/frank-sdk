@@ -1188,23 +1188,28 @@ const frank_board_desc_t frank_board_table[] = {
  * SD on SPI1 (GP10 SCK, GP11 MOSI, GP24 MISO, GP9 CS, as frank-dos has it),
  * the PSRAM on GP8, PWM audio on GP26/27. I2C0 on GP32/33 reaches two
  * level shifters: the HDMI DDC (a monitor answers at 0x30, 0x3A, 0x50,
- * 0x54) and a TLV320 codec at 0x18. The codec's I2S is GP28-31 with LRCK
- * on GP29 below BCLK on GP30 and MCLK on GP23, an order frank-test's I2S
- * cannot take: no CAP_AUDIO_CODEC_I2C yet. i2s_mclk is declared all the
- * same: GP22 switches the codec's supply (CODEC_PWR_DIS#), and with it off
- * the codec holds GP23 low through its input diodes, which frank-test's
- * short scan reported as GP22-GP23 shorted. Claimed, the pair is skipped.
- * HDMI HPD is GP21, CEC GP20. No PS/2. */
+ * 0x54) and the codec at 0x18, an Everest ES8311 (U8) - not a TLV320,
+ * although it shares the address.
+ *
+ * The ES8311 is mono: OUTP and OUTN go to the jack's two sides, in
+ * opposite phase, and through 1 uF to the PAM8003 amplifier (U11); the PWM
+ * pins reach the same jack through 270R. Its I2S: DSDIN GP31, LRCK GP29
+ * below BCLK GP30 (i2s_clk_swapped), ASDOUT GP28, MCLK GP23 (GPOUT1). Its
+ * supply is on unless GP22 pulls the regulator's enable low (4.7K up);
+ * the amplifier is on unless GP35 turns T4 on. With the supply off the
+ * codec holds GP23 low, which frank-test's short scan once took for a
+ * GP22-GP23 short; GP23 is claimed as the MCLK now. HDMI HPD is GP21, CEC
+ * GP20. No PS/2. */
 {
     .id = FRANK_BOARD_OLIMEX_RP2350PC, .name = "Olimex RP2350pc", .slug = "rp2350pc",
     .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_SINGLE,
-    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_VIDEO_HDMI | CAP_AUDIO_PWM | CAP_USB_HOST | CAP_USB_HUB | CAP_I2C | CAP_LED_PLAIN,
+    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_VIDEO_HDMI | CAP_AUDIO_PWM | CAP_AUDIO_ES8311 | CAP_USB_HOST | CAP_USB_HUB | CAP_I2C | CAP_LED_PLAIN,
     .pico_socket = false, .module_memory = false,
     .pins = {
         .uart_tx = 0, .uart_rx = 1, .ps2_kb_clk = PIN_NC, .ps2_kb_dat = PIN_NC,
         .ps2_ms_clk = PIN_NC, .ps2_ms_dat = PIN_NC, .sd_dat0 = 24, .sd_cs = 9,
         .sd_clk = 10, .sd_cmd = 11, .sd_dat1 = PIN_NC, .sd_dat2 = PIN_NC,
-        .i2s_data = PIN_NC, .i2s_clk_base = PIN_NC, .i2s_mclk = 23, .pwm_l = 26,
+        .i2s_data = 31, .i2s_clk_base = 29, .i2s_mclk = 23, .pwm_l = 26,
         .pwm_r = 27, .pcm_i2s_data = PIN_NC, .pcm_i2s_clk_base = PIN_NC, .video_base = 12,
         .psram_cs = 8, .psram_soft_sclk = PIN_NC, .psram_soft_mosi = PIN_NC, .psram_soft_miso = PIN_NC,
         .led_ws2812 = PIN_NC, .led_plain = 25, .esp_uart_tx = PIN_NC, .esp_uart_rx = PIN_NC,
@@ -1218,6 +1223,7 @@ const frank_board_desc_t frank_board_table[] = {
         .link_db_out = PIN_NC, .link_db_in = PIN_NC, .link_run = PIN_NC,
     },
     .video_default = VIDEO_AUTO, .i2s_lr_swapped = false,
+    .i2s_clk_swapped = true,
     .hdmi_pairs = HDMI_PAIRS(HDMI_PAIR(1, 1), HDMI_PAIR(0, 1), HDMI_PAIR(3, 1), HDMI_PAIR(2, 1)),
     .sig = sig_olimex_rp2350pc, .sig_len = 7,
     .flash_bytes = 16777216u, .psram_bytes = 8388608u,
