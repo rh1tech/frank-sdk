@@ -84,8 +84,11 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         desc[1] = 0x0409; /* English */
         n = 1;
     } else {
-        if (index >= sizeof(desc_strings) / sizeof(desc_strings[0])) return NULL;
-        const char *str = desc_strings[index];
+        /* string 1 is desc_strings[0]: index 0 is the language list. With
+         * desc_strings[index] the serial came back as "Console", the unique
+         * ID as the product, and the bench looks a board up by its serial */
+        if (index > sizeof(desc_strings) / sizeof(desc_strings[0])) return NULL;
+        const char *str = desc_strings[index - 1];
         if (!str) {
             if (!serial[0]) pico_get_unique_board_id_string(serial, sizeof(serial));
             str = serial;

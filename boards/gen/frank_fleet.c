@@ -1168,9 +1168,11 @@ const frank_board_desc_t frank_board_table[] = {
  *
  * Its signature is microFRANK's, which reads the same everywhere detection
  * can see and is no longer made: microFRANK keeps its descriptor without a
- * signature, to be picked by hand. A full-speed device plugged into the
- * USB-A port at boot pulls GP20 up and the Nano then reads as zeroFRANK
- * (a low-speed keyboard pulls GP21, which is not in the signature).
+ * signature, to be picked by hand. GP20 separates it from zeroFRANK
+ * (1.5K there) while the USB-A port is empty; a full-speed device in it
+ * pulls GP20 up, and frank-test's nano image settles that by declaring the
+ * board. (That image starts its PIO-USB host after detection: probing
+ * GP20 under a running host took the D+ pin away from it for good.)
  *
  * frank-test's nano image (frank_fn) runs the host on PIO-USB, the native
  * port being the USB console. */
