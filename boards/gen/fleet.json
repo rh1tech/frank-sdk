@@ -1117,11 +1117,11 @@
   "flash_bytes": 16777216,
   "psram_bytes": 8388608,
   "manual_note": null,
-  "notes": "Olimex's own all-in-one board, not a FRANK. Its HDMI is on GP12-19 like\nthe fleet's but in another order: GP12/13 D0, GP14/15 the clock, GP16/17\nD2, GP18/19 D1, each P first (hdmi_pairs). With the fleet's layout HSTX\nran and no monitor locked (2026-11-27).\n\nSD on SPI1 (GP10 SCK, GP11 MOSI, GP24 MISO, GP9 CS, as frank-dos has it),\nthe PSRAM on GP8, PWM audio on GP26/27. The stereo codec sits on I2C0\nGP32/33 behind level shifters, its I2S on GP28-31 with MCLK on GP23: not\ndescribed here yet. HDMI HPD is GP21, CEC GP20. No PS/2.",
+  "notes": "Olimex's own all-in-one board, not a FRANK. Its HDMI is on GP12-19 like\nthe fleet's but in another order: GP12/13 D0, GP14/15 the clock, GP16/17\nD2, GP18/19 D1, each P first (hdmi_pairs). With the fleet's layout HSTX\nran and no monitor locked (2026-11-27).\n\nSD on SPI1 (GP10 SCK, GP11 MOSI, GP24 MISO, GP9 CS, as frank-dos has it),\nthe PSRAM on GP8, PWM audio on GP26/27. I2C0 on GP32/33 reaches two\nlevel shifters: the HDMI DDC (a monitor answers at 0x30, 0x3A, 0x50,\n0x54) and a TLV320 codec at 0x18. The codec's I2S is GP28-31 with LRCK\non GP29 below BCLK on GP30 and MCLK on GP23, an order frank-test's I2S\ncannot take: no CAP_AUDIO_CODEC_I2C yet. HDMI HPD is GP21, CEC GP20.\nNo PS/2.",
   "signature_inline_notes": [
    "2.2K pull-ups on UEXT1's I2C pair",
    "the PSRAM's chip select, 10K",
-   "2.2K on the codec's I2C pair, GPIO side of the level shifters",
+   "2.2K on I2C0 (codec and HDMI DDC), GPIO side of the level shifters",
    "2.2K on UEXT2's I2C pair"
   ]
  }

@@ -480,7 +480,7 @@ static const pinsig_entry_t sig_z0[] = {
 static const pinsig_entry_t sig_olimex_rp2350pc[] = {
     /* 2.2K pull-ups on UEXT1's I2C pair */
     /* the PSRAM's chip select, 10K */
-    /* 2.2K on the codec's I2C pair, GPIO side of the level shifters */
+    /* 2.2K on I2C0 (codec and HDMI DDC), GPIO side of the level shifters */
     /* 2.2K on UEXT2's I2C pair */
     { 2, PINSIG_HIGH },
     { 3, PINSIG_HIGH },
@@ -1186,9 +1186,12 @@ const frank_board_desc_t frank_board_table[] = {
  * ran and no monitor locked (2026-11-27).
  *
  * SD on SPI1 (GP10 SCK, GP11 MOSI, GP24 MISO, GP9 CS, as frank-dos has it),
- * the PSRAM on GP8, PWM audio on GP26/27. The stereo codec sits on I2C0
- * GP32/33 behind level shifters, its I2S on GP28-31 with MCLK on GP23: not
- * described here yet. HDMI HPD is GP21, CEC GP20. No PS/2. */
+ * the PSRAM on GP8, PWM audio on GP26/27. I2C0 on GP32/33 reaches two
+ * level shifters: the HDMI DDC (a monitor answers at 0x30, 0x3A, 0x50,
+ * 0x54) and a TLV320 codec at 0x18. The codec's I2S is GP28-31 with LRCK
+ * on GP29 below BCLK on GP30 and MCLK on GP23, an order frank-test's I2S
+ * cannot take: no CAP_AUDIO_CODEC_I2C yet. HDMI HPD is GP21, CEC GP20.
+ * No PS/2. */
 {
     .id = FRANK_BOARD_OLIMEX_RP2350PC, .name = "Olimex RP2350pc", .slug = "rp2350pc",
     .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_SINGLE,
