@@ -50,6 +50,7 @@ typedef struct {
 
 typedef struct {
     bool up, down, left, right;
+    int8_t x, y;         /* the stick, -127..127 (0 without X/Y) */
     uint32_t buttons;    /* bit n = HID Button n+1 */
 } hid_pad_report_t;
 

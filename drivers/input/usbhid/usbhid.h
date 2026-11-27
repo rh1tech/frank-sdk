@@ -74,6 +74,9 @@ typedef struct {
 /** Buttons held on all connected gamepads together (GP_*). */
 uint32_t usbhid_gamepad_buttons(void);
 
+/** The sticks of the first pad with one off centre: LX LY RX RY, -127..127, +y down. */
+void usbhid_gamepad_axes(int8_t axes[4]);
+
 /** Non-zero while at least one gamepad is connected. */
 int usbhid_gamepad_connected(void);
 

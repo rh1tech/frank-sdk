@@ -4,6 +4,8 @@
 boards:
   NX: {serial: 0123456789ABCDEF, probe: FEDCBA9876543210}
 #  M2: {serial: ...}
+# A board under its own bench name builds for its target (psram_unstick):
+#  PGA: {serial: ..., target: M2}
 #  SL: {probe: 0011223344556677}
 capture:
   video: USB Video            # the MS2109 HDMI stick, by AVFoundation name

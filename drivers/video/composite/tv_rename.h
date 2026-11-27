@@ -38,6 +38,10 @@
 #define graphics_get_buffer     tv_graphics_get_buffer
 #define graphics_get_width      tv_graphics_get_width
 #define graphics_get_height     tv_graphics_get_height
+/* frank-sdk's additions */
+#define graphics_set_row_callback   tv_graphics_set_row_callback
+#define graphics_set_vsync_callback tv_graphics_set_vsync_callback
+#define graphics_set_tv_pal         tv_graphics_set_tv_pal
 #define graphics_get_palette    tv_graphics_get_palette
 #define graphics_set_res        tv_graphics_set_res
 #define graphics_set_shift      tv_graphics_set_shift

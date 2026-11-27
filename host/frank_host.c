@@ -199,6 +199,10 @@ bool frank_input_mouse(int *dx, int *dy, int *wheel, uint8_t *buttons) {
     return m;
 }
 uint32_t frank_input_pad(int n) { (void)n; return 0; }
+void frank_input_pad_axes(int n, int8_t axes[4]) { (void)n; for (int i = 0; i < 4; i++) axes[i] = 0; }
+bool frank_input_pad_connected(void) { return false; }
+uint32_t frank_input_pad_usb(void) { return 0; }
+uint32_t frank_input_pad_nes(int n) { (void)n; return 0; }
 void frank_input_report(void) { printf("input: SDL; last %u keys queued\n", kw); }
 
 /* ================= storage ================= */

@@ -274,10 +274,13 @@ def psram_unstick(board: str) -> str:
     the QSPI bus. Loads tools/psram_unstick into RAM (writes no flash): it drives
     the PSRAM CS high and returns to BOOTSEL. Then flash again."""
     from .paths import SDK
-    ser = board_cfg(board)["serial"]
+    cfg = board_cfg(board)
+    ser = cfg["serial"]
+    # the bench name (PGA, NANO...) is not a build target: bench.yaml's "target"
+    target = cfg.get("target", board)
     log = to_bootsel(board)
     bdir = Path.home() / ".cache" / "frank" / f"unstick-{board.lower()}"
-    r = build(str(SDK / "tools" / "psram_unstick"), board, str(bdir))
+    r = build(str(SDK / "tools" / "psram_unstick"), target, str(bdir))
     if not r.get("uf2"):
         raise BenchError("psram_unstick did not build: " + "\n".join(r.get("errors", [])))
     out = run(["picotool", "load", "-x", "--ser", ser, r["uf2"]], timeout=60)

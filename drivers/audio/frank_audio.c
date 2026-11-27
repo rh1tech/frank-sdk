@@ -31,7 +31,15 @@
 #define FRANK_AUDIO_RING 2048   /* frames, a power of two */
 #endif
 
-static uint32_t ring[FRANK_AUDIO_RING];
+/* The ring's storage is also the HDMI audio ring's (frank_video.c takes it
+ * through this symbol instead of its own): a firmware plays through one
+ * output, so linking frank_audio costs one ring, not two. */
+#ifndef FRANK_HDMI_AUDIO_RING
+#define FRANK_HDMI_AUDIO_RING 1024
+#endif
+_Static_assert(FRANK_HDMI_AUDIO_RING <= FRANK_AUDIO_RING, "frank-sdk: FRANK_HDMI_AUDIO_RING lives in the FRANK_AUDIO_RING storage");
+uint32_t frank_audio_ring_mem[FRANK_AUDIO_RING];
+#define ring frank_audio_ring_mem
 static volatile uint32_t ring_w, ring_r;
 static volatile unsigned vol_shift;
 

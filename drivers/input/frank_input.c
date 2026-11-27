@@ -188,6 +188,39 @@ uint32_t frank_input_pad(int n) {
     return p;
 }
 
+void frank_input_pad_axes(int n, int8_t axes[4]) {
+    for (int i = 0; i < 4; i++) axes[i] = 0;
+#if FRANK_USB_HOST
+    if (n == 0) usbhid_gamepad_axes(axes);
+#endif
+    (void)n;
+}
+
+uint32_t frank_input_pad_usb(void) {
+#if FRANK_USB_HOST
+    return usbhid_gamepad_buttons();
+#else
+    return 0;
+#endif
+}
+
+uint32_t frank_input_pad_nes(int n) {
+#ifdef FRANK_HAS_NESPAD
+    return from_nes(n == 0 ? nespad_state : nespad_state2);
+#else
+    (void)n;
+    return 0;
+#endif
+}
+
+bool frank_input_pad_connected(void) {
+#if FRANK_USB_HOST
+    return usbhid_gamepad_connected() != 0;
+#else
+    return false;
+#endif
+}
+
 void frank_input_report(void) {
 #if FRANK_USB_HOST
     printf("USB: keyboard %s, mouse %s, gamepad %s\n", usbhid_keyboard_connected() ? "yes" : "no",

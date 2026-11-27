@@ -68,6 +68,8 @@ pico_board_cmake_set_default(PICO_RP2350_A2_SUPPORTED, 1)
 #ifndef FRANK_VREG
 #define FRANK_VREG VREG_VOLTAGE_1_65
 #endif
+#define FRANK_BOARD_CPU_MHZ 504   // the clock the PSRAM/flash values are tuned for
+#if FRANK_CPU_MHZ == FRANK_BOARD_CPU_MHZ
 #ifndef FRANK_PSRAM_MHZ
 #define FRANK_PSRAM_MHZ 133
 #endif
@@ -76,6 +78,14 @@ pico_board_cmake_set_default(PICO_RP2350_A2_SUPPORTED, 1)
 #endif
 #ifndef FRANK_FLASH_RXDELAY
 #define FRANK_FLASH_RXDELAY 5
+#endif
+#else
+#ifndef FRANK_PSRAM_MHZ
+#define FRANK_PSRAM_MHZ 133
+#endif
+#ifndef FRANK_FLASH_MHZ
+#define FRANK_FLASH_MHZ 66
+#endif
 #endif
 
 // the console: 1 = USB CDC on the native port, 0 = the UART above (or none)

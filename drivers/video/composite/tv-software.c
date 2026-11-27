@@ -24,6 +24,18 @@
 #pragma GCC optimize("Ofast")
 uint8_t* text_buffer = NULL;
 
+/* frank-sdk: rows from a callback instead of the buffer (the firmware keeps its
+ * frame in PSRAM and serves rows from SRAM), a callback at the start of each
+ * field (the flip), the colour the border and the line ends take */
+static const uint8_t *(*tv_row_fn)(uint32_t row);
+static void (*tv_vsync_fn)(void);
+volatile uint32_t tv_fields;
+#ifndef TV_BORDER_INDEX
+#define TV_BORDER_INDEX 200
+#endif
+void graphics_set_row_callback(const uint8_t *(*fn)(uint32_t row)) { tv_row_fn = fn; }
+void graphics_set_vsync_callback(void (*fn)(void)) { tv_vsync_fn = fn; }
+
 
 typedef struct tv_out_mode_t {
     // double color_freq;
@@ -47,6 +59,16 @@ tv_out_mode_t tv_out_mode = {
     .cb_sync_PI_shift_half_frame = true
 };
 
+static const tv_out_mode_t tv_out_mode0 = {
+    .tv_system = g_TV_OUT_NTSC,
+    .N_lines = _524_lines,
+    .mode_bpp = GRAPHICSMODE_DEFAULT,
+    .c_freq = _3579545,
+    .color_index = 1.0,
+    .cb_sync_PI_shift_lines = false,
+    .cb_sync_PI_shift_half_frame = true
+};
+
 //параметры по умолчанию
 tv_out_mode_t tv_out_mode1 = {
     .tv_system = g_TV_OUT_PAL,
@@ -57,6 +79,9 @@ tv_out_mode_t tv_out_mode1 = {
     .cb_sync_PI_shift_lines = false,
     .cb_sync_PI_shift_half_frame = true
 };
+
+/* frank-sdk: PAL (625 lines, 4.43 MHz) instead of the default NTSC; before graphics_init */
+void graphics_set_tv_pal(bool pal) { tv_out_mode = pal ? tv_out_mode1 : tv_out_mode0; }
 
 //программы PIO
 //программа видеовывода
@@ -490,6 +515,12 @@ static bool __time_critical_func(video_timer_callbackTV)(repeating_timer_t* rt) 
             input_buffer = graphics_buffer.data;
         }
 
+        /* frank-sdk: a field starts (an interlaced frame's second half way through) */
+        if (line_active == 0 || (video_mode.N_lines > 400 && line_active == video_mode.N_lines / 2)) {
+            tv_fields++;
+            if (tv_vsync_fn) tv_vsync_fn();
+        }
+
         lines_buf_inx = (lines_buf_inx + 1) % N_LINE_BUF;
         uint8_t* output_buffer8 = (uint8_t *)lines_buf[lines_buf_inx];
 
@@ -915,7 +946,14 @@ static bool __time_critical_func(video_timer_callbackTV)(repeating_timer_t* rt) 
                     break;
             }
 
-            if ((y >= 240) || (y < 0) || (input_buffer == NULL)) {
+            /* frank-sdk: the row, from the callback or the buffer */
+            const uint8_t *row_src = NULL;
+            if (y >= 0 && y < 240 && tv_out_mode.mode_bpp == GRAPHICSMODE_DEFAULT) {
+                if (tv_row_fn) row_src = tv_row_fn((uint32_t)y);
+                else if (input_buffer) row_src = input_buffer + y * graphics_buffer.width;
+            }
+            if ((y >= 240) || (y < 0) || (input_buffer == NULL && !row_src)
+                || (tv_out_mode.mode_bpp == GRAPHICSMODE_DEFAULT && !row_src)) {
                 //вне изображения
                 memset(output_buffer8, video_mode.LVL_BLACK_TMPL, video_mode.img_W);
             }
@@ -1015,7 +1053,7 @@ static bool __time_critical_func(video_timer_callbackTV)(repeating_timer_t* rt) 
                 }
                 else
                 */
-                if (input_buffer != NULL)
+                if (input_buffer != NULL || row_src)
                     switch (tv_out_mode.mode_bpp) {
                         case TEXTMODE_DEFAULT: {
                             output_buffer8 += 8;
@@ -1042,10 +1080,10 @@ static bool __time_critical_func(video_timer_callbackTV)(repeating_timer_t* rt) 
                         break;
                         case GRAPHICSMODE_DEFAULT: {
                             //для 8-битного буфера
-                            uint8_t* input_buffer8 = input_buffer + y * graphics_buffer.width;
+                            const uint8_t* input_buffer8 = row_src;
 
                             // todo bgcolor
-                            uint8_t color = graphics_buffer.shift_x ? 200 : *input_buffer8++;
+                            uint8_t color = graphics_buffer.shift_x ? TV_BORDER_INDEX : *input_buffer8++;
                             uint32_t cout32 = conv_color[li][color];
                             // uint8_t* c_4=&conv_color[0][c8&0xf];
                             uint8_t* c_4 = &cout32;
@@ -1062,7 +1100,7 @@ static bool __time_critical_func(video_timer_callbackTV)(repeating_timer_t* rt) 
                                         color = *input_buffer8++;
                                     }
                                     else {
-                                        color = 200;
+                                        color = TV_BORDER_INDEX;
                                     }
                                     cout32 = conv_color[li][color];
                                     next_ibuf += 0x100;

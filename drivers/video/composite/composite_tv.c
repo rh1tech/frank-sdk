@@ -5,5 +5,7 @@
  */
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #pragma GCC diagnostic ignored "-Wall"
+/* its graphics_* become tv_graphics_*: a firmware has its own graphics_* API */
+#include "tv_rename.h"
 #include "tv_mem.h"
 #include "tv-software.c"

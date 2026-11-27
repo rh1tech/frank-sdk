@@ -195,6 +195,13 @@ static int32_t value(const uint8_t *d, const hid_pad_axis_t *a) {
     return (int32_t)v;
 }
 
+/* the logical range onto -127..127 */
+static int8_t axis_s8(int32_t v, const hid_pad_axis_t *a) {
+    const int64_t span = (int64_t)a->lmax - a->lmin;
+    int32_t s = (int32_t)(((int64_t)(v - a->lmin) * 254) / span) - 127;
+    return (int8_t)(s < -127 ? -127 : s > 127 ? 127 : s);
+}
+
 bool hid_pad_decode(const hid_pad_layout_t *L, const uint8_t *report, uint16_t len, hid_pad_report_t *out) {
     memset(out, 0, sizeof(*out));
     if (!L->use || !report) return false;
@@ -214,11 +221,13 @@ bool hid_pad_decode(const hid_pad_layout_t *L, const uint8_t *report, uint16_t l
         const int32_t v = value(report, &L->x), q = (L->x.lmax - L->x.lmin) / 4;
         out->left = v < L->x.lmin + q;
         out->right = v > L->x.lmax - q;
+        out->x = axis_s8(v, &L->x);
     }
     if (L->y.size && L->y.lmax > L->y.lmin) {
         const int32_t v = value(report, &L->y), q = (L->y.lmax - L->y.lmin) / 4;
         out->up = v < L->y.lmin + q;
         out->down = v > L->y.lmax - q;
+        out->y = axis_s8(v, &L->y);
     }
     if (L->hat.size) {
         const int32_t span = L->hat.lmax - L->hat.lmin; /* 7 = 8-way, 3 = 4-way */

@@ -9,7 +9,7 @@ hard-won lessons, and MCP servers that build, flash and check firmware on the be
 | `M2` | FRANK M2 / Murmulator 2.0 pinout (FRANK, PGA, MegaFRANK, miniFRANK) | HDMI (HSTX or PIO), VGA, composite | I2S, PWM, HDMI | USB, PS/2, NES |
 | `M1` | Murmulator 1.x + Pico 2 ("M1P2") | HDMI (PIO) | I2S, PWM, HDMI | USB, PS/2, NES |
 | `NX` + `SL` | FRANK Next, master + slave | HDMI (HSTX) | TLV320 (I2S), HDMI | USB (hub) |
-| `C2` + `SL` | FRANK Core 2 / 2U, master + slave | HDMI (HSTX) | I2S, HDMI | USB |
+| `C2` + `SL` | FRANK Core 2 / 2U, master + slave (experimental: firmware need not support it) | HDMI (HSTX) | I2S, HDMI | USB |
 | `FZ` | FRANK Z0 | HDMI (HSTX) | TLV320 (I2S), HDMI | PIO-USB |
 | `FN` | FRANK Nano | HDMI (HSTX) | HDMI | PIO-USB |
 | `Z0` | Waveshare RP2350-PiZero | HDMI (PIO) | I2S module, PWM, HDMI | USB / PIO-USB, PS/2, NES |

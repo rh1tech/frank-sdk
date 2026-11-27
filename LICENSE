@@ -23,4 +23,6 @@ SOFTWARE.
 Third-party code keeps its own licence, in the file or beside it: FatFs (ChaN),
 the SPI SD driver (Elehobica, BSD-2), SDIO_RP2350 (Rabbit Hole Computing, MIT),
 xinput_host (Ryan Wendland, MIT), pico_hdmi (public domain), dlmalloc (public
-domain), flash-config (xrip, MIT), the linker script (Raspberry Pi, BSD-3).
+domain), flash-config (xrip, MIT), the linker script (Raspberry Pi, BSD-3),
+DispHSTX (Miroslav Nemecek, free for any purpose), the PIO VGA driver (after the
+Murmulator's vga-nextgen, GPL-2.0), the composite driver (murmnes tv-software).

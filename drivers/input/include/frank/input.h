@@ -65,6 +65,15 @@ bool frank_input_key(frank_key_t *ev);
 bool frank_input_mouse(int *dx, int *dy, int *wheel, uint8_t *buttons);
 /* Pad 0: the first USB pad or the first NES pad, merged; pad 1: the second. */
 uint32_t frank_input_pad(int n);
+/* Pad 0's analog sticks: LX LY RX RY, -127..127, +x right, +y down (0 when
+ * centred, or the pad has none: NES pads, D-pad-only USB pads). Pad 1: 0. */
+void frank_input_pad_axes(int n, int8_t axes[4]);
+/* A USB gamepad is connected (a NES port cannot tell). */
+bool frank_input_pad_connected(void);
+/* The same buttons by source, for firmware that maps them differently: USB
+ * pads only, or NES/SNES port n only (B = SOUTH, A = EAST, Y = WEST, X = NORTH). */
+uint32_t frank_input_pad_usb(void);
+uint32_t frank_input_pad_nes(int n);
 
 /* "keys" console command: what is connected, the last events */
 void frank_input_report(void);

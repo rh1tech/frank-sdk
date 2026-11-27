@@ -40,6 +40,12 @@ void graphics_set_offset(int x, int y);
 
 void graphics_set_palette(uint8_t i, uint32_t color);
 
+/* frank-sdk additions */
+void graphics_set_row_callback(const uint8_t *(*fn)(uint32_t row));
+void graphics_set_vsync_callback(void (*fn)(void));   /* each field */
+void graphics_set_tv_pal(bool pal);                    /* before graphics_init */
+extern volatile uint32_t tv_fields;
+
 void graphics_set_textbuffer(uint8_t* buffer);
 
 void graphics_set_bgcolor(uint32_t color888);

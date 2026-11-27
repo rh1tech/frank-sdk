@@ -1,4 +1,5 @@
 # FRANK Core 2 / Core 2U — the master half. The slave half is boards/sl.yaml.
+# Experimental board: firmware need not support it (frank-idtech1 does not).
 id: C2
 name: FRANK Core 2 (master)
 covers: [FRANK Core 2, FRANK Core 2U, FRANK Core 2 Proto]

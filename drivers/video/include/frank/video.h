@@ -14,8 +14,10 @@
  *
  * The output is chosen per build, as the pins are shared (cmake
  * -DFRANK_VIDEO_OUT=hdmi|vga|composite; hdmi is the default): VGA through the
- * HSTX on the GPIO12-19 ladder (M2, PC: frank-test's pico_vga, 64 colours),
- * composite PAL/NTSC through PIO (frank-test's tv-software: M2 family). Neither
+ * HSTX on the GPIO12-19 ladder (M2, PC: DispHSTX, time-dithered colour) or
+ * through PIO on any pins (M1 too: FRANK_VGA_BACKEND=pio, a 2-pixel dither),
+ * composite PAL/NTSC through PIO (frank-test's tv-software: M2 family; clk_sys
+ * 504 MHz only, see docs/gotchas/composite-504-only.md). Neither
  * carries sound; frank/audio.h's analog outputs do.
  *
  * Rules (each cost hours on some port):
@@ -60,8 +62,14 @@ void frank_video_set_palette(const uint8_t *rgb, int stride);
 void frank_video_set_dvi(bool dvi);
 /* Starts the output, its IRQ bound to the calling core (core 1). */
 void frank_video_start(void);
+/* Starts the output on the calling core (core 1) and never returns: idle (in
+ * SRAM) runs over and over between the output's interrupts. The one way that
+ * works for VGA too, whose start never returns. */
+void __attribute__((noreturn)) frank_video_run(void (*idle)(void));
+/* Composite: PAL (625 lines) instead of NTSC (525, the default). Before the start. */
+void frank_video_set_composite_pal(bool pal);
 uint32_t frank_video_frame_count(void);
-const char *frank_video_backend(void);   /* "hstx" or "pio" */
+const char *frank_video_backend(void);   /* "hstx", "pio", "vga" or "composite" */
 
 /* ---- HDMI audio: 16-bit stereo at 44.1 kHz ---- */
 

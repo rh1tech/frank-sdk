@@ -251,12 +251,20 @@ def header(b, bases):
     if not vr:
         raise BoardError(f"{b['id']}: clocks.vreg {c['vreg']} is not a regulator step")
     dflt("FRANK_VREG", f"VREG_VOLTAGE_{vr}")
+    # the PSRAM and flash values are tuned for the board's own clock: at any
+    # other (a firmware's -DFRANK_CPU_MHZ) the safe maxima, the delays computed
+    L.append(f"#define FRANK_BOARD_CPU_MHZ {c['cpu_mhz']}   // the clock the PSRAM/flash values are tuned for")
+    L.append("#if FRANK_CPU_MHZ == FRANK_BOARD_CPU_MHZ")
     dflt("FRANK_PSRAM_MHZ", c["psram_mhz"])
     if "psram_rxdelay" in c:
         dflt("FRANK_PSRAM_RXDELAY", c["psram_rxdelay"])
     dflt("FRANK_FLASH_MHZ", c["flash_mhz"])
     if "flash_rxdelay" in c:
         dflt("FRANK_FLASH_RXDELAY", c["flash_rxdelay"])
+    L.append("#else")
+    dflt("FRANK_PSRAM_MHZ", min(133, int(c["psram_mhz"])))
+    dflt("FRANK_FLASH_MHZ", min(66, int(c["flash_mhz"])))
+    L.append("#endif")
     con = b.get("console", {}).get("default", "uart")
     L += ["", "// the console: 1 = USB CDC on the native port, 0 = the UART above (or none)"]
     dflt("FRANK_CONSOLE_USB", 1 if con == "usb" else 0)

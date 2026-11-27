@@ -29,6 +29,8 @@ One lesson each: symptom, cause, fix, where it was found. Served by the frank-do
 - [Look at what is on the board before flashing it](shared-bench-board.md)
 - [Every firmware must recover from a hang with nobody at the board](hang-recovery.md)
 - [HDMI, VGA and composite share GPIO12-19 on the M2 family](composite-vga-same-pins.md)
+- [Composite runs at 504 MHz only](composite-504-only.md)
+- [The capture stick needs ~15 s to lock on VGA](capture-vga-lock-time.md)
 - [Keep your own state in watchdog scratch 0-3, never 4-7](watchdog-scratch-4.md)
 - [Wait for room in the ring the output actually drains](audio-free-follows-output.md)
 - [When two sources disagree about a pin, stop](pin-sources-disagree.md)

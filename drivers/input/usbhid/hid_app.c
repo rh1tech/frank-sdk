@@ -46,6 +46,9 @@ static hid_pad_layout_t pad_layout[CFG_TUH_HID];
 static volatile uint32_t gp_hid[CFG_TUH_HID];
 static volatile uint32_t gp_xinput[CFG_TUH_DEVICE_MAX + 1];
 static volatile uint8_t gp_is_pad[CFG_TUH_HID], gp_xinput_on[CFG_TUH_DEVICE_MAX + 1];
+// Their sticks (LX LY RX RY, -127..127, +y down), the same slots
+static volatile int8_t gp_hid_axes[CFG_TUH_HID][4];
+static volatile int8_t gp_xinput_axes[CFG_TUH_DEVICE_MAX + 1][4];
 
 // Previous keyboard report for detecting key changes
 static hid_keyboard_report_t prev_kbd_report = { 0, 0, {0} };
@@ -197,6 +200,26 @@ static uint32_t gp_dirs(uint8_t lx, uint8_t ly, int hat) {
 
 #define BIT(v, m, gp) (((v) & (m)) ? (gp) : 0u)
 
+// 8-bit axis, 0x80 centre -> -127..127
+static int8_t axis8(uint8_t v) {
+    const int a = (int)v - 128;
+    return (int8_t)(a < -127 ? -127 : a);
+}
+
+static void set_axes(uint8_t instance, uint8_t lx, uint8_t ly, uint8_t rx, uint8_t ry) {
+    if (instance >= CFG_TUH_HID) return;
+    gp_hid_axes[instance][0] = axis8(lx);
+    gp_hid_axes[instance][1] = axis8(ly);
+    gp_hid_axes[instance][2] = axis8(rx);
+    gp_hid_axes[instance][3] = axis8(ry);
+}
+
+// of two axis bytes, the one further from centre
+static uint8_t pick_axis(uint8_t a, uint8_t b) {
+    const int da = a > 0x80 ? a - 0x80 : 0x7F - a, db = b > 0x80 ? b - 0x80 : 0x7F - b;
+    return db > da ? b : a;
+}
+
 // DualShock 4, report id 1 stripped: LX LY RX RY, hat|face, buttons, PS
 static uint32_t decode_ds4(uint8_t const *r, uint16_t len) {
     if (len < 7) return 0;
@@ -267,19 +290,35 @@ static uint32_t decode_0810_0001(uint8_t const *r, uint16_t len) {
 // the report was one of them.
 static int process_vendor_gamepad(uint8_t instance, uint8_t const *report, uint16_t len) {
     const uint16_t vid = hid_info[instance].vid, pid = hid_info[instance].pid;
+    uint8_t const *r = report + 1;   // the report without its id
     if (is_dualshock4(vid, pid)) {
-        if (len >= 10 && report[0] == 0x01) gp_hid[instance] = decode_ds4(report + 1, len - 1);
+        if (len >= 10 && report[0] == 0x01) {
+            gp_hid[instance] = decode_ds4(r, len - 1);
+            set_axes(instance, r[0], r[1], r[2], r[3]);
+        }
     } else if (is_dualsense(vid, pid)) {
-        if (len >= 11 && report[0] == 0x01) gp_hid[instance] = decode_ds5(report + 1, len - 1);
+        if (len >= 11 && report[0] == 0x01) {
+            gp_hid[instance] = decode_ds5(r, len - 1);
+            set_axes(instance, r[0], r[1], r[2], r[3]);
+        }
     } else if (is_f710_dinput(vid, pid)) {
-        if (len >= 8 && report[0] == 0x01) gp_hid[instance] = decode_dinput(report + 1, len - 1, report[5] & 15);
+        if (len >= 8 && report[0] == 0x01) {
+            gp_hid[instance] = decode_dinput(r, len - 1, report[5] & 15);
+            set_axes(instance, r[0], r[1], r[2], r[3]);
+        }
     } else if (is_gp_2563_0575(vid, pid)) {
         gp_hid[instance] = decode_2563_0575(report, len);
+        if (len >= 7) set_axes(instance, report[3], report[4], report[5], report[6]);
     } else if (is_gp_feed_2320(vid, pid)) {
-        if (len >= 8 && report[0] == 0x07) gp_hid[instance] = decode_feed_2320(report + 1, len - 1);
+        if (len >= 8 && report[0] == 0x07) {
+            gp_hid[instance] = decode_feed_2320(r, len - 1);
+            set_axes(instance, r[0], r[1], r[2], r[3]);
+        }
     } else if (is_gp_0810_0001(vid, pid)) {
-        if (len >= 8 && (report[0] == 0x01 || report[0] == 0x02))
-            gp_hid[instance] = decode_0810_0001(report + 1, len - 1);
+        if (len >= 8 && (report[0] == 0x01 || report[0] == 0x02)) {
+            gp_hid[instance] = decode_0810_0001(r, len - 1);
+            set_axes(instance, r[2], r[3], 0x80, 0x80);
+        }
     } else {
         return 0;
     }
@@ -315,6 +354,9 @@ static int pad_layout_feed(uint8_t instance, uint8_t const *report, uint16_t len
         if (r.buttons & (1u << i)) b |= gp_of[i];
     gp_hid[instance] = b;
     gp_is_pad[instance] = 1;
+    gp_hid_axes[instance][0] = r.x;
+    gp_hid_axes[instance][1] = r.y;
+    gp_hid_axes[instance][2] = gp_hid_axes[instance][3] = 0;
     return 1;
 }
 
@@ -352,7 +394,15 @@ void tuh_xinput_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t c
     if (p->sThumbLX < -8000) b |= GP_LEFT;
     if (p->sThumbLX > 8000) b |= GP_RIGHT;
     (void)instance;
-    if (dev_addr <= CFG_TUH_DEVICE_MAX) gp_xinput[dev_addr] = itf->connected ? b : 0;
+    if (dev_addr <= CFG_TUH_DEVICE_MAX) {
+        gp_xinput[dev_addr] = itf->connected ? b : 0;
+        // XInput's sticks are 16-bit with up positive
+        const int16_t v[4] = {p->sThumbLX, (int16_t)(-p->sThumbLY - 1), p->sThumbRX, (int16_t)(-p->sThumbRY - 1)};
+        for (int i = 0; i < 4; i++) {
+            const int a = itf->connected ? v[i] / 256 : 0;
+            gp_xinput_axes[dev_addr][i] = (int8_t)(a < -127 ? -127 : a > 127 ? 127 : a);
+        }
+    }
     tuh_xinput_receive_report(dev_addr, instance);
 }
 
@@ -373,7 +423,10 @@ void tuh_xinput_mount_cb(uint8_t dev_addr, uint8_t instance, const xinputh_inter
 void tuh_xinput_umount_cb(uint8_t dev_addr, uint8_t instance) {
     (void)instance;
     printf("USB XInput gamepad disconnected\n");
-    if (dev_addr <= CFG_TUH_DEVICE_MAX) gp_xinput[dev_addr] = gp_xinput_on[dev_addr] = 0;
+    if (dev_addr <= CFG_TUH_DEVICE_MAX) {
+        gp_xinput[dev_addr] = gp_xinput_on[dev_addr] = 0;
+        memset((void *)gp_xinput_axes[dev_addr], 0, 4);
+    }
 }
 
 //--------------------------------------------------------------------
@@ -425,6 +478,9 @@ static void process_generic_report(uint8_t dev_addr, uint8_t instance, uint8_t c
                     break;
                 gp_hid[instance] = decode_generic(report, len);
                 gp_is_pad[instance] = 1;
+                // the stick is in [0] [1] on some (pico-speccy) and in [3] [4]
+                // on others (murmgenesis): whichever pair is off centre
+                if (len >= 7) set_axes(instance, pick_axis(report[0], report[3]), pick_axis(report[1], report[4]), 0x80, 0x80);
                 break;
             default:
                 break;
@@ -499,6 +555,7 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance) {
     uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
     if (instance < CFG_TUH_HID) {
         gp_hid[instance] = gp_is_pad[instance] = 0;
+        memset((void *)gp_hid_axes[instance], 0, 4);
         memset(&pad_layout[instance], 0, sizeof(pad_layout[instance])); // the slot is reused
     }
 
@@ -637,6 +694,21 @@ uint32_t usbhid_gamepad_buttons(void) {
     for (int i = 0; i < CFG_TUH_HID; i++) b |= gp_hid[i];
     for (int i = 0; i <= CFG_TUH_DEVICE_MAX; i++) b |= gp_xinput[i];
     return b;
+}
+
+void usbhid_gamepad_axes(int8_t axes[4]) {
+    // the first pad that has a stick off centre, else centred
+    for (int i = 0; i < 4; i++) axes[i] = 0;
+    for (int i = 0; i < CFG_TUH_HID; i++)
+        if (gp_is_pad[i] && (gp_hid_axes[i][0] | gp_hid_axes[i][1] | gp_hid_axes[i][2] | gp_hid_axes[i][3])) {
+            for (int k = 0; k < 4; k++) axes[k] = gp_hid_axes[i][k];
+            return;
+        }
+    for (int i = 0; i <= CFG_TUH_DEVICE_MAX; i++)
+        if (gp_xinput_on[i] && (gp_xinput_axes[i][0] | gp_xinput_axes[i][1] | gp_xinput_axes[i][2] | gp_xinput_axes[i][3])) {
+            for (int k = 0; k < 4; k++) axes[k] = gp_xinput_axes[i][k];
+            return;
+        }
 }
 
 int usbhid_gamepad_connected(void) {

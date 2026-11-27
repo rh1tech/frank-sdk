@@ -29,11 +29,12 @@ frank_firmware(myfw)                          # the platform, linker script, con
 
 | Option | Values | Default |
 |---|---|---|
-| `FRANK_BOARD` | M1 M2 NX C2 SL FZ FN Z0 PC TW AF, or GA GB XT (run time) | (required) |
+| `FRANK_BOARD` | M1 M2 NX C2 SL FZ FN Z0 PC TW AF, or GA GB XT (run time); C2 is experimental, a firmware need not support it | (required) |
 | `FRANK_CONSOLE` | `usb` (CDC on the native port), `uart`, `none` | the board's |
 | `FRANK_RUNTIME_BOARD` | `ON`, `OFF` | `ON` for GA, GB, XT |
 | `FRANK_USB_HOST` | `native`, `pio`, `none` | PIO-USB where the board has it and the console is USB; the native port with a UART console; else none |
-| `FRANK_VIDEO_OUT` | `hdmi`, `vga`, `composite` | `hdmi` |
+| `FRANK_VIDEO_OUT` | `hdmi`, `vga`, `composite` (504 MHz only: [why](gotchas/composite-504-only.md)) | `hdmi` |
+| `FRANK_VGA_BACKEND` | `hstx` (DispHSTX, GPIO12-19), `pio` (any pins) | `hstx` where the ladder is on GPIO12-19, else `pio` |
 | `FRANK_HDMI_BACKEND` | `hstx`, `pio` | the board's (PIO is the only one off GPIO12-19) |
 | `FRANK_CPU_MHZ`, `FRANK_PSRAM_MHZ`, `FRANK_FLASH_MHZ`, `FRANK_*_RXDELAY` | | the board file's (tuned values) |
 
