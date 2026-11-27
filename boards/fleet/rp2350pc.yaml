@@ -6,7 +6,7 @@ name: Olimex RP2350pc
 slug: rp2350pc
 mcu: rp2350b
 role: single
-target: null
+target: OL
 caps:
 - CAP_PSRAM_QMI
 - CAP_SD

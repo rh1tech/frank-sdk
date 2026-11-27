@@ -15,6 +15,9 @@
 #if FRANK_USB_HOST
 #include "usbhid.h"
 #endif
+#if FRANK_NO_PS2   /* PIO-USB has PS/2's PIO (cmake/board.cmake) */
+#undef FRANK_HAS_PS2
+#endif
 #ifdef FRANK_HAS_PS2
 #include "ps2.h"
 extern bool ps2_set2_decode(uint8_t b, uint8_t *hid, bool *down);

@@ -23,9 +23,15 @@ video:
 sd: {mode: spi, spi: 0, clk: 6, cmd: 7, dat0: 4, dat3: 5}
 audio:
   i2s: {data: 23, bclk: 25, lrck: 26, mclk: 24, dac: TLV320DAC3100}   # MCLK recorded, never driven
+  # a PCM5122 DAC HAT on J1 (frank-lab frank_z0 netlist: pin 12 BCK GP30,
+  # pin 35 LRCK GP31, pin 40 DOUT GP27, pins 3/5 SDA/SCL GP10/11, the
+  # TLV320's I2C1 too). frank_audio takes it first when it answers at 0x4C.
+  hat: {data: 27, bclk: 30, lrck: 31, sda: 10, scl: 11, dac: PCM5122}
 i2c: {inst: 1, sda: 10, scl: 11, devices: {TLV320DAC3100: 0x18}}
 led: {plain: 20}        # LD2 blue; LD1 is power
 pio:
   video: 1
   i2s: 2
   pio_usb: 0
+shared:
+  - [i2c, audio.hat]   # the HAT's I2C is the codec's bus

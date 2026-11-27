@@ -10,11 +10,12 @@ hard-won lessons, and MCP servers that build, flash and check firmware on the be
 | `M1` | Murmulator 1.x + Pico 2 ("M1P2") | HDMI (PIO) | I2S, PWM, HDMI | USB, PS/2, NES |
 | `NX` + `SL` | FRANK Next, master + slave | HDMI (HSTX) | TLV320 (I2S), HDMI | USB (hub) |
 | `C2` + `SL` | FRANK Core 2 / 2U, master + slave (experimental: firmware need not support it) | HDMI (HSTX) | I2S, HDMI | USB |
-| `FZ` | FRANK Z0 | HDMI (HSTX) | TLV320 (I2S), HDMI | PIO-USB |
+| `FZ` | FRANK Z0 | HDMI (HSTX) | TLV320 (I2S), PCM5122 DAC HAT, HDMI | PIO-USB |
 | `FN` | FRANK Nano | HDMI (HSTX) | HDMI | PIO-USB |
-| `Z0` | Waveshare RP2350-PiZero | HDMI (PIO) | I2S module, PWM, HDMI | USB / PIO-USB, PS/2, NES |
+| `Z0` | Waveshare RP2350-PiZero | HDMI (PIO) | PCM5122 DAC HAT, I2S module, PWM, HDMI | USB / PIO-USB (PS/2 when not PIO-USB), NES |
 | `PC` | Olimex PICO-PC + Pico 2 | HDMI (HSTX), VGA | PWM, HDMI | USB, PS/2, NES |
 | `TW` | UKTailwind Pico Computer 3 | HDMI (HSTX) | PCM5102A (I2S), HDMI | USB (hub); PS/2, NES on its I/O header |
+| `OL` | Olimex RP2350pc (its own RP2350B; not the PICO-PC carrier) | HDMI (HSTX, its own pair order) | ES8311 (I2S), HDMI | USB (hub) |
 | `AF` | Adafruit Fruit Jam (not yet run here) | HDMI (HSTX) | TLV320 (I2S), HDMI | PIO-USB |
 | `GA`, `GB`, `XT` | any board of the package, found at run time (frank-test's images; XT = xt8086, no console) | the firmware's | the firmware's | the firmware's |
 | `HOST` | the desktop (SDL2): `cmake -S host -DAPP_DIR=...` | window | SDL | keyboard, mouse |

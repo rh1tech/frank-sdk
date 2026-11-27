@@ -342,6 +342,8 @@ target_sources(frank_audio INTERFACE
     ${FRANK_SDK_DIR}/drivers/audio/frank_audio.c
     ${FRANK_SDK_DIR}/drivers/audio/i2s.c
     ${FRANK_SDK_DIR}/drivers/audio/tlv320.c
+    ${FRANK_SDK_DIR}/drivers/audio/es8311.c
+    ${FRANK_SDK_DIR}/drivers/audio/pcm5122.c
 )
 target_include_directories(frank_audio INTERFACE ${FRANK_SDK_DIR}/drivers/audio/include ${FRANK_SDK_DIR}/drivers/audio)
 pico_generate_pio_header(frank_audio ${FRANK_SDK_DIR}/drivers/audio/audio_i2s.pio)
@@ -355,6 +357,9 @@ target_link_libraries(frank_rtc INTERFACE pico_stdlib hardware_i2c)
 
 # ---- input: USB host (native or PIO-USB), PS/2, NES pads (frank/input.h) ----
 add_library(frank_input INTERFACE)
+if(FRANK_NO_PS2)
+    target_compile_definitions(frank_input INTERFACE FRANK_NO_PS2=1)
+endif()
 target_sources(frank_input INTERFACE ${FRANK_SDK_DIR}/drivers/input/frank_input.c)
 target_include_directories(frank_input INTERFACE ${FRANK_SDK_DIR}/drivers/input/include)
 target_link_libraries(frank_input INTERFACE frank_platform hardware_pio hardware_clocks)

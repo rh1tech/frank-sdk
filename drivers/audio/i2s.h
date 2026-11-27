@@ -30,6 +30,9 @@ typedef struct {
     uint16_t *dma_buf;
     uint16_t dma_trans_count;
     uint8_t  volume;
+    bool     clk_swapped;   /* frank-sdk: LRCK on clock_pin_base, BCLK above it */
+    uint32_t clkdiv;        /* frank-sdk: the PIO divider in 8.8, 0 = from sample_freq (a codec
+                             * on MCLK wants it locked to MCLK's own divider) */
 } i2s_config_t;
 
 void i2s_init(i2s_config_t *config);

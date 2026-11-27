@@ -160,6 +160,8 @@ int frank_audio_init(frank_audio_out_t out, uint32_t rate) {
     return audio_out;
 }
 const char *frank_audio_name(void) { return audio_out < 0 ? "none" : "sdl"; }
+bool frank_audio_available(frank_audio_out_t out) { return out == FRANK_AUDIO_AUTO || out == FRANK_AUDIO_I2S; }
+int frank_audio_switch(frank_audio_out_t out, uint32_t rate) { return frank_audio_init(out, rate); }
 unsigned frank_audio_free(void) { return audio_out < 0 ? 0 : RING - (aw - ar); }
 uint32_t frank_audio_consumed(void) { return ar; }
 void frank_audio_set_volume(unsigned shift) { (void)shift; }

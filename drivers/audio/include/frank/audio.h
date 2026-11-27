@@ -31,10 +31,23 @@ typedef enum {
     FRANK_AUDIO_I2S = 1,
     FRANK_AUDIO_PWM = 2,
     FRANK_AUDIO_HDMI = 3,
+    /* the board's codec (TLV320DAC3100: Next, FRANK Z0, Fruit Jam) to one
+     * output only; FRANK_AUDIO_I2S drives both. The speaker is mono: L+R. */
+    FRANK_AUDIO_SPEAKER = 4,
+    FRANK_AUDIO_HEADPHONES = 5,
+    /* a PCM5122 DAC HAT on the Pi header (boards/<id>.yaml audio.hat) */
+    FRANK_AUDIO_HAT = 6,
 } frank_audio_out_t;
 
-/* Returns the output in use, or -1 if the board has none of the kind asked. */
+/* Can this board (this build) play through out? HAT: one answers on its I2C. */
+bool frank_audio_available(frank_audio_out_t out);
+
+/* Returns the output in use (the one asked, or what AUTO chose), or -1 if
+ * the board has none of the kind asked. */
 int frank_audio_init(frank_audio_out_t out, uint32_t sample_rate);
+/* The same at run time: stops the output that plays (its PIO, DMA, pins and
+ * interrupt given back) and starts out. Returns as frank_audio_init. */
+int frank_audio_switch(frank_audio_out_t out, uint32_t sample_rate);
 const char *frank_audio_name(void);
 
 /* Queue frames; returns how many fitted (FRANK_AUDIO_RING frames, 2048 default). */

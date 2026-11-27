@@ -555,6 +555,14 @@
  },
  "FZ": {
   "audio": {
+   "hat": {
+    "bclk": 30,
+    "dac": "PCM5122",
+    "data": 27,
+    "lrck": 31,
+    "scl": 11,
+    "sda": 10
+   },
    "i2s": {
     "bclk": 25,
     "dac": "TLV320DAC3100",
@@ -586,9 +594,11 @@
   },
   "gpio": {
    "10": [
+    "audio.hat",
     "i2c"
    ],
    "11": [
+    "audio.hat",
     "i2c"
    ],
    "12": [
@@ -635,6 +645,15 @@
    ],
    "26": [
     "audio.i2s"
+   ],
+   "27": [
+    "audio.hat"
+   ],
+   "30": [
+    "audio.hat"
+   ],
+   "31": [
+    "audio.hat"
    ],
    "4": [
     "sd"
@@ -696,6 +715,12 @@
    "mode": "spi",
    "spi": 0
   },
+  "shared": [
+   [
+    "i2c",
+    "audio.hat"
+   ]
+  ],
   "sources": [
    "frank-test core/board_table.c FRANK_BOARD_Z0 (netlist), boards/frank_z0.h"
   ],
@@ -1485,6 +1510,178 @@
    }
   }
  },
+ "OL": {
+  "audio": {
+   "i2s": {
+    "bclk": 30,
+    "dac": "ES8311",
+    "data": 31,
+    "lrck": 29,
+    "mclk": 23
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 1,
+    "tx": 0
+   }
+  },
+  "covers": [
+   "Olimex RP2350pc"
+  ],
+  "flash": {
+   "bytes": "16M"
+  },
+  "gpio": {
+   "0": [
+    "console.uart"
+   ],
+   "1": [
+    "console.uart"
+   ],
+   "10": [
+    "sd"
+   ],
+   "11": [
+    "sd"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "20": [
+    "gpio.hdmi_cec"
+   ],
+   "21": [
+    "gpio.hdmi_hpd"
+   ],
+   "22": [
+    "gpio.codec_power_off"
+   ],
+   "23": [
+    "audio.i2s"
+   ],
+   "24": [
+    "sd"
+   ],
+   "25": [
+    "led"
+   ],
+   "28": [
+    "gpio.codec_asdout"
+   ],
+   "29": [
+    "audio.i2s"
+   ],
+   "30": [
+    "audio.i2s"
+   ],
+   "31": [
+    "audio.i2s"
+   ],
+   "32": [
+    "i2c"
+   ],
+   "33": [
+    "i2c"
+   ],
+   "35": [
+    "gpio.amp_mute"
+   ],
+   "8": [
+    "psram"
+   ],
+   "9": [
+    "sd"
+   ]
+  },
+  "i2c": {
+   "devices": {
+    "ES8311": 24
+   },
+   "inst": 0,
+   "scl": 33,
+   "sda": 32
+  },
+  "id": "OL",
+  "led": {
+   "plain": 25
+  },
+  "mcu": "rp2350b",
+  "name": "Olimex RP2350pc",
+  "pio": {
+   "i2s": 0
+  },
+  "pio_gpio_base": {
+   "0": 0
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 8
+  },
+  "role": "single",
+  "sd": {
+   "clk": 10,
+   "cmd": 11,
+   "dat0": 24,
+   "dat3": 9,
+   "mode": "spi",
+   "spi": 1
+  },
+  "sources": [
+   "Olimex github.com/OLIMEX/RP2350pc HARDWARE/RP2350pc-Rev.A (schematic)",
+   "frank-test boards/fleet/rp2350pc.yaml (HDMI pair order, SD, ES8311, on hardware)",
+   "frank-dos (SD on SPI1)"
+  ],
+  "usb": {
+   "hub": true,
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 14,
+    "data": 12,
+    "invert_pairs": false,
+    "pairs": [
+     "D0+",
+     "CK+",
+     "D2+",
+     "D1+"
+    ],
+    "rgb_not_bgr": true
+   }
+  }
+ },
  "PC": {
   "audio": {
    "pwm": {
@@ -2025,6 +2222,14 @@
  },
  "Z0": {
   "audio": {
+   "hat": {
+    "bclk": 18,
+    "dac": "PCM5122",
+    "data": 21,
+    "lrck": 19,
+    "scl": 3,
+    "sda": 2
+   },
    "i2s": {
     "bclk": 11,
     "dac": "PCM5102A module",
@@ -2079,8 +2284,18 @@
     "audio.i2s",
     "audio.pwm"
    ],
+   "18": [
+    "audio.hat"
+   ],
+   "19": [
+    "audio.hat"
+   ],
    "2": [
+    "audio.hat",
     "ps2"
+   ],
+   "21": [
+    "audio.hat"
    ],
    "28": [
     "usb.pio_usb"
@@ -2089,6 +2304,7 @@
     "usb.pio_usb"
    ],
    "3": [
+    "audio.hat",
     "ps2"
    ],
    "30": [
@@ -2180,6 +2396,10 @@
    "spi": 1
   },
   "shared": [
+   [
+    "ps2",
+    "audio.hat"
+   ],
    [
     "console.uart",
     "ps2.mouse"

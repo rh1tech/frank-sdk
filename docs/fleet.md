@@ -20,5 +20,5 @@ frank-sdk build target it runs as, cross-checked pin for pin.
 | 11 | xt8086 | `xt8086` | rp2350b | single | — | auto | 10 |
 | 12 | FRANK ZX | `zx` | rp2350b | single | — | auto | 12 |
 | 13 | FRANK Z0 | `z0` | rp2350b | single | `FZ` | auto | 10 |
-| 14 | Olimex RP2350pc | `rp2350pc` | rp2350b | single | — | auto | 7 |
+| 14 | Olimex RP2350pc | `rp2350pc` | rp2350b | single | `OL` | auto | 7 |
 | 15 | FRANK Nano | `nano` | rp2350a | single | `FN` | auto | 6 |

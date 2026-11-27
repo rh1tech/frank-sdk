@@ -36,6 +36,11 @@ static bool wr(uint8_t reg, uint8_t val) {
 }
 
 bool tlv320_init(unsigned sda, unsigned scl) {
+    return tlv320_init_route(sda, scl, TLV320_HEADPHONES | TLV320_SPEAKER);
+}
+
+bool tlv320_init_route(unsigned sda, unsigned scl, unsigned route) {
+    const bool hp = route & TLV320_HEADPHONES, spk = route & TLV320_SPEAKER;
     bus = (sda / 2) & 1 ? i2c1 : i2c0;
     i2c_init(bus, 100 * 1000);
     gpio_set_function(sda, GPIO_FUNC_I2C);
@@ -66,24 +71,33 @@ bool tlv320_init(unsigned sda, unsigned scl) {
     /* page 1: the analogue side */
     ok = ok && wr(0x00, 1);
     ok = ok && wr(0x23, 0x44);          /* each DAC into its channel's mixer */
-    ok = ok && wr(0x21, 0x9E);          /* headphone de-pop: 1.53 ms, 3.9 ms steps */
-    ok = ok && wr(0x1F, 0xC4);          /* HPL, HPR on, 1.35 V common mode */
-    ok = ok && wr(0x24, 0x80);          /* left mixer -> HPL volume, 0 dB */
-    ok = ok && wr(0x25, 0x80);          /* right mixer -> HPR volume, 0 dB */
-    ok = ok && wr(0x26, 0x80);          /* left mixer -> Class-D volume, 0 dB */
-    ok = ok && wr(0x20, 0x80);          /* Class-D on */
+    if (hp) {
+        ok = ok && wr(0x21, 0x9E);      /* headphone de-pop: 1.53 ms, 3.9 ms steps */
+        ok = ok && wr(0x1F, 0xC4);      /* HPL, HPR on, 1.35 V common mode */
+        ok = ok && wr(0x24, 0x80);      /* left mixer -> HPL volume, 0 dB */
+        ok = ok && wr(0x25, 0x80);      /* right mixer -> HPR volume, 0 dB */
+    }
+    if (spk) {
+        ok = ok && wr(0x26, 0x80);      /* left mixer -> Class-D volume, 0 dB */
+        ok = ok && wr(0x20, 0x80);      /* Class-D on */
+    }
     sleep_ms(5);
-    ok = ok && wr(0x28, 0x06);          /* HPL 0 dB, unmuted */
-    ok = ok && wr(0x29, 0x06);          /* HPR 0 dB, unmuted */
-    ok = ok && wr(0x2A, 0x04);          /* Class-D 6 dB (its lowest), unmuted */
+    if (hp) {
+        ok = ok && wr(0x28, 0x06);      /* HPL 0 dB, unmuted */
+        ok = ok && wr(0x29, 0x06);      /* HPR 0 dB, unmuted */
+    }
+    if (spk) ok = ok && wr(0x2A, 0x04); /* Class-D 6 dB (its lowest), unmuted */
 
     /* page 0: the DACs on, unmuted last */
     ok = ok && wr(0x00, 0);
-    ok = ok && wr(0x3F, 0xD4);          /* both DACs on, left/right data */
+    /* both DACs on, left/right data; the speaker alone: the left DAC (L+R)/2 */
+    ok = ok && wr(0x3F, spk && !hp ? 0xF4 : 0xD4);
     ok = ok && wr(0x41, 0x00);          /* 0 dB */
     ok = ok && wr(0x42, 0x00);
     ok = ok && wr(0x40, 0x00);          /* unmute */
 
-    printf("TLV320: %s\n", ok ? "configured (headphones and speaker)" : "a write was not acknowledged");
+    printf("TLV320: %s\n", !ok ? "a write was not acknowledged"
+                            : hp && spk ? "configured (headphones and speaker)"
+                            : hp ? "configured (headphones)" : "configured (speaker, L+R)");
     return ok;
 }

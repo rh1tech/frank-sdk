@@ -95,9 +95,15 @@ void i2s_init(i2s_config_t *config) {
     config->sm = audio_sm;
 
     /* Load PIO program */
-    pio_program_offset = pio_add_program(audio_pio, &audio_i2s_program);
-    audio_i2s_program_init(audio_pio, audio_sm, pio_program_offset,
-                           config->data_pin, config->clock_pin_base);
+    if (config->clk_swapped) {
+        pio_program_offset = pio_add_program(audio_pio, &audio_i2s_clk_swapped_program);
+        audio_i2s_clk_swapped_program_init(audio_pio, audio_sm, pio_program_offset,
+                                           config->data_pin, config->clock_pin_base);
+    } else {
+        pio_program_offset = pio_add_program(audio_pio, &audio_i2s_program);
+        audio_i2s_program_init(audio_pio, audio_sm, pio_program_offset,
+                               config->data_pin, config->clock_pin_base);
+    }
 
     /* Drain the TX FIFO */
     pio_sm_clear_fifos(audio_pio, audio_sm);
@@ -107,7 +113,7 @@ void i2s_init(i2s_config_t *config) {
      * divider (8.8 fixed point) = sys_clk * 256 / (sample_rate * 64)
      *                            = sys_clk * 4 / sample_rate */
     uint32_t sys_clk = clock_get_hz(clk_sys);
-    uint32_t divider = sys_clk * 4 / config->sample_freq;
+    uint32_t divider = config->clkdiv ? config->clkdiv : sys_clk * 4 / config->sample_freq;
     uint32_t actual_rate = sys_clk * 4 / divider;  /* back-calculate for debug */
     printf("I2S clock: sys=%lu Hz, div=%lu.%lu, target=%lu Hz, actual~=%lu Hz\n",
            (unsigned long)sys_clk,
@@ -197,8 +203,10 @@ void i2s_deinit(i2s_config_t *config) {
     /* 2. Stop PIO state machine */
     pio_sm_set_enabled(audio_pio, audio_sm, false);
 
-    /* 3. Disable DMA IRQ */
+    /* 3. Disable DMA IRQ, and give its handler back: i2s_init installs it as
+     * the exclusive one, which asserts if it is still there (frank_audio_switch) */
     irq_set_enabled(AUDIO_DMA_IRQ, false);
+    irq_remove_handler(AUDIO_DMA_IRQ, audio_dma_irq_handler);
 
     /* 4. Abort and unclaim both DMA channels, clear IRQ flags */
     if (dma_channel_a >= 0) {
@@ -219,7 +227,8 @@ void i2s_deinit(i2s_config_t *config) {
 
     /* 5. Release PIO resources so subsequent i2s_init() can reclaim them */
     pio_sm_unclaim(audio_pio, audio_sm);
-    pio_remove_program(audio_pio, &audio_i2s_program, pio_program_offset);
+    pio_remove_program(audio_pio, config->clk_swapped ? &audio_i2s_clk_swapped_program : &audio_i2s_program,
+                       pio_program_offset);
 
     /* 6. Reset state variables */
     dma_buffers_free_mask = (1u << DMA_BUFFER_COUNT) - 1u;

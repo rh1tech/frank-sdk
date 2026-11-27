@@ -23,6 +23,19 @@
 #include "pico/stdlib.h"
 
 #include "i2s.h"
+/* a PCM5122 DAC HAT (boards/z0.yaml audio.hat): its I2C shares GPIO2/3 with
+ * PS/2's keyboard, so it is probed only in a build without PS/2 */
+#if defined(FRANK_HAS_AUDIO_HAT) && FRANK_AUDIO_HAT_DAC_PCM5122 && (!defined(FRANK_HAS_PS2) || FRANK_NO_PS2)
+#define USE_HAT 1
+#include "pcm5122.h"
+static bool on_hat;
+#else
+#define USE_HAT 0
+#endif
+#if FRANK_AUDIO_I2S_DAC_ES8311
+#include "es8311.h"
+#include "hardware/clocks.h"
+#endif
 #if FRANK_AUDIO_I2S_DAC_TLV320DAC3100
 #include "tlv320.h"
 #endif
@@ -84,6 +97,9 @@ static inline uint32_t __not_in_flash_func(ring_take)(void) {
 /* ---------------- I2S ---------------- */
 #ifdef FRANK_HAS_AUDIO_I2S
 static i2s_config_t i2s_cfg;
+#if FRANK_AUDIO_I2S_DAC_TLV320DAC3100
+static unsigned codec_route = TLV320_HEADPHONES | TLV320_SPEAKER;   /* FRANK_AUDIO_SPEAKER/_HEADPHONES pick one */
+#endif
 
 static void __not_in_flash_func(i2s_fill)(int idx, uint32_t *buf, uint32_t frames) {
     (void)idx;
@@ -95,7 +111,34 @@ static bool start_i2s(uint32_t rate) {
     i2s_cfg.sample_freq = rate;
     i2s_cfg.channel_count = 2;
     i2s_cfg.data_pin = FRANK_AUDIO_I2S_DATA;
+#if USE_HAT
+    if (on_hat) {   /* the HAT's own I2S pins, LRCK = BCLK + 1 */
+        i2s_cfg.data_pin = FRANK_AUDIO_HAT_DATA;
+        i2s_cfg.clock_pin_base = FRANK_AUDIO_HAT_BCLK;
+        i2s_cfg.pio = PIO_INSTANCE(FRANK_PIO_I2S);
+        i2s_cfg.dma_trans_count = 256;
+        i2s_init(&i2s_cfg);
+        i2s_set_fill_callback(i2s_fill);
+        i2s_start();
+        sleep_ms(20);   /* the DAC's PLL locks to BCK: set it up once BCK runs */
+        return pcm5122_init(FRANK_AUDIO_HAT_SDA, FRANK_AUDIO_HAT_SCL);
+    }
+#endif
+#if FRANK_AUDIO_I2S_LRCK + 1 == FRANK_AUDIO_I2S_BCLK
+    i2s_cfg.clock_pin_base = FRANK_AUDIO_I2S_LRCK;   /* LRCK below BCLK (the RP2350pc) */
+    i2s_cfg.clk_swapped = true;
+#else
     i2s_cfg.clock_pin_base = FRANK_AUDIO_I2S_BCLK;   /* LRCK = BCLK + 1 */
+#endif
+#if FRANK_AUDIO_I2S_DAC_ES8311
+    /* MCLK at 256 fs from clk_sys on its GPOUT pin, and the I2S clock the same
+     * divider times four: the two cannot drift. The rate is clk_sys / 256 /
+     * that whole divider: 49.2 kHz for 49716 at 504 MHz */
+    const uint32_t sys = clock_get_hz(clk_sys);
+    const uint32_t mdiv = (sys + 128u * rate) / (256u * rate);
+    clock_gpio_init(FRANK_AUDIO_I2S_MCLK, CLOCKS_CLK_GPOUT0_CTRL_AUXSRC_VALUE_CLK_SYS, (float)mdiv);
+    i2s_cfg.clkdiv = (mdiv * 4u) << 8;
+#endif
     i2s_cfg.pio = PIO_INSTANCE(FRANK_PIO_I2S);
     i2s_cfg.dma_trans_count = 256;
     i2s_init(&i2s_cfg);
@@ -110,7 +153,11 @@ static bool start_i2s(uint32_t rate) {
     gpio_put(FRANK_AUDIO_I2S_RESET, 1);
 #endif
     sleep_ms(20);   /* the codec's PLL locks to BCLK: set it up once the clocks run */
-    if (!tlv320_init(FRANK_I2C_SDA, FRANK_I2C_SCL)) return false;
+    if (!tlv320_init_route(FRANK_I2C_SDA, FRANK_I2C_SCL, codec_route)) return false;
+#endif
+#if FRANK_AUDIO_I2S_DAC_ES8311
+    sleep_ms(5);    /* the clocks running before the codec is told what it gets */
+    if (!es8311_init(FRANK_I2C_SDA, FRANK_I2C_SCL)) return false;
 #endif
     return true;
 }
@@ -199,6 +246,22 @@ static bool start_pwm(uint32_t rate) {
     hw_set_bits(&pwm_hw->en, mask);   /* only ours: pwm_set_mask_enabled would stop other slices */
     return true;
 }
+
+static void stop_pwm(void) {
+    uint32_t mask = 0;
+    for (int s = 0; s < pwm_nslices; s++) mask |= 1u << pwm_slice[s];
+    hw_clear_bits(&pwm_hw->en, mask);
+    for (int s = 0; s < pwm_nslices; s++)
+        for (int h = 0; h < 2; h++) {
+            dma_channel_set_irq1_enabled(pwm_dma[s][h], false);
+            dma_channel_abort(pwm_dma[s][h]);
+            dma_hw->ints1 = 1u << pwm_dma[s][h];
+            dma_channel_unclaim(pwm_dma[s][h]);
+        }
+    irq_remove_handler(DMA_IRQ_1, pwm_dma_irq);
+    gpio_deinit(FRANK_AUDIO_PWM_LEFT);
+    gpio_deinit(FRANK_AUDIO_PWM_RIGHT);
+}
 #endif
 
 /* ---------------- HDMI ---------------- */
@@ -209,8 +272,57 @@ unsigned frank_audio_write(const uint32_t *frames, unsigned n) {
     return ring_write(frames, n);
 }
 
+static int asked_kind = -1;   /* what frank_audio_init returned: SPEAKER, HAT... */
+
+bool frank_audio_available(frank_audio_out_t out) {
+    switch (out) {
+    case FRANK_AUDIO_AUTO: return true;
+#ifdef FRANK_HAS_AUDIO_I2S
+    case FRANK_AUDIO_I2S: return true;
+#endif
+#ifdef FRANK_HAS_AUDIO_PWM
+    case FRANK_AUDIO_PWM: return true;
+#endif
+    case FRANK_AUDIO_HDMI: return frank_hdmi_audio_write != 0;
+#if defined(FRANK_HAS_AUDIO_I2S) && FRANK_AUDIO_I2S_DAC_TLV320DAC3100
+    case FRANK_AUDIO_SPEAKER:
+    case FRANK_AUDIO_HEADPHONES: return true;
+#endif
+#if USE_HAT
+    case FRANK_AUDIO_HAT: return pcm5122_detect(FRANK_AUDIO_HAT_SDA, FRANK_AUDIO_HAT_SCL);
+#endif
+    default: return false;
+    }
+}
+
+int frank_audio_switch(frank_audio_out_t out, uint32_t rate) {
+    switch (out_kind) {
+#ifdef FRANK_HAS_AUDIO_I2S
+    case FRANK_AUDIO_I2S: i2s_deinit(&i2s_cfg); break;
+#endif
+#ifdef FRANK_HAS_AUDIO_PWM
+    case FRANK_AUDIO_PWM: stop_pwm(); break;
+#endif
+    default: break;   /* HDMI: the video keeps its ring; nothing feeds it now */
+    }
+#if USE_HAT
+    on_hat = false;
+#endif
+#if defined(FRANK_HAS_AUDIO_I2S) && FRANK_AUDIO_I2S_DAC_TLV320DAC3100
+    codec_route = TLV320_HEADPHONES | TLV320_SPEAKER;
+#endif
+    out_kind = asked_kind = -1;
+    ring_r = ring_w;   /* what the old output had left */
+    return frank_audio_init(out, rate);
+}
+
 const char *frank_audio_name(void) {
     static const char *names[] = {"none", "i2s", "pwm", "hdmi"};
+    if (out_kind >= 0 && asked_kind == FRANK_AUDIO_SPEAKER) return "speaker";
+    if (out_kind >= 0 && asked_kind == FRANK_AUDIO_HEADPHONES) return "headphones";
+#if USE_HAT
+    if (on_hat && out_kind == FRANK_AUDIO_I2S) return "pcm5122";
+#endif
     return out_kind < 0 ? names[0] : names[out_kind];
 }
 
@@ -219,6 +331,37 @@ const char *frank_audio_name(void) {
 extern int testPins(uint32_t pin0, uint32_t pin1);
 
 int frank_audio_init(frank_audio_out_t out, uint32_t rate) {
+    const frank_audio_out_t asked = out;
+    /* the codec to one output, or the HAT: all I2S underneath */
+    if (out == FRANK_AUDIO_SPEAKER || out == FRANK_AUDIO_HEADPHONES) {
+#if defined(FRANK_HAS_AUDIO_I2S) && FRANK_AUDIO_I2S_DAC_TLV320DAC3100
+        codec_route = out == FRANK_AUDIO_SPEAKER ? TLV320_SPEAKER : TLV320_HEADPHONES;
+        out = FRANK_AUDIO_I2S;
+#else
+        printf("audio: no codec with a speaker/headphone choice on this board\n");
+        return -1;
+#endif
+    }
+    if (out == FRANK_AUDIO_HAT) {
+#if USE_HAT
+        if (!pcm5122_detect(FRANK_AUDIO_HAT_SDA, FRANK_AUDIO_HAT_SCL)) {
+            printf("audio: no PCM5122 HAT answers\n");
+            return -1;
+        }
+        on_hat = true;
+        out = FRANK_AUDIO_I2S;
+#else
+        printf("audio: no HAT on this board (or PS/2 holds its I2C pins)\n");
+        return -1;
+#endif
+    }
+#if USE_HAT
+    /* the HAT first: it is a choice someone made by plugging it in */
+    if (out == FRANK_AUDIO_AUTO && pcm5122_detect(FRANK_AUDIO_HAT_SDA, FRANK_AUDIO_HAT_SCL)) {
+        on_hat = true;
+        out = FRANK_AUDIO_I2S;
+    }
+#endif
     if (out == FRANK_AUDIO_AUTO) {
 #if defined(FRANK_HAS_AUDIO_I2S) && defined(FRANK_HAS_AUDIO_PWM)
         gpio_init(FRANK_AUDIO_I2S_DATA);
@@ -253,6 +396,10 @@ int frank_audio_init(frank_audio_out_t out, uint32_t rate) {
     default: break;
     }
     out_kind = ok ? (int)out : -1;
+    asked_kind = ok ? (int)(asked == FRANK_AUDIO_AUTO ? out : asked) : -1;
+#if USE_HAT
+    if (ok && on_hat) asked_kind = FRANK_AUDIO_HAT;
+#endif
     printf("audio: %s at %lu Hz\n", ok ? frank_audio_name() : "no such output on this board", (unsigned long)rate);
-    return out_kind;
+    return asked_kind;
 }

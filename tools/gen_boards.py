@@ -277,6 +277,18 @@ def header(b, bases):
         if k in META or k in ("clocks", "flash", "console"):
             continue
         flatten([k], v, out)
+    # video.hdmi.pairs: what each GPIO pair from the base carries, in pin order:
+    # CK, D0, D1, D2 (D0 blue, D2 red), "+" P first, "-" N first (frank-test's
+    # hdmi_pairs). Without it the FRANK order: clock first, D0..D2, N first.
+    pairs = b.get("video", {}).get("hdmi", {}).get("pairs")
+    if pairs:
+        if len(pairs) != 4 or sorted(x[:2] for x in pairs) != ["CK", "D0", "D1", "D2"] or \
+                any(x[2:] not in ("+", "-") for x in pairs):
+            raise BoardError(f"{b['id']}: video.hdmi.pairs must name CK, D0, D1, D2 once each, + or -")
+        out.append(("FRANK_VIDEO_HDMI_HAS_PAIRS", "1"))
+        for i, x in enumerate(pairs):
+            out.append((f"FRANK_VIDEO_HDMI_PAIR{i}_LANE", "3" if x[:2] == "CK" else x[1]))
+            out.append((f"FRANK_VIDEO_HDMI_PAIR{i}_PFIRST", "1" if x[2] == "+" else "0"))
     ps = b.get("psram", {})
     out = [(m, v) for m, v in out if not m.startswith("FRANK_PSRAM_BYTES")]
     if ps:

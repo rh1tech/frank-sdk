@@ -92,6 +92,16 @@ set_property(CACHE FRANK_USB_HOST PROPERTY STRINGS native pio none)
 if(FRANK_USB_HOST STREQUAL "native" AND FRANK_CONSOLE STREQUAL "usb")
     message(FATAL_ERROR "frank-sdk: the native USB port cannot be the host and the console: FRANK_CONSOLE=uart, or FRANK_USB_HOST=pio")
 endif()
+# PIO-USB takes a whole PIO: where the board gives it PS/2's instance
+# (boards/z0.yaml: "pio_usb: 1, only when PS/2 is compiled out"), a PIO-USB
+# build has no PS/2 (frank-test's FRANK_NO_PS2). With both, PIO-USB found no
+# room and no USB keyboard worked (frank-idtech1 on the Waveshare PiZero).
+_frank_board_get(_pio_ps2 pio ps2)
+if(FRANK_USB_HOST STREQUAL "pio" AND FRANK_BOARD_HAS_PS2 AND NOT _pio_ps2 STREQUAL "" AND _pio_ps2 STREQUAL FRANK_BOARD_PIO_PIO_USB)
+    set(FRANK_BOARD_HAS_PS2 OFF)
+    set(FRANK_NO_PS2 ON)
+    message(STATUS "frank-sdk: PIO-USB takes PIO${_pio_ps2}, PS/2's: no PS/2 in this build")
+endif()
 if(FRANK_USB_HOST STREQUAL "pio")
     if(NOT FRANK_BOARD_PIO_USB_DP)
         message(FATAL_ERROR "frank-sdk: ${FRANK_BOARD} has no PIO-USB pins (boards/*.yaml usb.pio_usb_dp)")

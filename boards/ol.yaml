@@ -1,0 +1,44 @@
+# Olimex RP2350pc: Olimex's own RP2350B board, not a FRANK, nor the PICO-PC
+# carrier (boards/pc.yaml). Pins from frank-test's fleet entry
+# (boards/fleet/rp2350pc.yaml, proved on the board 2026-11-27), from Olimex's
+# Rev. A schematic.
+id: OL
+name: Olimex RP2350pc
+covers: [Olimex RP2350pc]
+mcu: rp2350b
+role: single
+sources:
+  - Olimex github.com/OLIMEX/RP2350pc HARDWARE/RP2350pc-Rev.A (schematic)
+  - frank-test boards/fleet/rp2350pc.yaml (HDMI pair order, SD, ES8311, on hardware)
+  - frank-dos (SD on SPI1)
+flash: {bytes: 16M}
+psram: {cs: 8, bytes: 8M}
+clocks:
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb
+  uart: {inst: 0, tx: 0, rx: 1}
+usb: {native: host, hub: true}   # the native port behind a hub (four sockets)
+video:
+  # GP12/13 D0, GP14/15 the clock, GP16/17 D2, GP18/19 D1, each P first. With
+  # the FRANK order HSTX ran and no monitor locked.
+  hdmi: {backend: hstx, base: 12, clk: 14, data: 12, rgb_not_bgr: true, invert_pairs: false,
+         pairs: [D0+, CK+, D2+, D1+]}
+sd: {mode: spi, spi: 1, clk: 10, cmd: 11, dat0: 24, dat3: 9}
+audio:
+  # an Everest ES8311, mono, slave on MCLK (GP23, GPOUT1) at 256 fs; LRCK
+  # GP29 below BCLK GP30. PWM (GP26/27 through 270R) reaches the same jack.
+  i2s: {data: 31, bclk: 30, lrck: 29, mclk: 23, dac: ES8311}
+i2c: {inst: 0, sda: 32, scl: 33, devices: {ES8311: 0x18}}   # and the HDMI DDC
+led: {plain: 25}
+gpio:
+  codec_asdout: 28      # the ES8311's ADC output
+  codec_power_off: 22   # low turns the codec's regulator off (4.7K up)
+  amp_mute: 35          # high turns T4 on: the PAM8003 off
+  hdmi_cec: 20
+  hdmi_hpd: 21
+pio:
+  i2s: 0

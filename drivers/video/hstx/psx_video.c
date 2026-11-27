@@ -71,7 +71,9 @@ static uint32_t mode_resync_us;
 // HSTX pins (M2 layout): 12=CLK-, 13=CLK+, 14/15=D0, 16/17=D1, 18/19=D2.
 // frank-sdk: every HSTX board has this layout; the board file must agree.
 #define PSXV_PIN_BASE FRANK_VIDEO_HDMI_BASE
-#if FRANK_VIDEO_HDMI_BASE != 12 || FRANK_VIDEO_HDMI_CLK != 12 || FRANK_VIDEO_HDMI_DATA != 14 || \
+#if FRANK_VIDEO_HDMI_HAS_PAIRS
+/* the board lists its pair order (video.hdmi.pairs) */
+#elif FRANK_VIDEO_HDMI_BASE != 12 || FRANK_VIDEO_HDMI_CLK != 12 || FRANK_VIDEO_HDMI_DATA != 14 || \
     !FRANK_VIDEO_HDMI_INVERT_PAIRS
 #error "psx_video: HSTX lanes are wired for the M2 layout (clock GPIO12-13 inverted, data 14-19)"
 #endif
@@ -724,6 +726,21 @@ void psxv_start(void)
     hstx_ctrl_hw->csr = HSTX_CTRL_CSR_EXPAND_EN_BITS | (uint32_t)MODE_HSTX_CSR_CLKDIV << HSTX_CTRL_CSR_CLKDIV_LSB |
                         5U << HSTX_CTRL_CSR_N_SHIFTS_LSB | 2U << HSTX_CTRL_CSR_SHIFT_LSB | HSTX_CTRL_CSR_EN_BITS;
 
+#if FRANK_VIDEO_HDMI_HAS_PAIRS
+    /* the board's own order (video.hdmi.pairs): per GPIO pair from the base, a
+     * TMDS lane (0..2) or the clock (3), P on the first pin or on the second */
+    static const uint8_t pair_lane[4] = {FRANK_VIDEO_HDMI_PAIR0_LANE, FRANK_VIDEO_HDMI_PAIR1_LANE,
+                                         FRANK_VIDEO_HDMI_PAIR2_LANE, FRANK_VIDEO_HDMI_PAIR3_LANE};
+    static const uint8_t pair_pfirst[4] = {FRANK_VIDEO_HDMI_PAIR0_PFIRST, FRANK_VIDEO_HDMI_PAIR1_PFIRST,
+                                           FRANK_VIDEO_HDMI_PAIR2_PFIRST, FRANK_VIDEO_HDMI_PAIR3_PFIRST};
+    for (uint pair = 0; pair < 4; ++pair) {
+        const uint lane = pair_lane[pair];
+        const uint32_t sel = lane == 3 ? HSTX_CTRL_BIT0_CLK_BITS
+                                       : (lane * 10) << HSTX_CTRL_BIT0_SEL_P_LSB | (lane * 10 + 1) << HSTX_CTRL_BIT0_SEL_N_LSB;
+        hstx_ctrl_hw->bit[pair * 2] = sel | (pair_pfirst[pair] ? 0 : HSTX_CTRL_BIT0_INV_BITS);
+        hstx_ctrl_hw->bit[pair * 2 + 1] = sel | (pair_pfirst[pair] ? HSTX_CTRL_BIT0_INV_BITS : 0);
+    }
+#else
     hstx_ctrl_hw->bit[0] = HSTX_CTRL_BIT0_CLK_BITS | HSTX_CTRL_BIT0_INV_BITS;
     hstx_ctrl_hw->bit[1] = HSTX_CTRL_BIT0_CLK_BITS;
     for (uint pair = 0; pair < 3; ++pair) {
@@ -740,6 +757,7 @@ void psxv_start(void)
         hstx_ctrl_hw->bit[bit] = lane_data_sel_bits | HSTX_CTRL_BIT0_INV_BITS;
         hstx_ctrl_hw->bit[bit + 1] = lane_data_sel_bits;
     }
+#endif
 
     // Set GPIO 12-19 to HSTX function (function 0 on RP2350)
     for (int i = PSXV_PIN_BASE; i < PSXV_PIN_BASE + 8; ++i)

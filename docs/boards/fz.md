@@ -19,8 +19,8 @@ Generated from [`boards/fz.yaml`](../../boards/fz.yaml) by `tools/gen_boards.py`
 | 7 | sd |
 | 8 | console.uart |
 | 9 | console.uart |
-| 10 | i2c |
-| 11 | i2c |
+| 10 | audio.hat / i2c |
+| 11 | audio.hat / i2c |
 | 12 | video.hdmi |
 | 13 | video.hdmi |
 | 14 | video.hdmi |
@@ -36,6 +36,11 @@ Generated from [`boards/fz.yaml`](../../boards/fz.yaml) by `tools/gen_boards.py`
 | 24 | audio.i2s |
 | 25 | audio.i2s |
 | 26 | audio.i2s |
+| 27 | audio.hat |
+| 30 | audio.hat |
+| 31 | audio.hat |
 | 47 | psram |
+
+Shared (a build uses one of each group): i2c vs audio.hat
 
 Sources: frank-test core/board_table.c FRANK_BOARD_Z0 (netlist), boards/frank_z0.h

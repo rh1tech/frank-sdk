@@ -42,6 +42,27 @@ bitloop0:
 public entry_point:
     set x, 14         side 0b11
 
+; frank-sdk: the same with the two clocks the other way up, LRCLK on the
+; side-set base and BCLK above it (the Olimex RP2350pc: LRCK GP29, BCLK GP30;
+; frank-test's audio_i2s_clk_swapped). Each side-set value's two bits exchanged.
+.program audio_i2s_clk_swapped
+.side_set 2
+
+                    ;        /--- BCLK
+                    ;        |/-- LRCLK
+bitloop1:           ;        ||
+    out pins, 1       side 0b01
+    jmp x-- bitloop1  side 0b11
+    out pins, 1       side 0b00
+    set x, 14         side 0b10
+
+bitloop0:
+    out pins, 1       side 0b00
+    jmp x-- bitloop0  side 0b10
+    out pins, 1       side 0b01
+public entry_point:
+    set x, 14         side 0b11
+
 % c-sdk {
 
 static inline void audio_i2s_program_init(PIO pio, uint sm, uint offset, uint data_pin, uint clock_pin_base) {
@@ -58,6 +79,23 @@ static inline void audio_i2s_program_init(PIO pio, uint sm, uint offset, uint da
     pio_sm_set_pins(pio, sm, 0); // clear pins
 
     pio_sm_exec(pio, sm, pio_encode_jmp(offset + audio_i2s_offset_entry_point));
+}
+
+/* the same with LRCLK on clock_pin_base and BCLK above it */
+static inline void audio_i2s_clk_swapped_program_init(PIO pio, uint sm, uint offset, uint data_pin, uint clock_pin_base) {
+    pio_sm_config sm_config = audio_i2s_clk_swapped_program_get_default_config(offset);
+
+    sm_config_set_out_pins(&sm_config, data_pin, 1);
+    sm_config_set_sideset_pins(&sm_config, clock_pin_base);
+    sm_config_set_out_shift(&sm_config, false, true, 32);
+
+    pio_sm_init(pio, sm, offset, &sm_config);
+
+    uint pin_mask = (1u << data_pin) | (3u << clock_pin_base);
+    pio_sm_set_pindirs_with_mask(pio, sm, pin_mask, pin_mask);
+    pio_sm_set_pins(pio, sm, 0); // clear pins
+
+    pio_sm_exec(pio, sm, pio_encode_jmp(offset + audio_i2s_clk_swapped_offset_entry_point));
 }
 
 %}

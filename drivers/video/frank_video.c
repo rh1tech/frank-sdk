@@ -6,6 +6,7 @@
  */
 #include "frank/video.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "pico.h"
@@ -253,7 +254,19 @@ static void __not_in_flash_func(audio_src)(uint32_t frames[4]) {
     for (int i = 0; i < 4; i++) frames[i] = ring_take();
 }
 
+extern volatile uint32_t psxv_late, psxv_fifo_low, psxv_resyncs;
+/* "~C video~": a dropout on the sink is a resync here (a line IRQ serviced
+ * too late broke the ping-pong; rebuilt from the next frame) */
+static void cmd_video(const char *args) {
+    (void)args;
+    printf("video: hstx, frame %lu, late IRQs %lu, FIFO found empty %lu, resyncs %lu\n",
+           (unsigned long)psxv_frame_count, (unsigned long)psxv_late, (unsigned long)psxv_fifo_low,
+           (unsigned long)psxv_resyncs);
+}
+
 void frank_video_init(void) {
+    extern void frank_console_add(const char *name, void (*fn)(const char *), const char *help);
+    frank_console_add("video", cmd_video, "the HDMI counters: frames, late line IRQs, empty FIFO, resyncs");
     psxv_init();
     psxv_set_mode(640, 480);
     psxv_set_line_callback(on_line);

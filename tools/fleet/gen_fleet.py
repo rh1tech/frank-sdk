@@ -97,7 +97,10 @@ def target_pins(t: dict, fleet_mcu: str) -> dict[str, int]:
     a = t.get("audio", {})
     if a.get("i2s"):
         put("i2s_data", a["i2s"]["data"])
-        put("i2s_clk_base", a["i2s"]["bclk"])
+        # the side-set base: BCLK, or LRCK when it sits below BCLK (clocks swapped)
+        i2s = a["i2s"]
+        swapped = i2s.get("lrck") is not None and i2s["lrck"] + 1 == i2s["bclk"]
+        put("i2s_clk_base", i2s["lrck"] if swapped else i2s["bclk"])
         put("i2s_mclk", a["i2s"].get("mclk"))
     if a.get("pwm"):
         put("pwm_l", a["pwm"].get("left"))
