@@ -29,6 +29,8 @@ caps:
 - CAP_TAPE_IN
 - CAP_ESP01
 - CAP_LED_PLAIN
+- CAP_I2C
+- CAP_RTC_DS3231
 pico_socket: false
 module_memory: true
 pins:
@@ -53,6 +55,8 @@ pins:
   pad_d1: 26
   pad_d2: 27
   tape_in: 22
+  i2c_sda: 28
+  i2c_scl: 29
 video_default: auto
 i2s_lr_swapped: false
 signature_name: sig_frank_pga
@@ -63,8 +67,8 @@ signature:
   3: high
   23: float
   24: float
-  28: float
-  29: float
+  28: dontcare
+  29: dontcare
   30: float
   47: high
 flash_bytes: 0
@@ -82,7 +86,14 @@ signature_inline_notes:
   oldskoolfrank — which brings its ESP-01S strapping pins back here
   through 1K. Everything above is now identical on the two: see
   sig_oldskoolfrank for why GP0-3 stopped being a discriminator.
-- no I2C
+- |-
+  GP28/29: don't care. They were "float, no I2C"; the current frank_pga
+  (frank-lab, same nets in frank_pga_4layer) has a DS3231MZ (U14) there
+  with 4.7K pull-ups, so they read high, and detection, finding the
+  DS3231 at 0x68 on a board that declared none, called a FRANK PGA
+  MegaFRANK (2026-11-27). Don't care rather than high: a PGA without the
+  RTC still matches. GP30 (MegaFRANK's 1-Wire, pulled up) and GP23/24
+  (OldSkoolFRANK's pull-ups) keep the three apart.
 - no 1-Wire
 - |-
   The PGA2350's own PSRAM chip select, pulled up inside the module.

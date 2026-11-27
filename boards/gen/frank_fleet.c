@@ -30,7 +30,13 @@ static const pinsig_entry_t sig_frank_pga[] = {
      * oldskoolfrank — which brings its ESP-01S strapping pins back here
      * through 1K. Everything above is now identical on the two: see
      * sig_oldskoolfrank for why GP0-3 stopped being a discriminator. */
-    /* no I2C */
+    /* GP28/29: don't care. They were "float, no I2C"; the current frank_pga
+     * (frank-lab, same nets in frank_pga_4layer) has a DS3231MZ (U14) there
+     * with 4.7K pull-ups, so they read high, and detection, finding the
+     * DS3231 at 0x68 on a board that declared none, called a FRANK PGA
+     * MegaFRANK (2026-11-27). Don't care rather than high: a PGA without the
+     * RTC still matches. GP30 (MegaFRANK's 1-Wire, pulled up) and GP23/24
+     * (OldSkoolFRANK's pull-ups) keep the three apart. */
     /* no 1-Wire */
     /* The PGA2350's own PSRAM chip select, pulled up inside the module.
      * This said FLOAT on the reasoning that the carrier fits no PSRAM,
@@ -43,8 +49,8 @@ static const pinsig_entry_t sig_frank_pga[] = {
     { 3, PINSIG_HIGH },
     { 23, PINSIG_FLOAT },
     { 24, PINSIG_FLOAT },
-    { 28, PINSIG_FLOAT },
-    { 29, PINSIG_FLOAT },
+    { 28, PINSIG_DONTCARE },
+    { 29, PINSIG_DONTCARE },
     { 30, PINSIG_FLOAT },
     { 47, PINSIG_HIGH },
 };
@@ -534,7 +540,7 @@ const frank_board_desc_t frank_board_table[] = {
      * on GP47. Not pico_socket: a PGA2350 exposes all 48 GPIOs. */
     .id = FRANK_BOARD_FRANK_PGA, .name = "FRANK PGA", .slug = "pga",
     .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_SINGLE,
-    .caps = CAP_SD | CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_VIDEO_COMPOSITE | CAP_AUDIO_I2S | CAP_AUDIO_AMP | CAP_AUDIO_MUX | CAP_USB_DEVICE | CAP_USB_HOST | CAP_USB_HUB | CAP_USB_MUX | CAP_PS2 | CAP_GAMEPAD_NES | CAP_TAPE_IN | CAP_ESP01 | CAP_LED_PLAIN,
+    .caps = CAP_SD | CAP_VIDEO_HDMI | CAP_VIDEO_VGA | CAP_VIDEO_COMPOSITE | CAP_AUDIO_I2S | CAP_AUDIO_AMP | CAP_AUDIO_MUX | CAP_USB_DEVICE | CAP_USB_HOST | CAP_USB_HUB | CAP_USB_MUX | CAP_PS2 | CAP_GAMEPAD_NES | CAP_TAPE_IN | CAP_ESP01 | CAP_LED_PLAIN | CAP_I2C | CAP_RTC_DS3231,
     .pico_socket = false, .module_memory = true,
     .pins = {
         .uart_tx = 0, .uart_rx = 1, .ps2_kb_clk = 2, .ps2_kb_dat = 3,
@@ -546,7 +552,7 @@ const frank_board_desc_t frank_board_table[] = {
         .led_ws2812 = PIN_NC, .led_plain = 25, .esp_uart_tx = 38, .esp_uart_rx = 39,
         .esp_reset = PIN_NC, .esp_gpio0 = PIN_NC, .esp_gpio2 = PIN_NC, .pad_latch = 21,
         .pad_clk = 20, .pad_d1 = 26, .pad_d2 = 27, .tape_in = 22,
-        .i2c_sda = PIN_NC, .i2c_scl = PIN_NC, .onewire = PIN_NC, .pio_usb_dp = PIN_NC,
+        .i2c_sda = 28, .i2c_scl = 29, .onewire = PIN_NC, .pio_usb_dp = PIN_NC,
         .ay_rclk = PIN_NC, .ay_srclk = PIN_NC, .ay_ser = PIN_NC, .dip = PIN_NC,
         .kbd_col_base = PIN_NC, .kbd_row_base = PIN_NC, .kbd_col_len = 0, .kbd_row_len = 0,
         .host_bus_base = PIN_NC, .host_bus_len = 0, .host_clk = PIN_NC, .host_reset = PIN_NC,
