@@ -1,0 +1,58 @@
+# FRANK Nano: frank-test's run-time descriptor. From frank-lab frank_nano's
+# netlist and frank-sdk's FN target.
+order: 15
+id: FRANK_BOARD_NANO
+name: FRANK Nano
+slug: nano
+mcu: rp2350a
+role: single
+target: FN
+caps:
+- CAP_PSRAM_QMI
+- CAP_SD
+- CAP_VIDEO_HDMI
+- CAP_USB_DEVICE
+- CAP_USB_HOST
+- CAP_PIO_USB
+- CAP_LED_PLAIN
+pico_socket: false
+module_memory: false
+pins:
+  sd_dat0: 4
+  sd_cs: 5
+  sd_clk: 6
+  sd_cmd: 7
+  video_base: 12
+  psram_cs: 8
+  pio_usb_dp: 20
+  led_plain: 25
+video_default: auto
+i2s_lr_swapped: false
+signature_name: sig_nano
+signature:
+  0: float
+  2: float
+  3: float
+  8: high
+  20: float
+  26: float
+flash_bytes: 16777216
+psram_bytes: 8388608
+manual_note: null
+notes: |-
+  HDMI, the microSD, 8 MB of PSRAM on GP8, the LED, and a USB-A host on
+  PIO-USB (D+ GP20, D- GP21, 22R each, a USBLC6 and nothing else). The
+  native USB-C is a device only, and there is no UART header, no audio, no
+  I2C: GP0-3, 9-11, 22-24 and 26-29 go nowhere.
+
+  Its signature is microFRANK's, which reads the same everywhere detection
+  can see and is no longer made: microFRANK keeps its descriptor without a
+  signature, to be picked by hand. A full-speed device plugged into the
+  USB-A port at boot pulls GP20 up and the Nano then reads as zeroFRANK
+  (a low-speed keyboard pulls GP21, which is not in the signature).
+
+  frank-test's nano image (frank_fn) runs the host on PIO-USB, the native
+  port being the USB console.
+signature_inline_notes:
+- the PSRAM's chip select, 10K
+- PIO-USB D+, no pull of its own

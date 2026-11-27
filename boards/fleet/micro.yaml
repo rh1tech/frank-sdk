@@ -33,14 +33,13 @@ pins:
   led_plain: 25
 video_default: auto
 i2s_lr_swapped: false
-signature_name: sig_microfrank
-signature:
-  0: float
-  2: float
-  3: float
-  8: high
-  20: float
-  26: float
+# No signature since 2026-11-27: never autodetected, chosen by hand (Board >
+# Set Board). FRANK Nano reads the same on every pin detection can see (its
+# signature is the one this board had: GP0, 2, 3, 20, 26 floating, GP8's
+# PSRAM pull-up) and the same flash and PSRAM, and microFRANK is not made
+# any more, so the Nano takes the pattern.
+signature_name: null
+signature: {}
 flash_bytes: 16777216
 psram_bytes: 8388608
 manual_note: S1 selects the USB mux (device vs host).

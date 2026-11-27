@@ -67,6 +67,8 @@ typedef enum {
     FRANK_BOARD_Z0,               /* RP2350B, TLV320, PIO-USB, Pi header*/
     /* Last for the same reason. Not a FRANK board: Olimex's own. */
     FRANK_BOARD_OLIMEX_RP2350PC,  /* RP2350B, 4x USB host, HDMI, codec */
+    /* Last for the same reason. */
+    FRANK_BOARD_NANO,             /* RP2350A, HDMI, SD, PIO-USB host    */
 
     FRANK_BOARD_COUNT
 } frank_board_id_t;

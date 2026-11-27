@@ -70,95 +70,6 @@ static const pinsig_entry_t sig_megafrank[] = {
     { 47, PINSIG_HIGH },
 };
 
-/* FRANK universal test firmware
- *
- * Copyright (c) 2026 Mikhail Matveev <xtreme@rh1.tech>
- * https://github.com/rh1tech/frank-test
- * SPDX-License-Identifier: GPL-3.0-or-later
- *
- * board_table.c — the descriptors.
- *
- * Source of truth: the KiCad netlists, exported with
- *
- *     kicad-cli sch export netlist --format kicadsexpr -o b.net b.kicad_sch
- *
- * and joined pin-to-net by tools/parse.py + tools/gpio2.py. docs/pinouts.txt
- * is that output; every number below can be found in it. Do not "tidy" a
- * pin here without regenerating that file — the whole point of the
- * generator is that the table cannot quietly drift from the schematic.
- *
- * Three findings from the extraction are worth stating up front, because
- * they contradict what the board diagrams suggest:
- *
- *  1. GP22 is the tape input on every board that has one, except the
- *     Core 2U revision (GP45), frank_next (GP44, and a BC850 doing the
- *     squaring rather than a CD4069) and frank_zx (GP44, CD4069).
- *     On frank, megafrank and minifrank the CD4069 output does
- *     not reach the MCU directly — a config switch bridges it onto GP22
- *     (JP1 6<->7, S1 9<->3, S2 1<->4 respectively). The pin is therefore
- *     only the tape input when the operator has closed that switch, which
- *     is what CAP_TAPE_DIP_GATED records.
- *
- *  2. Every audio mux, USB mux and amplifier-shutdown line in the fleet
- *     is driven by a physical switch or jumper, not by a GPIO. Firmware
- *     cannot select those paths. The tests can only verify whichever
- *     path the switch currently selects, and the report has to tell the
- *     operator which switch to move. See `manual_note`.
- *
- *     There used to be one exception, frank_next's ESP UART mux on GP30.
- *     The second design keeps the 74HC4052 and takes the GPIO away: S0
- *     is now JP2, a two-way DIP that also selects where the USB-C port
- *     goes. So the rule is now without exceptions.
- *
- *  3. ESP CH_PD and RST go to buttons on every board that carries a
- *     companion except frank_zx; no GPIO reaches them. So the ESP has to
- *     be detected by talking to it (AT/OK) rather than by rebooting it
- *     and watching for a ROM banner.
- *
- *     frank_zx is the exception, and the first since the original FRANK
- *     Next: its ESP-01's RST is on GP38 and GPIO0 on GP39, each with a
- *     4K7 pull-up and buttons beside them. tests_esp.c still opens with
- *     a bare AT, and uses the reset only for a module that stays silent.
- *
- *     The first FRANK Next was the exception — an ESP32 whose CHIP_PU
- *     and GPIO0 were on GP38/GP39 — and the second is not: its ESP8266EX
- *     takes reset from S5 and from the CH343P's DTR/RTS pair through a
- *     UMH3N, which is the usual auto-download arrangement and reaches no
- *     GPIO of ours.
- *
- *     That still holds, but it was written as "no GPIO reaches any of the
- *     ESP's control pins", which is wider than the netlists support.
- *     oldskoolfrank brings GPIO2 and GPIO0 back to GP23 and GP24. It
- *     changes nothing about resetting the part - CH_PD there is not
- *     connected to anything at all and RST is on SW3, so the straps
- *     cannot be made to take effect - but the two pins are wired, they
- *     carry pull-ups, and those pull-ups are what tells this board apart
- *     from frank_pga. See sig_oldskoolfrank.
- *
- * ------------------------------------------------------------------
- *
- * Passive signatures
- *
- * ------------------------------------------------------------------
- *
- * Only the pins that separate a board from the others in its MCU class.
- * Adding pins the whole class shares would dilute the Hamming margin
- * without adding information.
- *
- * --- RP2350A class -------------------------------------------------
- *
- * GP8 is the PSRAM chip select on all three standalone A-class boards
- * (10K pull-up), and unused on frank and on the core2 slave. That single
- * pin splits the class in half before anything else is looked at. */
-static const pinsig_entry_t sig_microfrank[] = {
-    { 0, PINSIG_FLOAT },
-    { 2, PINSIG_FLOAT },
-    { 3, PINSIG_FLOAT },
-    { 8, PINSIG_HIGH },
-    { 20, PINSIG_FLOAT },
-    { 26, PINSIG_FLOAT },
-};
-
 static const pinsig_entry_t sig_minifrank[] = {
     /* 2026-11-26 (frank-sdk, from frank-lab frank_mini's netlist): the
      * current revision adds an RV-3032-C7 RTC (U8) on its own I2C pair,
@@ -500,6 +411,17 @@ static const pinsig_entry_t sig_olimex_rp2350pc[] = {
     { 37, PINSIG_HIGH },
 };
 
+static const pinsig_entry_t sig_nano[] = {
+    /* the PSRAM's chip select, 10K */
+    /* PIO-USB D+, no pull of its own */
+    { 0, PINSIG_FLOAT },
+    { 2, PINSIG_FLOAT },
+    { 3, PINSIG_FLOAT },
+    { 8, PINSIG_HIGH },
+    { 20, PINSIG_FLOAT },
+    { 26, PINSIG_FLOAT },
+};
+
 const frank_board_desc_t frank_board_table[] = {
 
 {
@@ -624,7 +546,7 @@ const frank_board_desc_t frank_board_table[] = {
         .link_db_out = PIN_NC, .link_db_in = PIN_NC, .link_run = PIN_NC,
     },
     .video_default = VIDEO_AUTO, .i2s_lr_swapped = false,
-    .sig = sig_microfrank, .sig_len = 6,
+    .sig = NULL, .sig_len = 0,
     .flash_bytes = 16777216u, .psram_bytes = 8388608u,
     .manual_note = "S1 selects the USB mux (device vs host).",
 },
@@ -1235,6 +1157,47 @@ const frank_board_desc_t frank_board_table[] = {
     .i2s_clk_swapped = true,
     .hdmi_pairs = HDMI_PAIRS(HDMI_PAIR(1, 1), HDMI_PAIR(0, 1), HDMI_PAIR(3, 1), HDMI_PAIR(2, 1)),
     .sig = sig_olimex_rp2350pc, .sig_len = 7,
+    .flash_bytes = 16777216u, .psram_bytes = 8388608u,
+    .manual_note = NULL,
+},
+
+/* HDMI, the microSD, 8 MB of PSRAM on GP8, the LED, and a USB-A host on
+ * PIO-USB (D+ GP20, D- GP21, 22R each, a USBLC6 and nothing else). The
+ * native USB-C is a device only, and there is no UART header, no audio, no
+ * I2C: GP0-3, 9-11, 22-24 and 26-29 go nowhere.
+ *
+ * Its signature is microFRANK's, which reads the same everywhere detection
+ * can see and is no longer made: microFRANK keeps its descriptor without a
+ * signature, to be picked by hand. A full-speed device plugged into the
+ * USB-A port at boot pulls GP20 up and the Nano then reads as zeroFRANK
+ * (a low-speed keyboard pulls GP21, which is not in the signature).
+ *
+ * frank-test's nano image (frank_fn) runs the host on PIO-USB, the native
+ * port being the USB console. */
+{
+    .id = FRANK_BOARD_NANO, .name = "FRANK Nano", .slug = "nano",
+    .mcu = FRANK_MCU_RP2350A, .role = FRANK_ROLE_SINGLE,
+    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_VIDEO_HDMI | CAP_USB_DEVICE | CAP_USB_HOST | CAP_PIO_USB | CAP_LED_PLAIN,
+    .pico_socket = false, .module_memory = false,
+    .pins = {
+        .uart_tx = PIN_NC, .uart_rx = PIN_NC, .ps2_kb_clk = PIN_NC, .ps2_kb_dat = PIN_NC,
+        .ps2_ms_clk = PIN_NC, .ps2_ms_dat = PIN_NC, .sd_dat0 = 4, .sd_cs = 5,
+        .sd_clk = 6, .sd_cmd = 7, .sd_dat1 = PIN_NC, .sd_dat2 = PIN_NC,
+        .i2s_data = PIN_NC, .i2s_clk_base = PIN_NC, .i2s_mclk = PIN_NC, .pwm_l = PIN_NC,
+        .pwm_r = PIN_NC, .pcm_i2s_data = PIN_NC, .pcm_i2s_clk_base = PIN_NC, .video_base = 12,
+        .psram_cs = 8, .psram_soft_sclk = PIN_NC, .psram_soft_mosi = PIN_NC, .psram_soft_miso = PIN_NC,
+        .led_ws2812 = PIN_NC, .led_plain = 25, .esp_uart_tx = PIN_NC, .esp_uart_rx = PIN_NC,
+        .esp_reset = PIN_NC, .esp_gpio0 = PIN_NC, .esp_gpio2 = PIN_NC, .pad_latch = PIN_NC,
+        .pad_clk = PIN_NC, .pad_d1 = PIN_NC, .pad_d2 = PIN_NC, .tape_in = PIN_NC,
+        .i2c_sda = PIN_NC, .i2c_scl = PIN_NC, .onewire = PIN_NC, .pio_usb_dp = 20,
+        .ay_rclk = PIN_NC, .ay_srclk = PIN_NC, .ay_ser = PIN_NC, .dip = PIN_NC,
+        .kbd_col_base = PIN_NC, .kbd_row_base = PIN_NC, .kbd_col_len = 0, .kbd_row_len = 0,
+        .host_bus_base = PIN_NC, .host_bus_len = 0, .host_clk = PIN_NC, .host_reset = PIN_NC,
+        .host_ready = PIN_NC, .link_a_data = PIN_NC, .link_b_data = PIN_NC, .link_fs = PIN_NC,
+        .link_db_out = PIN_NC, .link_db_in = PIN_NC, .link_run = PIN_NC,
+    },
+    .video_default = VIDEO_AUTO, .i2s_lr_swapped = false,
+    .sig = sig_nano, .sig_len = 6,
     .flash_bytes = 16777216u, .psram_bytes = 8388608u,
     .manual_note = NULL,
 },
