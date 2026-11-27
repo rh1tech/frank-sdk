@@ -1190,8 +1190,11 @@ const frank_board_desc_t frank_board_table[] = {
  * level shifters: the HDMI DDC (a monitor answers at 0x30, 0x3A, 0x50,
  * 0x54) and a TLV320 codec at 0x18. The codec's I2S is GP28-31 with LRCK
  * on GP29 below BCLK on GP30 and MCLK on GP23, an order frank-test's I2S
- * cannot take: no CAP_AUDIO_CODEC_I2C yet. HDMI HPD is GP21, CEC GP20.
- * No PS/2. */
+ * cannot take: no CAP_AUDIO_CODEC_I2C yet. i2s_mclk is declared all the
+ * same: GP22 switches the codec's supply (CODEC_PWR_DIS#), and with it off
+ * the codec holds GP23 low through its input diodes, which frank-test's
+ * short scan reported as GP22-GP23 shorted. Claimed, the pair is skipped.
+ * HDMI HPD is GP21, CEC GP20. No PS/2. */
 {
     .id = FRANK_BOARD_OLIMEX_RP2350PC, .name = "Olimex RP2350pc", .slug = "rp2350pc",
     .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_SINGLE,
@@ -1201,7 +1204,7 @@ const frank_board_desc_t frank_board_table[] = {
         .uart_tx = 0, .uart_rx = 1, .ps2_kb_clk = PIN_NC, .ps2_kb_dat = PIN_NC,
         .ps2_ms_clk = PIN_NC, .ps2_ms_dat = PIN_NC, .sd_dat0 = 24, .sd_cs = 9,
         .sd_clk = 10, .sd_cmd = 11, .sd_dat1 = PIN_NC, .sd_dat2 = PIN_NC,
-        .i2s_data = PIN_NC, .i2s_clk_base = PIN_NC, .i2s_mclk = PIN_NC, .pwm_l = 26,
+        .i2s_data = PIN_NC, .i2s_clk_base = PIN_NC, .i2s_mclk = 23, .pwm_l = 26,
         .pwm_r = 27, .pcm_i2s_data = PIN_NC, .pcm_i2s_clk_base = PIN_NC, .video_base = 12,
         .psram_cs = 8, .psram_soft_sclk = PIN_NC, .psram_soft_mosi = PIN_NC, .psram_soft_miso = PIN_NC,
         .led_ws2812 = PIN_NC, .led_plain = 25, .esp_uart_tx = PIN_NC, .esp_uart_rx = PIN_NC,
