@@ -9,7 +9,7 @@ frank-sdk build target it runs as, cross-checked pin for pin.
 | 0 | FRANK | `frank` | any | single | `M2` | auto | 4 |
 | 1 | FRANK PGA | `pga` | rp2350b | single | `M2` | auto | 10 |
 | 2 | MegaFRANK | `mega` | rp2350b | single | — | auto | 6 |
-| 3 | microFRANK | `micro` | rp2350a | single | — | auto | 6 |
+| 3 | microFRANK | `micro` | rp2350a | single | — | auto | 0 |
 | 4 | miniFRANK | `mini` | rp2350a | single | `M2` | auto | 4 |
 | 5 | zeroFRANK | `zero` | rp2350a | single | — | auto | 4 |
 | 6 | OldSkoolFRANK | `oldskool` | rp2350b | single | — | vga | 9 |
@@ -21,3 +21,4 @@ frank-sdk build target it runs as, cross-checked pin for pin.
 | 12 | FRANK ZX | `zx` | rp2350b | single | — | auto | 12 |
 | 13 | FRANK Z0 | `z0` | rp2350b | single | `FZ` | auto | 10 |
 | 14 | Olimex RP2350pc | `rp2350pc` | rp2350b | single | — | auto | 7 |
+| 15 | FRANK Nano | `nano` | rp2350a | single | `FN` | auto | 6 |
