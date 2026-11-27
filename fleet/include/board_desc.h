@@ -327,6 +327,15 @@ typedef struct {
      * the part. */
     bool               i2s_lr_swapped;
 
+    /* What each GP12-19 pair carries, for HSTX HDMI: 0 is the fleet's
+     * layout (CLK, D0, D1, D2 from GP12 up, N on the even pin). Otherwise
+     * four nibbles, the low one GP12/13: HDMI_PAIR(signal, p_first) with
+     * signal 0 clock, 1-3 data lanes 0-2 (blue, green, red), p_first when
+     * P is on the even pin. The Olimex RP2350pc has D0 on GP12, the clock
+     * on GP14 and the red and green pairs swapped, all P first: no FRANK
+     * layout would lock a monitor there. */
+    uint16_t           hdmi_pairs;
+
     /* Tier 2 fingerprint: the pins whose passive state distinguishes
      * this board from the others in its MCU class, and nothing more.
      * Listing pins that every board in the class shares would only dilute
@@ -345,6 +354,10 @@ typedef struct {
      * because it is a switch and not a GPIO. NULL if nothing. */
     const char *manual_note;
 } frank_board_desc_t;
+
+#define HDMI_PAIR(signal, p_first) ((uint16_t)(((signal) & 3u) | ((p_first) ? 4u : 0u)))
+#define HDMI_PAIRS(p12, p14, p16, p18) \
+    ((uint16_t)((p12) | (p14) << 4 | (p16) << 8 | (p18) << 12))
 
 /* The table, and lookups over it. */
 extern const frank_board_desc_t frank_board_table[];

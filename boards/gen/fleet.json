@@ -1060,5 +1060,69 @@
    "J1 pins 19/16, bare",
    "PSRAM CE, 10K"
   ]
+ },
+ {
+  "order": 14,
+  "id": "FRANK_BOARD_OLIMEX_RP2350PC",
+  "name": "Olimex RP2350pc",
+  "slug": "rp2350pc",
+  "mcu": "rp2350b",
+  "role": "single",
+  "target": null,
+  "caps": [
+   "CAP_PSRAM_QMI",
+   "CAP_SD",
+   "CAP_VIDEO_HDMI",
+   "CAP_AUDIO_PWM",
+   "CAP_USB_HOST",
+   "CAP_USB_HUB",
+   "CAP_I2C",
+   "CAP_LED_PLAIN"
+  ],
+  "pico_socket": false,
+  "module_memory": false,
+  "pins": {
+   "uart_tx": 0,
+   "uart_rx": 1,
+   "sd_dat0": 24,
+   "sd_cs": 9,
+   "sd_clk": 10,
+   "sd_cmd": 11,
+   "video_base": 12,
+   "psram_cs": 8,
+   "pwm_l": 26,
+   "pwm_r": 27,
+   "led_plain": 25,
+   "i2c_sda": 32,
+   "i2c_scl": 33
+  },
+  "video_default": "auto",
+  "i2s_lr_swapped": false,
+  "hdmi_pairs": [
+   "D0+",
+   "CK+",
+   "D2+",
+   "D1+"
+  ],
+  "signature_name": "sig_olimex_rp2350pc",
+  "signature": {
+   "2": "high",
+   "3": "high",
+   "8": "high",
+   "32": "high",
+   "33": "high",
+   "36": "high",
+   "37": "high"
+  },
+  "flash_bytes": 16777216,
+  "psram_bytes": 8388608,
+  "manual_note": null,
+  "notes": "Olimex's own all-in-one board, not a FRANK. Its HDMI is on GP12-19 like\nthe fleet's but in another order: GP12/13 D0, GP14/15 the clock, GP16/17\nD2, GP18/19 D1, each P first (hdmi_pairs). With the fleet's layout HSTX\nran and no monitor locked (2026-11-27).\n\nSD on SPI1 (GP10 SCK, GP11 MOSI, GP24 MISO, GP9 CS, as frank-dos has it),\nthe PSRAM on GP8, PWM audio on GP26/27. The stereo codec sits on I2C0\nGP32/33 behind level shifters, its I2S on GP28-31 with MCLK on GP23: not\ndescribed here yet. HDMI HPD is GP21, CEC GP20. No PS/2.",
+  "signature_inline_notes": [
+   "2.2K pull-ups on UEXT1's I2C pair",
+   "the PSRAM's chip select, 10K",
+   "2.2K on the codec's I2C pair, GPIO side of the level shifters",
+   "2.2K on UEXT2's I2C pair"
+  ]
  }
 ]

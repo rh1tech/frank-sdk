@@ -477,6 +477,20 @@ static const pinsig_entry_t sig_z0[] = {
     { 47, PINSIG_HIGH },
 };
 
+static const pinsig_entry_t sig_olimex_rp2350pc[] = {
+    /* 2.2K pull-ups on UEXT1's I2C pair */
+    /* the PSRAM's chip select, 10K */
+    /* 2.2K on the codec's I2C pair, GPIO side of the level shifters */
+    /* 2.2K on UEXT2's I2C pair */
+    { 2, PINSIG_HIGH },
+    { 3, PINSIG_HIGH },
+    { 8, PINSIG_HIGH },
+    { 32, PINSIG_HIGH },
+    { 33, PINSIG_HIGH },
+    { 36, PINSIG_HIGH },
+    { 37, PINSIG_HIGH },
+};
+
 const frank_board_desc_t frank_board_table[] = {
 
 {
@@ -1164,6 +1178,44 @@ const frank_board_desc_t frank_board_table[] = {
     .sig = sig_z0, .sig_len = 10,
     .flash_bytes = 16777216u, .psram_bytes = 8388608u,
     .manual_note = "Speaker on J3, headphones on J4 (L/GND/R). Use the z0 image: keyboard and mouse on J7 (PIO-USB, GP21/GP22), USB console on J8, UART console on J1 pins 8/10. The rp2350b image runs too, without a keyboard.",
+},
+
+/* Olimex's own all-in-one board, not a FRANK. Its HDMI is on GP12-19 like
+ * the fleet's but in another order: GP12/13 D0, GP14/15 the clock, GP16/17
+ * D2, GP18/19 D1, each P first (hdmi_pairs). With the fleet's layout HSTX
+ * ran and no monitor locked (2026-11-27).
+ *
+ * SD on SPI1 (GP10 SCK, GP11 MOSI, GP24 MISO, GP9 CS, as frank-dos has it),
+ * the PSRAM on GP8, PWM audio on GP26/27. The stereo codec sits on I2C0
+ * GP32/33 behind level shifters, its I2S on GP28-31 with MCLK on GP23: not
+ * described here yet. HDMI HPD is GP21, CEC GP20. No PS/2. */
+{
+    .id = FRANK_BOARD_OLIMEX_RP2350PC, .name = "Olimex RP2350pc", .slug = "rp2350pc",
+    .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_SINGLE,
+    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_VIDEO_HDMI | CAP_AUDIO_PWM | CAP_USB_HOST | CAP_USB_HUB | CAP_I2C | CAP_LED_PLAIN,
+    .pico_socket = false, .module_memory = false,
+    .pins = {
+        .uart_tx = 0, .uart_rx = 1, .ps2_kb_clk = PIN_NC, .ps2_kb_dat = PIN_NC,
+        .ps2_ms_clk = PIN_NC, .ps2_ms_dat = PIN_NC, .sd_dat0 = 24, .sd_cs = 9,
+        .sd_clk = 10, .sd_cmd = 11, .sd_dat1 = PIN_NC, .sd_dat2 = PIN_NC,
+        .i2s_data = PIN_NC, .i2s_clk_base = PIN_NC, .i2s_mclk = PIN_NC, .pwm_l = 26,
+        .pwm_r = 27, .pcm_i2s_data = PIN_NC, .pcm_i2s_clk_base = PIN_NC, .video_base = 12,
+        .psram_cs = 8, .psram_soft_sclk = PIN_NC, .psram_soft_mosi = PIN_NC, .psram_soft_miso = PIN_NC,
+        .led_ws2812 = PIN_NC, .led_plain = 25, .esp_uart_tx = PIN_NC, .esp_uart_rx = PIN_NC,
+        .esp_reset = PIN_NC, .esp_gpio0 = PIN_NC, .esp_gpio2 = PIN_NC, .pad_latch = PIN_NC,
+        .pad_clk = PIN_NC, .pad_d1 = PIN_NC, .pad_d2 = PIN_NC, .tape_in = PIN_NC,
+        .i2c_sda = 32, .i2c_scl = 33, .onewire = PIN_NC, .pio_usb_dp = PIN_NC,
+        .ay_rclk = PIN_NC, .ay_srclk = PIN_NC, .ay_ser = PIN_NC, .dip = PIN_NC,
+        .kbd_col_base = PIN_NC, .kbd_row_base = PIN_NC, .kbd_col_len = 0, .kbd_row_len = 0,
+        .host_bus_base = PIN_NC, .host_bus_len = 0, .host_clk = PIN_NC, .host_reset = PIN_NC,
+        .host_ready = PIN_NC, .link_a_data = PIN_NC, .link_b_data = PIN_NC, .link_fs = PIN_NC,
+        .link_db_out = PIN_NC, .link_db_in = PIN_NC, .link_run = PIN_NC,
+    },
+    .video_default = VIDEO_AUTO, .i2s_lr_swapped = false,
+    .hdmi_pairs = HDMI_PAIRS(HDMI_PAIR(1, 1), HDMI_PAIR(0, 1), HDMI_PAIR(3, 1), HDMI_PAIR(2, 1)),
+    .sig = sig_olimex_rp2350pc, .sig_len = 7,
+    .flash_bytes = 16777216u, .psram_bytes = 8388608u,
+    .manual_note = NULL,
 },
 
 };

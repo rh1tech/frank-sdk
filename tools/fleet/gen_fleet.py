@@ -62,6 +62,8 @@ def validate(d: dict) -> list[str]:
             errs.append(f"signature: GPIO{p} does not exist on {d['mcu']}")
         if f"PINSIG_{lvl.upper()}" not in fl.PINSIG:
             errs.append(f"signature: GPIO{p} level {lvl}")
+    if d.get("hdmi_pairs") is not None:
+        errs += hdmi_pairs_errors(d["hdmi_pairs"])
     if f"FRANK_BOARD_{d['id'].replace('FRANK_BOARD_', '')}" not in fl.BOARD_IDS:
         errs.append(f"id {d['id']} is not in frank_board_id_t")
     return [f"{d['_file']}: {e}" for e in errs]
@@ -158,6 +160,28 @@ def c_comment(text, indent=""):
     return "\n".join([indent + "/* " + lines[0]] + [indent + " * " + l if l else indent + " *" for l in lines[1:]]) + " */"
 
 
+HDMI_SIGNALS = {"CK": 0, "D0": 1, "D1": 2, "D2": 3}
+
+
+def hdmi_pairs_errors(pairs) -> list[str]:
+    """hdmi_pairs: four of CK/D0/D1/D2, each with + (P on the even pin) or -,
+    GP12/13 first, every signal once"""
+    if not isinstance(pairs, list) or len(pairs) != 4:
+        return ["hdmi_pairs: four entries, GP12/13 to GP18/19"]
+    errs = []
+    for p in pairs:
+        if not (isinstance(p, str) and len(p) == 3 and p[:2] in HDMI_SIGNALS and p[2] in "+-"):
+            errs.append(f"hdmi_pairs: {p!r} is not CK/D0/D1/D2 with + or -")
+    if not errs and sorted(p[:2] for p in pairs) != sorted(HDMI_SIGNALS):
+        errs.append(f"hdmi_pairs: {pairs} does not carry each of CK, D0, D1, D2 once")
+    return errs
+
+
+def hdmi_pairs_c(pairs) -> str:
+    return "HDMI_PAIRS(" + ", ".join(
+        f"HDMI_PAIR({HDMI_SIGNALS[p[:2]]}, {1 if p[2] == '+' else 0})" for p in pairs) + ")"
+
+
 def sig_array(name, sig, notes, inline):
     L = []
     if notes:
@@ -195,6 +219,8 @@ def entry(d, static_name=None):
         L.append("        " + ", ".join(pl[i:i + 4]) + ",")
     L.append("    },")
     L.append(f"    .video_default = VIDEO_{d['video_default'].upper()}, .i2s_lr_swapped = {str(d['i2s_lr_swapped']).lower()},")
+    if d.get("hdmi_pairs"):
+        L.append(f"    .hdmi_pairs = {hdmi_pairs_c(d['hdmi_pairs'])},")
     if d.get("signature_name"):
         L.append(f"    .sig = {d['signature_name']}, .sig_len = {len(d['signature'])},")
     else:
