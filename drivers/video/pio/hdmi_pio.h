@@ -16,6 +16,7 @@
 #ifndef HDMI_PIO_H
 #define HDMI_PIO_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /* source row 0..239 for the next pair of output lines, NULL: black. Runs in
@@ -36,6 +37,10 @@ void psxv_start(void);
 /* 256 RGB triplets, stride bytes apart, into the staging table; shown from
  * the next vblank after hdmi_pio_show_palette(). Waits for a pending one. */
 void hdmi_pio_load_palette(const uint8_t *rgb, int stride);
+/* frank-sdk: 640x480, a source pixel per output pixel, rows 0..479 of 640
+ * bytes; only the first 16 colours (indices & 15), balanced symbols. Before
+ * psxv_init(). */
+void hdmi_pio_set_hires(bool on);
 void hdmi_pio_show_palette(void);
 int hdmi_pio_palette_pending(void);
 

@@ -1,5 +1,6 @@
 /*
- * frank-sdk — the common 320x240 8-bit HDMI mode over either back-end.
+ * frank-sdk — the common 320x240 8-bit HDMI mode over either back-end, and
+ * 640x480 8-bit (frank_video_set_mode) on HDMI.
  *
  * Copyright (c) 2026 Mikhail Matveev <xtreme@rh1.tech>
  * SPDX-License-Identifier: MIT
@@ -51,8 +52,10 @@ static inline uint32_t __not_in_flash_func(ring_take)(void) {
 
 static frank_video_row_fn row_fn;
 static const uint8_t *fb_ptr;
+static int mode_w = FRANK_VIDEO_W, mode_h = FRANK_VIDEO_H;
+static bool hires;   /* 640x480: a source pixel per output pixel */
 
-static const uint8_t *__not_in_flash_func(fb_row)(uint32_t y) { return fb_ptr + y * FRANK_VIDEO_W; }
+static const uint8_t *__not_in_flash_func(fb_row)(uint32_t y) { return fb_ptr + y * mode_w; }
 
 #if FRANK_VIDEO_OUT_VGA && FRANK_VIDEO_VGA_PIO
 /* ================= VGA through PIO: drivers/video/vga_pio, any pin base ================= */
@@ -76,6 +79,7 @@ void frank_video_set_dvi(bool dvi) { (void)dvi; }
 void frank_video_start(void) { vga_pio_start(); }
 uint32_t frank_video_frame_count(void) { return vga_pio_frame_count; }
 const char *frank_video_backend(void) { return "vga"; }
+static bool backend_mode(int w, int h) { return w == FRANK_VIDEO_W && h == FRANK_VIDEO_H; }
 
 #elif FRANK_VIDEO_OUT_VGA
 /* ================= VGA over HSTX: DispHSTX (Miroslav Nemecek), time-dithered ================= */
@@ -167,6 +171,7 @@ static void vga_start(void (*idle)(void)) {
 void frank_video_start(void) { vga_start(NULL); }
 uint32_t frank_video_frame_count(void) { return frames; }
 const char *frank_video_backend(void) { return "vga"; }
+static bool backend_mode(int w, int h) { return w == FRANK_VIDEO_W && h == FRANK_VIDEO_H; }
 
 #elif FRANK_VIDEO_OUT_COMPOSITE
 /* ================= composite PAL/NTSC: frank-test's tv-software, PIO ================= */
@@ -208,6 +213,7 @@ void frank_video_start(void) {
 }
 uint32_t frank_video_frame_count(void) { return tv_fields; }
 const char *frank_video_backend(void) { return "composite"; }
+static bool backend_mode(int w, int h) { return w == FRANK_VIDEO_W && h == FRANK_VIDEO_H; }
 
 /* the back-end: the board's (boards/<id>.yaml video.hdmi.backend), or PIO on an
  * HSTX board when the build asks (cmake -DFRANK_HDMI_BACKEND=pio) */
@@ -219,12 +225,35 @@ const char *frank_video_backend(void) { return "composite"; }
 static uint16_t pal16[256];
 static uint16_t pal16_next[256];
 static volatile bool pal_pending;
-/* the HSTX DMA reads a line one to two lines after its callback: four slots */
-static uint16_t lines[4][FRANK_VIDEO_W] __attribute__((aligned(4)));
-static uint16_t black[FRANK_VIDEO_W] __attribute__((aligned(4)));
+/* the HSTX DMA reads a line one to two lines after its callback: four slots,
+ * wide enough for the hi-res mode's native lines */
+static uint16_t lines[4][FRANK_VIDEO_HIRES_W] __attribute__((aligned(4)));
+static uint16_t black[FRANK_VIDEO_HIRES_W] __attribute__((aligned(4)));
 static void (*vsync_fn)(void);
 
+/* 640x480: the row's own line, its 640 pixels sent 1:1 (PSXV_LINE_NATIVE) */
+static void __not_in_flash_func(on_line_hires)(uint32_t out_line, psxv_line_t *line) {
+    const uint8_t *src = row_fn && out_line < FRANK_VIDEO_HIRES_H ? row_fn(out_line) : NULL;
+    line->mode = PSXV_LINE_NATIVE;
+    if (!src) {
+        line->pixels = black;
+        return;
+    }
+    uint16_t *dst = lines[out_line & 3];
+    for (int x = 0; x < FRANK_VIDEO_HIRES_W; x += 4) {
+        dst[x] = pal16[src[x]];
+        dst[x + 1] = pal16[src[x + 1]];
+        dst[x + 2] = pal16[src[x + 2]];
+        dst[x + 3] = pal16[src[x + 3]];
+    }
+    line->pixels = dst;
+}
+
 static void __not_in_flash_func(on_line)(uint32_t out_line, psxv_line_t *line) {
+    if (hires) {
+        on_line_hires(out_line, line);
+        return;
+    }
     const uint32_t row = out_line >> 1;
     const uint8_t *src = row_fn && row < FRANK_VIDEO_H ? row_fn(row) : NULL;
     line->mode = PSXV_LINE_DOUBLE;
@@ -290,13 +319,16 @@ void frank_video_set_dvi(bool dvi) { psxv_set_dvi_mode(dvi); }
 void frank_video_start(void) { psxv_start(); }
 uint32_t frank_video_frame_count(void) { return psxv_frame_count; }
 const char *frank_video_backend(void) { return "hstx"; }
+static bool backend_mode(int w, int h) {
+    return (w == FRANK_VIDEO_W && h == FRANK_VIDEO_H) || (w == FRANK_VIDEO_HIRES_W && h == FRANK_VIDEO_HIRES_H);
+}
 
 #elif FRANK_VIDEO_HDMI_BACKEND_PIO || FRANK_VIDEO_USE_PIO
 /* ================= PIO: hdmi_pio, 320 8-bit pixels doubled ================= */
 #include "hdmi_pio.h"
 
 static const uint8_t *__not_in_flash_func(on_row)(uint32_t row) {
-    return row_fn && row < FRANK_VIDEO_H ? row_fn(row) : NULL;
+    return row_fn && row < (uint32_t)mode_h ? row_fn(row) : NULL;
 }
 
 /* hdmi_pio takes one frame at 11025 Hz and interpolates up to 44.1 kHz:
@@ -328,10 +360,26 @@ void frank_video_set_dvi(bool dvi) { hdmi_pio_set_dvi(dvi); }
 void frank_video_start(void) { psxv_start(); }
 uint32_t frank_video_frame_count(void) { return psxv_frame_count; }
 const char *frank_video_backend(void) { return "pio"; }
+static bool backend_mode(int w, int h) {
+    if (w == FRANK_VIDEO_W && h == FRANK_VIDEO_H) return hdmi_pio_set_hires(false), true;
+    if (w == FRANK_VIDEO_HIRES_W && h == FRANK_VIDEO_HIRES_H) return hdmi_pio_set_hires(true), true;
+    return false;
+}
 
 #else
 #error "frank-sdk video: the board has no HDMI back-end (boards/*.yaml video.hdmi.backend)"
 #endif
+
+bool frank_video_set_mode(int w, int h) {
+    if (!backend_mode(w, h)) return false;
+    mode_w = w;
+    mode_h = h;
+    hires = w == FRANK_VIDEO_HIRES_W;
+    return true;
+}
+
+int frank_video_width(void) { return mode_w; }
+int frank_video_height(void) { return mode_h; }
 
 void frank_video_set_row_callback(frank_video_row_fn fn) {
     row_fn = fn;

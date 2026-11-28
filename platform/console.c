@@ -25,14 +25,18 @@
 volatile bool frank_verbose;
 volatile bool frank_scripted;
 
-#define MAX_CMDS 32
+#define MAX_CMDS 48
 static struct {
     const char *name, *help;
     frank_cmd_fn fn;
 } cmds[MAX_CMDS];
 static int ncmds;
 
-static char line[128];
+/* golden token lists and typed UTF-8 text (Athena) run long */
+#ifndef FRANK_CONSOLE_LINE
+#define FRANK_CONSOLE_LINE 1024
+#endif
+static char line[FRANK_CONSOLE_LINE];
 static volatile bool line_ready;
 
 void frank_console_add(const char *name, frank_cmd_fn fn, const char *help) {

@@ -21,6 +21,14 @@
 #ifdef FRANK_HAS_PS2
 #include "ps2.h"
 extern bool ps2_set2_decode(uint8_t b, uint8_t *hid, bool *down);
+/* No PS/2 mouse: a firmware that needs none (FRANK_INPUT_NO_MOUSE), or a UART
+ * console on the mouse's pins (M2: GPIO 0/1, board.yaml `shared`) */
+#if defined(FRANK_PS2_MOUSE_CLK) && (defined(FRANK_INPUT_NO_MOUSE) || (defined(LIB_PICO_STDIO_UART) && \
+    (FRANK_PS2_MOUSE_CLK == PICO_DEFAULT_UART_TX_PIN || FRANK_PS2_MOUSE_CLK == PICO_DEFAULT_UART_RX_PIN || \
+     FRANK_PS2_MOUSE_DAT == PICO_DEFAULT_UART_TX_PIN || FRANK_PS2_MOUSE_DAT == PICO_DEFAULT_UART_RX_PIN)))
+#undef FRANK_PS2_MOUSE_CLK
+#undef FRANK_PS2_MOUSE_DAT
+#endif
 #ifndef FRANK_PS2_MOUSE_CLK
 #define FRANK_PS2_NO_MOUSE 1
 #define FRANK_PS2_MOUSE_CLK FRANK_PS2_KBD_CLK   /* (not initialised) */

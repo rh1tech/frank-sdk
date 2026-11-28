@@ -41,8 +41,14 @@ extern "C" {
 
 #define FRANK_VIDEO_W 320
 #define FRANK_VIDEO_H 240
+/* the hi-res mode (frank_video_set_mode): a source pixel per output pixel */
+#define FRANK_VIDEO_HIRES_W 640
+#define FRANK_VIDEO_HIRES_H 480
+/* colours the PIO back-end shows in the hi-res mode: indices are taken & 15 */
+#define FRANK_VIDEO_HIRES_PIO_COLOURS 16
 
-/* Source row 0..239 (each shown on two output lines), or NULL for black.
+/* Source row 0..239 (each shown on two output lines), or NULL for black; in
+ * the hi-res mode row 0..479 of 640 pixels, each on one line.
  * In the line IRQ: it and what it returns must be in SRAM. */
 typedef const uint8_t *(*frank_video_row_fn)(uint32_t row);
 
@@ -51,8 +57,17 @@ typedef const uint8_t *(*frank_video_row_fn)(uint32_t row);
  * SCRATCH_Y. */
 void frank_video_init(void);
 void frank_video_set_row_callback(frank_video_row_fn fn);
-/* Or a whole 320x240 frame buffer (in SRAM), shown as it is: the only way for
- * composite, which scans out of the buffer itself. */
+/* 320x240 (the default) or 640x480, before frank_video_start(). The 640x480
+ * mode is HDMI only and has a full palette on HSTX; on PIO (Z0, M1) only its
+ * first 16 colours, each channel at the nearest DC-balanced TMDS level (a
+ * pixel next to any other pixel: there is no pair to balance it, as when
+ * each pixel is doubled), so close to the asked colour, not exact. false: a
+ * mode the output does not have (VGA, composite: 320x240 only). */
+bool frank_video_set_mode(int w, int h);
+int frank_video_width(void);
+int frank_video_height(void);
+/* Or a whole frame buffer (in SRAM) of the mode's size, shown as it is: the
+ * only way for composite, which scans out of the buffer itself. */
 void frank_video_set_framebuffer(const uint8_t *fb);
 void frank_video_set_vsync_callback(void (*fn)(void));
 /* 256 RGB triplets, `stride` bytes apart; shown from the next vertical blank */

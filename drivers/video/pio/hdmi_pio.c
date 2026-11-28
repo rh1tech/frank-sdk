@@ -24,6 +24,13 @@
  * shared by the line pair, or one blank index repeated). The IRQ at the end
  * of the third block points "ctrl" at the next line's list and makes the one
  * after: its list, its island, its row.
+ *
+ * frank-sdk, the hi-res mode (hdmi_pio_set_hires): a line's own 640 pixels,
+ * two to an index. The 256 palette entries are then the pairs of the first
+ * 16 colours (index a << 4 | b), each pixel a TMDS symbol balanced by itself
+ * (five ones in ten bits): a doubled pixel balances against its complement,
+ * two different neighbours cannot. Each channel is the nearest level such a
+ * symbol decodes to (bal_sym).
  */
 
 #include "hdmi_pio.h"
@@ -109,6 +116,12 @@ static uint32_t ctrl_quiet_fixed;     /* the same, the read address fixed */
 /* the palette staged by core 0, copied in at the next vblank */
 static uint64_t stage[256];
 static volatile int stage_pending;
+/* the hi-res mode: the first 16 colours in balanced symbols; the rows (a line
+ * is made two ahead of the one being sent: four buffers) */
+static bool hires;
+static uint64_t stage_hi[16];
+static uint16_t bal_sym[256]; /* 8-bit level -> the nearest DC-balanced data symbol */
+static uint16_t hi_rows[4][ROW_PIXELS] __attribute__((aligned(4)));
 
 static hdmi_pio_row_cb_t row_cb;
 static psxv_vsync_cb_t vsync_cb;
@@ -255,6 +268,59 @@ static void __not_in_flash_func(make_audio_packet)(hstx_packet_t *p) {
     }
 }
 
+/* the 8-bit value a data symbol carries (DVI 1.0, 3.3.3: the decoder) */
+static uint32_t tmds_decode(uint32_t sym) {
+    uint32_t q = sym & 0xff, d;
+    if (sym & 0x200) q ^= 0xff;
+    d = q & 1;
+    for (int i = 1; i < 8; i++) {
+        uint32_t b = ((q >> i) ^ (q >> (i - 1))) & 1;
+        if (!(sym & 0x100)) b ^= 1;
+        d |= b << i;
+    }
+    return d;
+}
+
+/* every 8-bit level to the data symbol with five ones in ten bits whose value
+ * is nearest (the four control symbols are balanced too: never those) */
+static void make_balanced(void) {
+    uint16_t best[256];
+    int have[256];
+    for (int v = 0; v < 256; v++) have[v] = 0;
+    for (uint32_t sym = 0; sym < 1024; sym++) {
+        if (__builtin_popcount(sym) != 5) continue;
+        if (sym == ctl_sym[0] || sym == ctl_sym[1] || sym == ctl_sym[2] || sym == ctl_sym[3]) continue;
+        uint32_t v = tmds_decode(sym);
+        if (!have[v]) best[v] = (uint16_t)sym, have[v] = 1;
+    }
+    for (int v = 0; v < 256; v++) {
+        int d = 0;
+        while (!(v - d >= 0 && have[v - d]) && !(v + d < 256 && have[v + d])) d++;
+        bal_sym[v] = v - d >= 0 && have[v - d] ? best[v - d] : best[v + d];
+    }
+}
+
+/* the hi-res palette: entry a << 4 | b, the two pixels side by side */
+static void __not_in_flash_func(set_pairs)(void) {
+    for (int i = 0; i < 256; i++) {
+        uint64_t *c = (uint64_t *)&pal_tab[i * 4];
+        c[0] = stage_hi[i >> 4];
+        c[1] = stage_hi[i & 15];
+    }
+}
+
+void hdmi_pio_set_hires(bool on) { hires = on; }
+
+/* 640 8-bit pixels to 320 indices of pairs (the first 16 colours) */
+static void __not_in_flash_func(convert_row_hires)(uint16_t *dst, const uint8_t *src) {
+    const uint32_t *s = (const uint32_t *)src;
+    uint32_t *d = (uint32_t *)dst;
+    for (int i = 0; i < ROW_PIXELS / 2; i++) {
+        uint32_t w = s[i];
+        d[i] = ((w & 0xf) << 4 | (w >> 8 & 0xf)) | ((w >> 16 & 0xf) << 4 | (w >> 24 & 0xf)) << 16;
+    }
+}
+
 /* 8-bit pixels to 16-bit indices */
 static void __not_in_flash_func(convert_row)(uint16_t *dst, const uint8_t *src) {
     const uint32_t *s = (const uint32_t *)src;
@@ -308,7 +374,16 @@ static void __not_in_flash_func(prepare_line)(uint32_t line, uint32_t slot) {
     } else {
         set_block(&b[1], dvi_only ? isl_dvi[vs] : isl_null[vs], ISLAND_ENTRIES, ctrl_quiet);
     }
-    if (!blank) {
+    if (!blank && hires) {
+        uint16_t *row = hi_rows[line & 3];
+        const uint8_t *src = row_cb ? row_cb(line) : NULL;
+        if (src)
+            convert_row_hires(row, src);
+        else
+            for (int i = 0; i < ROW_PIXELS; i++) row[i] = 0;
+        set_block(&b[2], rest_active, 54, ctrl_irq);
+        set_block(&b[3], row, ROW_PIXELS, ctrl_quiet);
+    } else if (!blank) {
         uint16_t *row = rows[(line >> 1) & 1];
         if (!(line & 1)) {
             const uint8_t *src = row_cb ? row_cb(line >> 1) : NULL;
@@ -335,7 +410,10 @@ static void __not_in_flash_func(dma_irq)(void) {
     if (line == ACTIVE_LINES + 1) {
         psxv_frame_count++;
         if (stage_pending) { /* the palette staged by core 0 */
-            for (int i = 0; i < 256; i++) set_pal_entry(i, stage[i]);
+            if (hires)
+                set_pairs();
+            else
+                for (int i = 0; i < 256; i++) set_pal_entry(i, stage[i]);
             stage_pending = 0;
         }
         if (vsync_cb) vsync_cb();
@@ -368,6 +446,7 @@ void hdmi_pio_load_palette(const uint8_t *rgb, int stride) {
     for (int i = 0; i < 256; i++) {
         const uint8_t *c = rgb + i * stride;
         stage[i] = ser3(tmds_table[c[2]], tmds_table[c[1]], tmds_table[c[0]]);
+        if (i < 16) stage_hi[i] = ser3(bal_sym[c[2]], bal_sym[c[1]], bal_sym[c[0]]);
     }
 }
 
@@ -397,7 +476,12 @@ static void make_tables(void) {
         for (int n = 0; n < 16; n++) terc_lane[lane][n] = ser_lane(terc4[n], lane);
     guard12 = ser_lane(GUARD_DATA, 1) | ser_lane(GUARD_DATA, 2);
 
-    for (int i = 0; i < 256; i++) set_pal_entry(i, ser3(tmds_table[0], tmds_table[0], tmds_table[0]));
+    make_balanced();
+    for (int i = 0; i < 16; i++) stage_hi[i] = ser3(bal_sym[0], bal_sym[0], bal_sym[0]);
+    if (hires)
+        set_pairs();
+    else
+        for (int i = 0; i < 256; i++) set_pal_entry(i, ser3(tmds_table[0], tmds_table[0], tmds_table[0]));
     for (int vs = 0; vs < 2; vs++) {
         uint32_t v = vs ? 0 : 2; /* VSYNC level (low when asserted) */
         set_hdmi_entry(E_BLANK + vs, ser3(ctl_sym[v | 1], ctl_sym[0], ctl_sym[0]));
