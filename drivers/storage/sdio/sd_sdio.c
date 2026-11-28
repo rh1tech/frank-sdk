@@ -272,12 +272,22 @@ static bool claim_dma(void)
 {
 	if (sdio_dma_a >= 0)
 		return true;
-	/* (two that are free; rp2350_sdio_init claims them itself) */
-	int a = dma_claim_unused_channel(false), b = dma_claim_unused_channel(false);
+	/* Two that are free and no driver's fixed ones (HSTX HDMI 0/1, PIO HDMI
+	 * 0-3, I2S 10/11, DispHSTX 14/15): a card mounted before the video
+	 * starts took 0/1, and the video panicked on its claim (FRANK Next).
+	 * rp2350_sdio_init claims them itself. */
+	static const uint8_t pick[] = {13, 12, 9, 8, 7, 6, 5, 4};
+	int a = -1, b = -1;
+	for (unsigned i = 0; i < sizeof(pick) && b < 0; i++) {
+		if (dma_channel_is_claimed(pick[i]))
+			continue;
+		if (a < 0)
+			a = pick[i];
+		else
+			b = pick[i];
+	}
 	if (a < 0 || b < 0)
 		return false;
-	dma_channel_unclaim((uint)a);
-	dma_channel_unclaim((uint)b);
 	sdio_dma_a = a;
 	sdio_dma_b = b;
 	return true;
