@@ -64,7 +64,10 @@ static const uint8_t desc_config[] = {
     TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EP_CDC_NOTIF, 8, EP_CDC_OUT, EP_CDC_IN, 64),
 };
 
-static const char *const desc_strings[] = {"Raspberry Pi", "frank-386", NULL /* serial */, "Console"};
+#ifndef FRANK_FIRMWARE_NAME
+#define FRANK_FIRMWARE_NAME "frank-sdk"
+#endif
+static const char *const desc_strings[] = {"Raspberry Pi", FRANK_FIRMWARE_NAME, NULL /* serial */, "Console"};
 
 const uint8_t *tud_descriptor_device_cb(void) {
     return (const uint8_t *)&desc_device;

@@ -281,17 +281,27 @@ static uint32_t tmds_decode(uint32_t sym) {
     return d;
 }
 
-/* every 8-bit level to the data symbol with five ones in ten bits whose value
- * is nearest (the four control symbols are balanced too: never those) */
+/* every 8-bit level to the nearest one the TMDS encoder (DVI 1.0, 3.3.3) sends
+ * DC-neutral: those whose transition-minimised byte has four ones, sent with
+ * bit 9 = !bit 8. Only real encoder output: a receiver can take other codes
+ * with five ones (many transitions) for control tokens and lose its word
+ * alignment (no picture at all, seen on the Z0). */
 static void make_balanced(void) {
     uint16_t best[256];
     int have[256];
     for (int v = 0; v < 256; v++) have[v] = 0;
-    for (uint32_t sym = 0; sym < 1024; sym++) {
-        if (__builtin_popcount(sym) != 5) continue;
-        if (sym == ctl_sym[0] || sym == ctl_sym[1] || sym == ctl_sym[2] || sym == ctl_sym[3]) continue;
-        uint32_t v = tmds_decode(sym);
-        if (!have[v]) best[v] = (uint16_t)sym, have[v] = 1;
+    for (uint32_t d = 0; d < 256; d++) {
+        int n1 = __builtin_popcount(d);
+        bool xnor = n1 > 4 || (n1 == 4 && !(d & 1));
+        uint32_t q = d & 1;
+        for (int i = 1; i < 8; i++) {
+            uint32_t b = ((q >> (i - 1)) ^ (d >> i)) & 1;
+            if (xnor) b ^= 1;
+            q |= b << i;
+        }
+        if (__builtin_popcount(q) != 4) continue;
+        uint32_t sym = xnor ? (q ^ 0xff) | 0x200 : q | 0x100;   /* bit 8 = !xnor, bit 9 = its opposite */
+        best[d] = (uint16_t)sym, have[d] = 1;
     }
     for (int v = 0; v < 256; v++) {
         int d = 0;

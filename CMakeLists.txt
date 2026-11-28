@@ -171,6 +171,7 @@ function(frank_firmware target)
         set(FW_NAME ${target})
     endif()
     target_link_libraries(${target} frank_platform)
+    target_compile_definitions(${target} PRIVATE FRANK_FIRMWARE_NAME="${FW_NAME}")   # the USB console's product name
     # with frank_input's USB host linked, the SDK's stdio_usb compiles to nothing:
     # a USB console is then frank-dos's dual-role usb_console (host on PIO-USB)
     get_target_property(_libs ${target} LINK_LIBRARIES)
