@@ -3,8 +3,9 @@
 #
 # Its link is rev A's (boards/sl.yaml) mirrored: slave GPIO n is rev A's
 # GPIO 24-n, with bus B's CLK and VALID swapped on top. The data run D7..D0
-# upwards, CLK and VALID sit below the data: drivers/link's reversed layout
-# (link_tx_rev, link_rx_any) on this side, the master unchanged.
+# upwards, CLK and VALID sit below the data. Both ends send at the full rate
+# as they are; each receiver turns a mirrored bus's words back (link_rx_any,
+# one rbit a word): this side bus A, the master (boards/nb.yaml) bus B.
 id: SB
 name: FRANK Next rev B (slave)
 covers: [FRANK Next rev B slave]

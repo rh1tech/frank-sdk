@@ -92,34 +92,6 @@
     wait 0 pin 8                  ; falling edge — re-arm
 .wrap
 
-;
-; ---------------------------------------------------------------------
-; link_tx_rev — link_tx for data lines wired D7..D0 upwards (FRANK Next
-; rev B's slave: bus B leaves on GPIO6-13 as D7..D0, its clock on GPIO4).
-;
-; Config: autopull OFF, shift LEFT. Each word is pulled and bit-reversed,
-; so the top byte of the OSR is byte 0 with its bits mirrored; `out pins, 8`
-; from the top then puts D0 on the highest pin. Pull and mov stretch the
-; first byte's low phase to 4 cycles (data 2 cycles before the rise, as in
-; link_tx): 22 cycles a word rather than 20. The clock parks low on an
-; empty FIFO, as link_tx's does.
-; ---------------------------------------------------------------------
-.program link_tx_rev
-.side_set 1
-
-.wrap_target
-    pull block       side 0        ; clock low while the FIFO is empty
-    mov osr, ::osr   side 0
-    out pins, 8      side 0 [1]    ; byte 0
-    nop              side 1 [2]
-    out pins, 8      side 0 [1]    ; byte 1
-    nop              side 1 [2]
-    out pins, 8      side 0 [1]    ; byte 2
-    nop              side 1 [2]
-    out pins, 8      side 0 [1]    ; byte 3
-    nop              side 1 [2]
-.wrap
-
 % c-sdk {
 #include "hardware/clocks.h"
 #include "hardware/gpio.h"
@@ -183,11 +155,10 @@ static inline int link_rx_program_init(PIO pio, uint sm, uint offset,
     return pio_sm_init(pio, sm, offset, &c);
 }
 
-/* Cycles of SM clock a word takes in link_tx_rev. */
-#define LINK_PIO_CYCLES_PER_WORD_REV 22
-
-/* link_tx_rev: data on data_base..+7 as D7..D0, the clock on any pin. */
-static inline int link_tx_rev_program_init(PIO pio, uint sm, uint offset,
+/* link_tx with the clock on any pin (FRANK Next rev B's slave: bus B's
+ * clock below its data). The data go out as they are: where the lines are
+ * mirrored, the receiving end turns the words back (link_rx_any). */
+static inline int link_tx_any_program_init(PIO pio, uint sm, uint offset,
                                            uint data_base, uint clk_pin, float clkdiv) {
     for (uint i = 0; i < 8; i++) {
         pio_gpio_init(pio, data_base + i);
@@ -201,10 +172,10 @@ static inline int link_tx_rev_program_init(PIO pio, uint sm, uint offset,
     pio_sm_set_consecutive_pindirs(pio, sm, data_base, 8, true);
     pio_sm_set_consecutive_pindirs(pio, sm, clk_pin, 1, true);
 
-    pio_sm_config c = link_tx_rev_program_get_default_config(offset);
+    pio_sm_config c = link_tx_program_get_default_config(offset);
     sm_config_set_out_pins(&c, data_base, 8);
     sm_config_set_sideset_pins(&c, clk_pin);
-    sm_config_set_out_shift(&c, false /* shift left */, false /* no autopull */, 32);
+    sm_config_set_out_shift(&c, true /* shift right */, true /* autopull */, 32);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
     sm_config_set_clkdiv(&c, clkdiv);
 
@@ -213,9 +184,10 @@ static inline int link_tx_rev_program_init(PIO pio, uint sm, uint offset,
 
 /* link_rx for any clock pin and either bit order. The program is link_rx's
  * three instructions with the clock's index from the IN base encoded at run
- * time (it wraps: a clock one below the data is pin 31). reversed: the data
- * wired D7..D0 upwards; the ISR then shifts left, and each word comes out
- * of the FIFO bit-reversed whole: link_rx_wait() mirrors it back. */
+ * time (it wraps: a clock one below the data is pin 31). reversed: the bus's
+ * lines mirrored between the two ends, each byte arriving bit-reversed; the
+ * ISR then shifts left, and each word comes out of the FIFO bit-reversed
+ * whole: link_rx_wait() mirrors it back. */
 static inline int link_rx_any_program_init(PIO pio, uint sm, uint offset,
                                            uint data_base, uint clk_pin, bool reversed) {
     for (uint i = 0; i < 8; i++) {

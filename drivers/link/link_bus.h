@@ -41,7 +41,7 @@ typedef struct {
 
     uint  tx_data_base, tx_clk, tx_valid;
     uint  rx_data_base, rx_clk, rx_valid;
-    bool  tx_rev, rx_rev;   /* data wired D7..D0 upwards (link_pins_t) */
+    bool  rx_rev;           /* the receive bus mirrored (link_pins_t) */
     uint32_t *rx_buf;       /* rx_rev: the frame link_rx_wait() turns back */
     size_t rx_words;
 
@@ -76,9 +76,10 @@ void link_init(link_t *l, PIO pio,
                uint tx_data_base, uint rx_data_base,
                uint db_out, uint db_in, uint fs, bool fs_is_output);
 
-/* A bus wired otherwise: CLK and VALID anywhere, the data D0..D7 upwards
- * or, reversed, D7..D0 upwards (FRANK Next rev B's slave). The far end
- * needs nothing different: the bytes on the wire are the same. */
+/* A bus wired otherwise: CLK and VALID anywhere, and its data lines
+ * mirrored between the two ends (`reversed`: D0 at one end's lowest pin is
+ * D7 at the other's, FRANK Next rev B). Both ends send as they are, at the
+ * full rate; the receiving end of a mirrored bus turns each word back. */
 typedef struct {
     uint data, clk, valid;
     bool reversed;

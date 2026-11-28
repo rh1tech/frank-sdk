@@ -1716,7 +1716,9 @@
   },
   "link": {
    "a_data": 20,
+   "a_reversed": true,
    "b_data": 30,
+   "b_reversed": true,
    "db_in": 42,
    "db_out": 41,
    "fs": 40,

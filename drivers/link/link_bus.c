@@ -38,8 +38,7 @@ static inline uint32_t rbit32(uint32_t x) {
  * frame and turn the round-trip figure into a measurement of our own
  * padding. Four bytes plus a generous margin. */
 static inline uint32_t tx_drain_us(const link_t *l) {
-    float cycles = (l->tx_rev ? (float)LINK_PIO_CYCLES_PER_WORD_REV : 4.0f * (float)LINK_PIO_CYCLES_PER_BYTE) *
-                   l->applied_clkdiv;
+    float cycles = 4.0f * (float)LINK_PIO_CYCLES_PER_BYTE * l->applied_clkdiv;
     float us = (cycles * 1000000.0f) / (float)clock_get_hz(clk_sys);
     return (uint32_t)us + 2u;
 }
@@ -61,15 +60,15 @@ void link_init_pins(link_t *l, PIO pio, const link_pins_t *p) {
     const uint tx_data_base = p->tx.data, rx_data_base = p->rx.data;
     const uint db_out = p->db_out, db_in = p->db_in, fs = p->fs;
     const bool fs_is_output = p->fs_is_output;
-    /* the layout link_tx/link_rx were written for: CLK at data+8 */
-    const bool tx_plain = !p->tx.reversed && p->tx.clk == tx_data_base + 8;
+    /* the layout link_tx/link_rx were written for: CLK at data+8. A bus
+     * whose lines are mirrored goes out as it is; its receiver turns it back */
+    const bool tx_plain = p->tx.clk == tx_data_base + 8;
     const bool rx_plain = !p->rx.reversed && p->rx.clk == rx_data_base + 8;
 
     l->pio = pio;
     l->tx_data_base = tx_data_base;
     l->tx_clk       = p->tx.clk;
     l->tx_valid     = p->tx.valid;
-    l->tx_rev       = p->tx.reversed;
     l->rx_data_base = rx_data_base;
     l->rx_clk       = p->rx.clk;
     l->rx_valid     = p->rx.valid;
@@ -97,7 +96,7 @@ void link_init_pins(link_t *l, PIO pio, const link_pins_t *p) {
 
     l->sm_tx  = pio_claim_unused_sm(pio, true);
     l->sm_rx  = pio_claim_unused_sm(pio, true);
-    l->off_tx = pio_add_program(pio, tx_plain ? &link_tx_program : &link_tx_rev_program);
+    l->off_tx = pio_add_program(pio, &link_tx_program);
     if (rx_plain) {
         l->off_rx = pio_add_program(pio, &link_rx_program);
     } else {
@@ -111,12 +110,9 @@ void link_init_pins(link_t *l, PIO pio, const link_pins_t *p) {
      * the PIO's GPIO window, which is the one configuration mistake that
      * would otherwise produce a link that looks wired but reads garbage
      * off whichever low GPIOs the high pins aliased onto. */
-    /* A clock that is not data+8 with the bits in order has no program
-     * yet: only the reversed layout (rev B's slave) does. */
-    hard_assert(tx_plain || p->tx.reversed);
     hard_assert(tx_plain ? link_tx_program_init(pio, l->sm_tx, l->off_tx,
                                                 tx_data_base, l->applied_clkdiv) == PICO_OK
-                         : link_tx_rev_program_init(pio, l->sm_tx, l->off_tx, tx_data_base,
+                         : link_tx_any_program_init(pio, l->sm_tx, l->off_tx, tx_data_base,
                                                     l->tx_clk, l->applied_clkdiv) == PICO_OK);
     /* The receiver is edge-driven: it must always run as fast as it can,
      * because its three-instruction loop has to complete inside the
@@ -185,7 +181,6 @@ void link_use_bulk_rate(link_t *l) { apply_clkdiv(l, l->bulk_clkdiv);   }
 
 uint32_t link_byte_rate(const link_t *l) {
     float hz = (float)clock_get_hz(clk_sys) / l->bulk_clkdiv;
-    if (l->tx_rev) return (uint32_t)(hz * 4.0f / (float)LINK_PIO_CYCLES_PER_WORD_REV);
     return (uint32_t)(hz / (float)LINK_PIO_CYCLES_PER_BYTE);
 }
 

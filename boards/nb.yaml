@@ -45,7 +45,9 @@ led: {ws2812: 43}       # LD2, through 330R
 link:
   side: master
   a_data: 20            # bus A master->slave GPIO20-27, CLK 28, VALID 29 (100R each)
+  a_reversed: true      # both buses land mirrored on the slave (boards/sb.yaml):
   b_data: 30            # bus B slave->master GPIO30-37, CLK 38, VALID 39
+  b_reversed: true      # this side turns bus B's words back, the slave bus A's
   fs: 40
   db_out: 41
   db_in: 42

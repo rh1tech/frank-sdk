@@ -146,7 +146,9 @@ pico_board_cmake_set_default(PICO_RP2350_A2_SUPPORTED, 1)
 #define FRANK_LINK_SIDE "master"
 #define FRANK_LINK_SIDE_MASTER 1
 #define FRANK_LINK_A_DATA 20
+#define FRANK_LINK_A_REVERSED 1
 #define FRANK_LINK_B_DATA 30
+#define FRANK_LINK_B_REVERSED 1
 #define FRANK_LINK_FS 40
 #define FRANK_LINK_DB_OUT 41
 #define FRANK_LINK_DB_IN 42
