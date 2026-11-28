@@ -4,7 +4,7 @@
  * CLK GP1, DAT0-3 GP4-7. Taken from frank-react's drivers/sdio.
  *
  * PIO0: PIO1 is the HDMI encoder and PIO2 the I2S codec (board_config.h). The
- * inter-processor link would want PIO0 too, which is why the NX build has no
+ * inter-processor link would want PIO0 too, which is why the NA/NB builds has no
  * REMOTE_MEM / DISK_CACHE. The DMA channels are whichever two were free when the
  * card was first set up (sd_sdio.c); DMA_IRQ_2 (0 is the video's).
  */

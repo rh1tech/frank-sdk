@@ -1,7 +1,8 @@
-# The slave half of FRANK Next and FRANK Core 2 / 2U: pin-identical on all three.
+# The slave half of FRANK Next rev A and FRANK Core 2 / 2U: pin-identical on all
+# three. Rev B's slave is wired differently (frank-lab frank_next2) and has no file yet.
 id: SL
-name: FRANK Next / Core 2 (slave)
-covers: [FRANK Next slave, FRANK Core 2 slave, FRANK Core 2U slave]
+name: FRANK Next rev A / Core 2 (slave)
+covers: [FRANK Next rev A slave, FRANK Core 2 slave, FRANK Core 2U slave]
 mcu: rp2350a
 role: slave
 sources:

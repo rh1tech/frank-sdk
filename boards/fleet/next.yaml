@@ -1,12 +1,13 @@
-# FRANK Next: frank-test's run-time descriptor. Imported from frank-test
+# FRANK Next rev A (1.xx): frank-test's run-time descriptor. Rev B is
+# next_b.yaml. Imported from frank-test
 # core/board_table.c; edit here, gen_boards.py writes the C table.
 order: 9
 id: FRANK_BOARD_NEXT
-name: FRANK Next
+name: FRANK Next rev A
 slug: next
 mcu: rp2350b
 role: master
-target: NX
+target: NA
 caps:
 - CAP_PSRAM_QMI
 - CAP_SD

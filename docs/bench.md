@@ -16,7 +16,7 @@ plugs). The serial is the firmware's own (its USB CDC console, and the same in B
 
 ## Flash
 
-`frank flash NX build-nx/nx_fw.uf2` (or `./flash.sh NX` in a firmware repo):
+`frank flash NA build-na/na_fw.uf2` (or `./flash.sh NX` in a firmware repo):
 
 1. `~BOOT~` on the board's USB CDC console, again every 5 s for 40 s (a firmware still
    booting reads its console late);
@@ -30,7 +30,7 @@ Never ask anyone to press BOOTSEL. If a load fails verify with noisy reads, see
 
 ## Talk
 
-`frank cmd NX clocks` runs `~C clocks~` and returns up to its `OK clocks` line.
+`frank cmd NA clocks` runs `~C clocks~` and returns up to its `OK clocks` line.
 `~C help~` lists a firmware's commands. Built in: `clocks`, `mem`, `psram`, `bootinfo`,
 `crumb`, `prof`, `core1`. Magic words anywhere in the stream: `~BOOT~`, `~RST~`, `~VERB~`, `~PROF~`.
 

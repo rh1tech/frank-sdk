@@ -633,11 +633,11 @@
  {
   "order": 9,
   "id": "FRANK_BOARD_NEXT",
-  "name": "FRANK Next",
+  "name": "FRANK Next rev A",
   "slug": "next",
   "mcu": "rp2350b",
   "role": "master",
-  "target": "NX",
+  "target": "NA",
   "caps": [
    "CAP_PSRAM_QMI",
    "CAP_SD",
@@ -1174,6 +1174,92 @@
   "signature_inline_notes": [
    "the PSRAM's chip select, 10K",
    "PIO-USB D+, no pull of its own"
+  ]
+ },
+ {
+  "order": 16,
+  "id": "FRANK_BOARD_NEXT_B",
+  "name": "FRANK Next rev B",
+  "slug": "next_b",
+  "mcu": "rp2350b",
+  "role": "master",
+  "target": "NB",
+  "caps": [
+   "CAP_PSRAM_QMI",
+   "CAP_SD",
+   "CAP_SD_4BIT",
+   "CAP_VIDEO_HDMI",
+   "CAP_AUDIO_I2S",
+   "CAP_AUDIO_CODEC_I2C",
+   "CAP_USB_DEVICE",
+   "CAP_USB_HOST",
+   "CAP_USB_HUB",
+   "CAP_USB_MUX",
+   "CAP_TAPE_IN",
+   "CAP_RTC_RV3032",
+   "CAP_I2C",
+   "CAP_LED_WS2812",
+   "CAP_LINK"
+  ],
+  "pico_socket": false,
+  "module_memory": false,
+  "pins": {
+   "uart_tx": 46,
+   "uart_rx": 45,
+   "sd_dat0": 4,
+   "sd_cs": 7,
+   "sd_clk": 1,
+   "sd_cmd": 0,
+   "sd_dat1": 5,
+   "sd_dat2": 6,
+   "i2s_data": 11,
+   "i2s_clk_base": 9,
+   "i2s_mclk": 8,
+   "video_base": 12,
+   "psram_cs": 47,
+   "led_ws2812": 43,
+   "tape_in": 44,
+   "i2c_sda": 2,
+   "i2c_scl": 3,
+   "link_a_data": 20,
+   "link_b_data": 30,
+   "link_fs": 40,
+   "link_db_out": 41,
+   "link_db_in": 42
+  },
+  "video_default": "auto",
+  "i2s_lr_swapped": false,
+  "signature_name": "sig_next_b",
+  "signature": {
+   "0": "high",
+   "1": "float",
+   "4": "high",
+   "5": "high",
+   "6": "high",
+   "7": "high",
+   "43": "float",
+   "45": "float",
+   "47": "high"
+  },
+  "flash_bytes": 16777216,
+  "psram_bytes": 8388608,
+  "manual_note": "The slave's RUN is the PCF8574's P0 (I2C 0x20), not a GPIO. The USB mux takes the master's USB to the hub, or to the USB-C socket when BOOT is held at reset; the PCF8574's P2/P3 force it either way.",
+  "notes": "FRANK Next, second revision. The master's GPIO are rev A's but for\nGPIO43, which drives the WS2812 now instead of the slave's RUN. The\nRTC is an RV-3032 at 0x51 instead of the DS3231, a PCF8574 at 0x20\njoined the bus, and the ESP8266 and the CH343P are gone.",
+  "inline_notes": [
+   "GP46/GP45 on J10, through 330R each: GP0/GP1 are the SD\ncard's CMD and CLK, as on rev A.",
+   "SDIO 4-bit, CMD and CLK below the data lines, as on rev A.",
+   "TLV320DAC3100: BCLK/WCLK/DIN, as on rev A.",
+   "LD2, through 330R.",
+   "A BC850 squaring the tape input, as on rev A."
+  ],
+  "signature_notes": "The FRANK Next rev B master. Below GP20 it is rev A exactly — the SDIO\nsocket's 10K pull-ups and the bare CLK — and so it is the Core 2's\nopposite in the same way. What sets it apart from rev A is GP43 and\nGP45: rev A's slave RUN and ESP mux lines carry 10K pull-ups, while\nhere GP43 is the WS2812's input behind 330R and GP45 the bare UART RX\non J10. An RV-3032 answering at 0x51 rules out rev A as well, whose\nRTC is a DS3231 at 0x68.",
+  "signature_inline_notes": [
+   "SD CMD, 10K",
+   "SD CLK, deliberately not",
+   "SD DAT0-2, CD/DAT3, 10K",
+   "the WS2812's DIN, no pull",
+   "J10's RX, no pull",
+   "PSRAM CE, 2K2"
   ]
  }
 ]

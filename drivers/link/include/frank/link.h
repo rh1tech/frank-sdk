@@ -7,7 +7,7 @@
  * Two 8-bit source-synchronous buses (PIO + DMA), three doorbell/frame-sync
  * wires; control frames with a CRC, bulk data at up to clk_sys/5 bytes a
  * second. From frank-blood / frank-amiga common/link. The pins and the PIO
- * come from the board file (boards/nx.yaml, c2.yaml, sl.yaml: link, pio.link);
+ * come from the board file (boards/na.yaml, nb.yaml, c2.yaml, sl.yaml: link, pio.link);
  * the link's PIO needs gpio base 16 on the master (bus B reaches GPIO39).
  * Both halves must run the same clk_sys: the slave's receive loop is timed
  * against the master's byte period (gen_boards.py checks the pair).

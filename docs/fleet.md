@@ -15,10 +15,11 @@ frank-sdk build target it runs as, cross-checked pin for pin.
 | 6 | OldSkoolFRANK | `oldskool` | rp2350b | single | — | vga | 9 |
 | 7 | FRANK Core 2 | `core2` | rp2350b | master | `C2` | auto | 6 |
 | 8 | Core 2 / FRANK Next (slave) | `core2-slave` | rp2350a | slave | `SL` | auto | 6 |
-| 9 | FRANK Next | `next` | rp2350b | master | `NX` | auto | 9 |
+| 9 | FRANK Next rev A | `next` | rp2350b | master | `NA` | auto | 9 |
 | 10 | Z0pa | `z0pa` | rp2350b | single | `Z0` | auto | 10 |
 | 11 | xt8086 | `xt8086` | rp2350b | single | — | auto | 10 |
 | 12 | FRANK ZX | `zx` | rp2350b | single | — | auto | 12 |
 | 13 | FRANK Z0 | `z0` | rp2350b | single | `FZ` | auto | 10 |
 | 14 | Olimex RP2350pc | `rp2350pc` | rp2350b | single | `OL` | auto | 7 |
 | 15 | FRANK Nano | `nano` | rp2350a | single | `FN` | auto | 6 |
+| 16 | FRANK Next rev B | `next_b` | rp2350b | master | `NB` | auto | 9 |

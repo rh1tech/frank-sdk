@@ -9,8 +9,9 @@ in [inventory.md](inventory.md) (`tools/inventory.py`).
 | frank-sdk | Source of the pins | Notes |
 |---|---|---|
 | `boards/m2.yaml` | frank-test `core/board_table.c` PINS_* conventions (netlist); frank-dos `BOARD_M2` | clocks: frank-quake2 diag tuning (PSRAM 168 MHz RXDELAY 6, flash 126 MHz RXDELAY 5) |
-| `boards/nx.yaml` | frank-test `FRANK_BOARD_NEXT`; frank-dos `BOARD_NX`, `boards/frank_next_master.h` | PIO plan from frank-dos (SDIO PIO0, HDMI+I2S PIO1, link PIO2 base 16) |
+| `boards/na.yaml` (was nx.yaml) | frank-test `FRANK_BOARD_NEXT`; frank-dos `BOARD_NX`, `boards/frank_next_master.h` | PIO plan from frank-dos (SDIO PIO0, HDMI+I2S PIO1, link PIO2 base 16) |
 | `boards/c2.yaml` | frank-test `FRANK_BOARD_CORE2`; frank-dos `BOARD_C2` | flash /5 RXDELAY 3: frank-blood (the derived 6 bricks a soft reset) |
+| `boards/nb.yaml` | frank-lab `frank_next2` netlist (rev 2.xx, unbuilt) | rev A's clocks and PIO plan: the same MCU, flash and PSRAM parts |
 | `boards/sl.yaml` | frank-test "Core 2 / FRANK Next (slave)"; frank-react `drivers/link/link_pins.h` | one file for three pin-identical slaves |
 | `boards/fz.yaml` | frank-test `FRANK_BOARD_Z0`, `boards/frank_z0.h` | FRANK Z0. Clocks untuned (378 MHz) |
 | `boards/z0.yaml` | frank-quake2 (`BOARD_VARIANT=Z0`), frank-dos `BOARD_Z2`, `drivers/hdmi/hdmi.h` lane order | Waveshare RP2350-PiZero |

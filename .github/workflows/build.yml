@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [M1, M2, NX, C2, SL, FZ, FN, Z0, PC, TW, AF, OL]
+        board: [M1, M2, NA, NB, C2, SL, FZ, FN, Z0, PC, TW, AF, OL]
         example: [hello, video, diag]
         exclude:
           - {board: SL, example: video}   # the slave has no HDMI
@@ -44,13 +44,13 @@ jobs:
           - {board: M2, example: video, opts: "-DFRANK_VIDEO_OUT=composite"}
           - {board: M2, example: video, opts: "-DFRANK_HDMI_BACKEND=pio"}
           - {board: M2, example: diag, opts: "-DFRANK_CONSOLE=uart"}
-          - {board: NX, example: dual, opts: ""}
+          - {board: NA, example: dual, opts: ""}
           - {board: SL, example: dual, opts: ""}
           - {board: C2, example: dual, opts: ""}
           - {board: GA, example: runtime, opts: ""}
           - {board: GB, example: runtime, opts: ""}
           - {board: XT, example: runtime, opts: ""}
-          - {board: NX, example: runtime, opts: "-DFRANK_RUNTIME_BOARD=ON"}
+          - {board: NA, example: runtime, opts: "-DFRANK_RUNTIME_BOARD=ON"}
     steps:
       - uses: actions/checkout@v4
       - run: cmake -S examples/${{ matrix.example }} -B b --fresh -G Ninja -DFRANK_BOARD=${{ matrix.board }} ${{ matrix.opts }} -DPICO_SDK_PATH=$PICO_SDK_PATH

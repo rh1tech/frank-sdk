@@ -19,10 +19,10 @@ async def probe(server, calls):
                 print(f"  {name}({args}) -> {text[:160]!r}")
 
 async def main():
-    await probe("frank-docs-mcp", [("pin", {"board_id": "NX", "gpio": 43}),
+    await probe("frank-docs-mcp", [("pin", {"board_id": "NA", "gpio": 43}),
                                    ("list_boards", {}), ("console_commands", {})])
     if "--bench" in sys.argv:
-        await probe("frank-dev-mcp", [("command", {"board": "NX", "cmd": "psram"})])
+        await probe("frank-dev-mcp", [("command", {"board": "NA", "cmd": "psram"})])
     else:
         await probe("frank-dev-mcp", [])
 

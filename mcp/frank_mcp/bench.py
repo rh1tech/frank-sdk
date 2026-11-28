@@ -5,7 +5,7 @@ Every hardware call has a timeout. Boards are addressed by USB serial number
 (tty names move), from the machine-local ~/.config/frank/bench.yaml:
 
     boards:
-      NX: {serial: 0123456789ABCDEF, probe: FEDCBA9876543210}
+      NA: {serial: 0123456789ABCDEF, probe: FEDCBA9876543210}
       M2: {serial: ...}
     capture: {video: "USB Video", audio: "USB Digital Audio", size: 640x480, fps: 30}
 

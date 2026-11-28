@@ -1,9 +1,9 @@
 # A new firmware
 
 ```
-frank-sdk/mcp/.venv/bin/frank new ~/src/frank-foo frank-foo NX M2 Z0 --video
+frank-sdk/mcp/.venv/bin/frank new ~/src/frank-foo frank-foo NA M2 Z0 --video
 cd ~/src/frank-foo
-./build.sh NX && ./flash.sh NX
+./build.sh NA && ./flash.sh NA
 ```
 
 (or the `frank-dev` MCP tool `new_firmware`). It creates a git repo with frank-sdk as a

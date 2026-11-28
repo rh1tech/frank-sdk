@@ -2,7 +2,7 @@
 # Boards by target id; serial = the board's own USB serial (its CDC console and
 # BOOTSEL device); probe = the debug probe on it, for the SWD BOOTSEL fallback.
 boards:
-  NX: {serial: 0123456789ABCDEF, probe: FEDCBA9876543210}
+  NA: {serial: 0123456789ABCDEF, probe: FEDCBA9876543210}
 #  M2: {serial: ...}
 # A board under its own bench name builds for its target (psram_unstick):
 #  PGA: {serial: ..., target: M2}

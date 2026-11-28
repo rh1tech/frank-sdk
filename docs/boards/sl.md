@@ -1,9 +1,9 @@
-# FRANK Next / Core 2 (slave) — target `SL`
+# FRANK Next rev A / Core 2 (slave) — target `SL`
 
 Generated from [`boards/sl.yaml`](../../boards/sl.yaml) by `tools/gen_boards.py`. Do not edit.
 
 - **MCU:** RP2350A, role slave
-- **Covers:** FRANK Next slave, FRANK Core 2 slave, FRANK Core 2U slave
+- **Covers:** FRANK Next rev A slave, FRANK Core 2 slave, FRANK Core 2U slave
 - **Flash:** 16M W25Q128JVPIQ
 - **PSRAM:** 8M on CS GPIO0
 - **Clocks:** CPU 504 MHz at 1.65 V, PSRAM ≤ 133 MHz, flash ≤ 66 MHz

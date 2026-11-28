@@ -29,7 +29,7 @@ def test_generated_files_are_current():
     assert r.returncode == 0, r.stderr
 
 
-@pytest.mark.parametrize("bid", ["M1", "M2", "NX", "C2", "SL", "FZ", "FN", "Z0", "PC", "GA", "GB", "XT"])
+@pytest.mark.parametrize("bid", ["M1", "M2", "NA", "NB", "C2", "SL", "FZ", "FN", "Z0", "PC", "GA", "GB", "XT"])
 def test_every_board_checks(bid):
     b = load(bid)
     gen_boards.check(b, gen_boards.pin_claims(b))
@@ -55,16 +55,16 @@ def test_pin_beyond_package_is_refused():
 
 
 def test_pio_window_is_checked():
-    b = load("NX")
+    b = load("NA")
     b["pio"]["sd"] = 2                 # SD on GPIO0-7 with the link up to GPIO42
     with pytest.raises(gen_boards.BoardError, match="32-pin window"):
         gen_boards.check(b, gen_boards.pin_claims(b))
 
 
 def test_docs_tools():
-    assert {b["id"] for b in docs_server.list_boards()} >= {"M1", "M2", "NX", "C2", "SL", "FZ", "Z0", "PC"}
-    assert "link" in docs_server.pin("NX", 43)
-    assert "free" in docs_server.pin("NX", 45) or "console" in docs_server.pin("NX", 45)
+    assert {b["id"] for b in docs_server.list_boards()} >= {"M1", "M2", "NA", "NB", "C2", "SL", "FZ", "Z0", "PC"}
+    assert "link" in docs_server.pin("NA", 43)
+    assert "free" in docs_server.pin("NA", 45) or "console" in docs_server.pin("NA", 45)
     assert docs_server.gotchas("QPI")
     assert all(g["id"] != "README" for g in docs_server.gotchas())
     assert "help" in docs_server.console_commands()["builtins"]
@@ -73,7 +73,7 @@ def test_docs_tools():
 
 
 def test_scaffold(tmp_path):
-    r = scaffold.new_firmware(str(tmp_path / "fw"), "frank-test-fw", ["NX", "z0"], "a test",
+    r = scaffold.new_firmware(str(tmp_path / "fw"), "frank-test-fw", ["NA", "z0"], "a test",
                               features=["video"], sdk="local")
     d = Path(r["path"])
     cm = (d / "CMakeLists.txt").read_text()
@@ -145,7 +145,7 @@ def test_console_falls_back_to_the_probe_uart(monkeypatch):
 
 
 def test_scaffold_full_features(tmp_path):
-    r = scaffold.new_firmware(str(tmp_path / "fw"), "fw-full", ["M2", "NX"], features=["video", "audio", "storage", "input"], sdk="local")
+    r = scaffold.new_firmware(str(tmp_path / "fw"), "fw-full", ["M2", "NA"], features=["video", "audio", "storage", "input"], sdk="local")
     d = Path(r["path"])
     cm = (d / "CMakeLists.txt").read_text()
     for lib in ("frank_video", "frank_audio", "frank_storage", "frank_input"):

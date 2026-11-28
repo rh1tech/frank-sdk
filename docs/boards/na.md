@@ -1,9 +1,9 @@
-# FRANK Next (master) — target `NX`
+# FRANK Next rev A (master) — target `NA`
 
-Generated from [`boards/nx.yaml`](../../boards/nx.yaml) by `tools/gen_boards.py`. Do not edit.
+Generated from [`boards/na.yaml`](../../boards/na.yaml) by `tools/gen_boards.py`. Do not edit.
 
 - **MCU:** RP2350B, role master, pair `SL`
-- **Covers:** FRANK Next
+- **Covers:** FRANK Next rev A, FRANK Next 1.xx
 - **Flash:** 16M W25Q128JVPIQ
 - **PSRAM:** 8M on CS GPIO47
 - **Clocks:** CPU 504 MHz at 1.65 V, PSRAM ≤ 133 MHz, flash ≤ 66 MHz
@@ -64,4 +64,4 @@ Generated from [`boards/nx.yaml`](../../boards/nx.yaml) by `tools/gen_boards.py`
 
 Shared (a build uses one of each group): sd vs sd_spi_fallback
 
-Sources: frank-test core/board_table.c FRANK_BOARD_NEXT (netlist); frank-dos src/board_config.h BOARD_NX, boards/frank_next_master.h; frank-duke3d common/platform/clocks.c (504 MHz on both halves)
+Sources: murmulator hardware/frank_next (schematic, rev 1.xx); frank-test core/board_table.c FRANK_BOARD_NEXT (netlist); frank-dos src/board_config.h BOARD_NX, boards/frank_next_master.h; frank-duke3d common/platform/clocks.c (504 MHz on both halves)

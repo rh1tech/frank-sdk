@@ -1,6 +1,6 @@
 # frank-sdk — pick the board. Include BEFORE pico_sdk_import.cmake:
 #
-#   set(FRANK_BOARD M2 CACHE STRING "Board")      # or -DFRANK_BOARD=NX
+#   set(FRANK_BOARD M2 CACHE STRING "Board")      # or -DFRANK_BOARD=NA
 #   include(frank-sdk/cmake/board.cmake)
 #   include(frank-sdk/pico_sdk_import.cmake)
 #   project(myfw C CXX ASM)
@@ -31,6 +31,11 @@ if(NOT DEFINED FRANK_BOARD OR FRANK_BOARD STREQUAL "")
     message(FATAL_ERROR "frank-sdk: set FRANK_BOARD to one of: ${FRANK_BOARDS}")
 endif()
 string(TOUPPER "${FRANK_BOARD}" FRANK_BOARD)
+# FRANK Next rev A was NX before rev B (NB) came
+if(FRANK_BOARD STREQUAL "NX")
+    message(WARNING "frank-sdk: FRANK_BOARD=NX is NA now (FRANK Next rev A); rev B is NB")
+    set(FRANK_BOARD NA CACHE STRING "Board" FORCE)
+endif()
 if(NOT FRANK_BOARD IN_LIST FRANK_BOARDS)
     message(FATAL_ERROR "frank-sdk: FRANK_BOARD=${FRANK_BOARD} is not one of: ${FRANK_BOARDS}")
 endif()

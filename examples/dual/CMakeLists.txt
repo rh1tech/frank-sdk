@@ -1,8 +1,8 @@
 # frank-sdk example: dual — the two halves of FRANK Next / Core 2 over the link.
-# Build both: -DFRANK_BOARD=NX (or C2) for the master, -DFRANK_BOARD=SL for the slave.
+# Build both: -DFRANK_BOARD=NA (or C2) for the master, -DFRANK_BOARD=SL for the slave.
 cmake_minimum_required(VERSION 3.19)
 
-set(FRANK_BOARD "NX" CACHE STRING "Board: NX or C2 (master), SL (slave)")
+set(FRANK_BOARD "NA" CACHE STRING "Board: NA or C2 (master), SL (slave)")
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/board.cmake)
 include(${FRANK_SDK_DIR}/pico_sdk_import.cmake)
 

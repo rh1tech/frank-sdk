@@ -6,7 +6,7 @@
  *
  * The common mode is 640x480@60 from a 320x240 8-bit picture: each source
  * pixel is shown 2x2, through a 256-entry palette. It works on the HSTX
- * boards (M2, NX, C2, FZ: drivers/video/hstx, pico_hdmi's psx_video) and the
+ * boards (M2, NA, NB, C2, FZ: drivers/video/hstx, pico_hdmi's psx_video) and the
  * PIO boards (Z0, M1: drivers/video/pio, frank-quake2's hdmi_pio) alike, each
  * with sound (HDMI data islands) or without (DVI). An HSTX board can take the
  * PIO back-end too: cmake -DFRANK_HDMI_BACKEND=pio. HSTX boards also have

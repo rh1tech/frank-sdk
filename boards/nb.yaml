@@ -1,0 +1,57 @@
+# FRANK Next rev B (2.xx) — the master half. From the frank-lab frank_next2
+# netlist; no board is built yet, so nothing here has run on hardware.
+# Rev A is boards/na.yaml.
+#
+# What changed on the master since rev A: GPIO0-42, 44-47 are the same nets.
+# GPIO43, rev A's wire to the slave's RUN, is the WS2812 (LD2) now; the
+# slave's RUN is the PCF8574's P0 instead. The DS3231 became an RV-3032 and
+# a PCF8574 joined the I2C bus (slave RUN, the SD card detect, the USB mux).
+# The ESP8266 and the CH343P are gone: the UART is J10, the USB mux (a
+# TS3USB221, latched by a 74LVC1G74 from BOOT at reset) picks the CH334F hub
+# or the USB-C socket.
+id: NB
+name: FRANK Next rev B (master)
+covers: [FRANK Next rev B, FRANK Next 2.xx]
+mcu: rp2350b
+role: master
+sources:
+  - frank-lab frank_next2 (schematic, rev 2.xx, unbuilt)
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 47, bytes: 8M, part: APS6404L}
+clocks:                 # rev A's: the same MCU, flash and PSRAM parts
+  cpu_mhz: 504
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: usb
+  uart: {inst: 0, tx: 46, rx: 45}   # J10, through 330R each
+usb: {native: host, hub: true}      # CH334F, three USB-A; or the USB-C socket, by the mux
+video:
+  hdmi: {backend: hstx, base: 12, clk: 12, data: 14, rgb_not_bgr: true, invert_pairs: true}
+sd: {mode: sdio, cmd: 0, clk: 1, dat0: 4}        # DAT0-3 = GPIO4-7, as rev A
+sd_spi_fallback: {clk: 1, cmd: 0, dat0: 4, dat3: 7}
+audio:
+  i2s: {data: 11, bclk: 9, lrck: 10, mclk: 8, dac: TLV320DAC3100}   # as rev A
+i2c: {inst: 1, sda: 2, scl: 3, devices: {TLV320DAC3100: 0x18, RV3032: 0x51, PCF8574: 0x20}}
+expander:               # the PCF8574's port bits
+  slave_run: 0          # through 1K onto the slave's RUN (10K up): low holds the slave in reset
+  sd_cd: 1              # the microSD socket's card detect
+  usb_force_c: 2        # low: the mux to the USB-C socket (the flip-flop's reset)
+  usb_force_hub: 3      # low: the mux to the hub (its set)
+tape_in: 44
+led: {ws2812: 43}       # LD2, through 330R
+link:
+  side: master
+  a_data: 20            # bus A master->slave GPIO20-27, CLK 28, VALID 29 (100R each)
+  b_data: 30            # bus B slave->master GPIO30-37, CLK 38, VALID 39
+  fs: 40
+  db_out: 41
+  db_in: 42
+pio:
+  sd: 0
+  video: 1
+  i2s: 1
+  link: 2
+shared:
+  - [sd, sd_spi_fallback]

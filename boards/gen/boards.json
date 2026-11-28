@@ -1251,7 +1251,7 @@
    }
   }
  },
- "NX": {
+ "NA": {
   "audio": {
    "i2s": {
     "bclk": 9,
@@ -1276,7 +1276,8 @@
    }
   },
   "covers": [
-   "FRANK Next"
+   "FRANK Next rev A",
+   "FRANK Next 1.xx"
   ],
   "flash": {
    "bytes": "16M",
@@ -1441,7 +1442,7 @@
    "scl": 3,
    "sda": 2
   },
-  "id": "NX",
+  "id": "NA",
   "link": {
    "a_data": 20,
    "b_data": 30,
@@ -1452,7 +1453,7 @@
    "side": "master"
   },
   "mcu": "rp2350b",
-  "name": "FRANK Next (master)",
+  "name": "FRANK Next rev A (master)",
   "pair": "SL",
   "pio": {
    "i2s": 1,
@@ -1490,9 +1491,276 @@
    ]
   ],
   "sources": [
+   "murmulator hardware/frank_next (schematic, rev 1.xx)",
    "frank-test core/board_table.c FRANK_BOARD_NEXT (netlist)",
    "frank-dos src/board_config.h BOARD_NX, boards/frank_next_master.h",
    "frank-duke3d common/platform/clocks.c (504 MHz on both halves)"
+  ],
+  "tape_in": 44,
+  "usb": {
+   "hub": true,
+   "native": "host"
+  },
+  "video": {
+   "hdmi": {
+    "backend": "hstx",
+    "base": 12,
+    "clk": 12,
+    "data": 14,
+    "invert_pairs": true,
+    "rgb_not_bgr": true
+   }
+  }
+ },
+ "NB": {
+  "audio": {
+   "i2s": {
+    "bclk": 9,
+    "dac": "TLV320DAC3100",
+    "data": 11,
+    "lrck": 10,
+    "mclk": 8
+   }
+  },
+  "clocks": {
+   "cpu_mhz": 504,
+   "flash_mhz": 66,
+   "psram_mhz": 133,
+   "vreg": 1.65
+  },
+  "console": {
+   "default": "usb",
+   "uart": {
+    "inst": 0,
+    "rx": 45,
+    "tx": 46
+   }
+  },
+  "covers": [
+   "FRANK Next rev B",
+   "FRANK Next 2.xx"
+  ],
+  "expander": {
+   "sd_cd": 1,
+   "slave_run": 0,
+   "usb_force_c": 2,
+   "usb_force_hub": 3
+  },
+  "flash": {
+   "bytes": "16M",
+   "part": "W25Q128JVPIQ"
+  },
+  "gpio": {
+   "0": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "1": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "10": [
+    "audio.i2s"
+   ],
+   "11": [
+    "audio.i2s"
+   ],
+   "12": [
+    "video.hdmi"
+   ],
+   "13": [
+    "video.hdmi"
+   ],
+   "14": [
+    "video.hdmi"
+   ],
+   "15": [
+    "video.hdmi"
+   ],
+   "16": [
+    "video.hdmi"
+   ],
+   "17": [
+    "video.hdmi"
+   ],
+   "18": [
+    "video.hdmi"
+   ],
+   "19": [
+    "video.hdmi"
+   ],
+   "2": [
+    "i2c"
+   ],
+   "20": [
+    "link"
+   ],
+   "21": [
+    "link"
+   ],
+   "22": [
+    "link"
+   ],
+   "23": [
+    "link"
+   ],
+   "24": [
+    "link"
+   ],
+   "25": [
+    "link"
+   ],
+   "26": [
+    "link"
+   ],
+   "27": [
+    "link"
+   ],
+   "28": [
+    "link"
+   ],
+   "29": [
+    "link"
+   ],
+   "3": [
+    "i2c"
+   ],
+   "30": [
+    "link"
+   ],
+   "31": [
+    "link"
+   ],
+   "32": [
+    "link"
+   ],
+   "33": [
+    "link"
+   ],
+   "34": [
+    "link"
+   ],
+   "35": [
+    "link"
+   ],
+   "36": [
+    "link"
+   ],
+   "37": [
+    "link"
+   ],
+   "38": [
+    "link"
+   ],
+   "39": [
+    "link"
+   ],
+   "4": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "40": [
+    "link"
+   ],
+   "41": [
+    "link"
+   ],
+   "42": [
+    "link"
+   ],
+   "43": [
+    "led"
+   ],
+   "44": [
+    "tape_in"
+   ],
+   "45": [
+    "console.uart"
+   ],
+   "46": [
+    "console.uart"
+   ],
+   "47": [
+    "psram"
+   ],
+   "5": [
+    "sd"
+   ],
+   "6": [
+    "sd"
+   ],
+   "7": [
+    "sd",
+    "sd_spi_fallback"
+   ],
+   "8": [
+    "audio.i2s"
+   ],
+   "9": [
+    "audio.i2s"
+   ]
+  },
+  "i2c": {
+   "devices": {
+    "PCF8574": 32,
+    "RV3032": 81,
+    "TLV320DAC3100": 24
+   },
+   "inst": 1,
+   "scl": 3,
+   "sda": 2
+  },
+  "id": "NB",
+  "led": {
+   "ws2812": 43
+  },
+  "link": {
+   "a_data": 20,
+   "b_data": 30,
+   "db_in": 42,
+   "db_out": 41,
+   "fs": 40,
+   "side": "master"
+  },
+  "mcu": "rp2350b",
+  "name": "FRANK Next rev B (master)",
+  "pio": {
+   "i2s": 1,
+   "link": 2,
+   "sd": 0,
+   "video": 1
+  },
+  "pio_gpio_base": {
+   "0": 0,
+   "1": 0,
+   "2": 16
+  },
+  "psram": {
+   "bytes": "8M",
+   "cs": 47,
+   "part": "APS6404L"
+  },
+  "role": "master",
+  "sd": {
+   "clk": 1,
+   "cmd": 0,
+   "dat0": 4,
+   "mode": "sdio"
+  },
+  "sd_spi_fallback": {
+   "clk": 1,
+   "cmd": 0,
+   "dat0": 4,
+   "dat3": 7
+  },
+  "shared": [
+   [
+    "sd",
+    "sd_spi_fallback"
+   ]
+  ],
+  "sources": [
+   "frank-lab frank_next2 (schematic, rev 2.xx, unbuilt)"
   ],
   "tape_in": 44,
   "usb": {
@@ -1881,7 +2149,7 @@
    }
   },
   "covers": [
-   "FRANK Next slave",
+   "FRANK Next rev A slave",
    "FRANK Core 2 slave",
    "FRANK Core 2U slave"
   ],
@@ -1989,7 +2257,7 @@
    "side": "slave"
   },
   "mcu": "rp2350a",
-  "name": "FRANK Next / Core 2 (slave)",
+  "name": "FRANK Next rev A / Core 2 (slave)",
   "pio": {
    "link": 0
   },

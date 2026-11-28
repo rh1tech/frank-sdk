@@ -1,11 +1,13 @@
-# FRANK Next rev 1.00 — the master half. The slave half is boards/sl.yaml.
-id: NX
-name: FRANK Next (master)
-covers: [FRANK Next]
+# FRANK Next rev A (1.xx) — the master half. The slave half is boards/sl.yaml.
+# Rev B (2.xx) is boards/nb.yaml. NA was NX: FRANK_BOARD=NX still builds this.
+id: NA
+name: FRANK Next rev A (master)
+covers: [FRANK Next rev A, FRANK Next 1.xx]
 mcu: rp2350b
 role: master
 pair: SL
 sources:
+  - murmulator hardware/frank_next (schematic, rev 1.xx)
   - frank-test core/board_table.c FRANK_BOARD_NEXT (netlist)
   - frank-dos src/board_config.h BOARD_NX, boards/frank_next_master.h
   - frank-duke3d common/platform/clocks.c (504 MHz on both halves)

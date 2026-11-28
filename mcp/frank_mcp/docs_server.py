@@ -38,7 +38,7 @@ def list_boards() -> list[dict]:
 @server.tool()
 def board(board_id: str) -> dict:
     """One board in full: pins by function and by GPIO, clocks, console, PIO plan,
-    shared pins, sources. Board ids: M1 (Murmulator 1 + Pico 2, "M1P2"), M2, NX,
+    shared pins, sources. Board ids: M1 (Murmulator 1 + Pico 2, "M1P2"), M2, NA (FRANK Next rev A), NB (rev B),
     C2, SL (the Next/Core 2 slave), FZ (FRANK Z0), FN (FRANK Nano), Z0 (Waveshare RP2350-PiZero),
     PC (Olimex PICO-PC + Pico 2)."""
     bs = _boards()
@@ -110,7 +110,7 @@ def search_docs(query: str, limit: int = 20) -> list[dict]:
 
 @server.tool()
 def read_doc(path: str) -> str:
-    """A doc by its path under frank-sdk (e.g. docs/bench.md, docs/boards/nx.md)."""
+    """A doc by its path under frank-sdk (e.g. docs/bench.md, docs/boards/na.md)."""
     p = (SDK / path).resolve()
     if SDK not in p.parents or not p.is_file():
         return f"no doc {path}"

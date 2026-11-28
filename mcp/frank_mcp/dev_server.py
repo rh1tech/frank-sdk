@@ -11,7 +11,7 @@ from . import bench, lint, scaffold
 server = MCPServer(
     "frank-dev",
     instructions=(
-        "Builds and bench-tests FRANK RP2350 firmware. Boards are named by target id (M1, M2, NX, C2, SL, FZ, FN, Z0, PC: frank-docs list_boards) "
+        "Builds and bench-tests FRANK RP2350 firmware. Boards are named by target id (M1, M2, NA, NB, C2, SL, FZ, FN, Z0, PC: frank-docs list_boards) "
         "and found by USB serial from ~/.config/frank/bench.yaml. Flash only through `flash` (never ask the "
         "user to press BOOTSEL); after every flash, check the console and the picture (`watch`). Every tool "
         "has a timeout; a BenchError says what failed."

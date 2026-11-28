@@ -422,6 +422,31 @@ static const pinsig_entry_t sig_nano[] = {
     { 26, PINSIG_FLOAT },
 };
 
+/* The FRANK Next rev B master. Below GP20 it is rev A exactly — the SDIO
+ * socket's 10K pull-ups and the bare CLK — and so it is the Core 2's
+ * opposite in the same way. What sets it apart from rev A is GP43 and
+ * GP45: rev A's slave RUN and ESP mux lines carry 10K pull-ups, while
+ * here GP43 is the WS2812's input behind 330R and GP45 the bare UART RX
+ * on J10. An RV-3032 answering at 0x51 rules out rev A as well, whose
+ * RTC is a DS3231 at 0x68. */
+static const pinsig_entry_t sig_next_b[] = {
+    /* SD CMD, 10K */
+    /* SD CLK, deliberately not */
+    /* SD DAT0-2, CD/DAT3, 10K */
+    /* the WS2812's DIN, no pull */
+    /* J10's RX, no pull */
+    /* PSRAM CE, 2K2 */
+    { 0, PINSIG_HIGH },
+    { 1, PINSIG_FLOAT },
+    { 4, PINSIG_HIGH },
+    { 5, PINSIG_HIGH },
+    { 6, PINSIG_HIGH },
+    { 7, PINSIG_HIGH },
+    { 43, PINSIG_FLOAT },
+    { 45, PINSIG_FLOAT },
+    { 47, PINSIG_HIGH },
+};
+
 const frank_board_desc_t frank_board_table[] = {
 
 {
@@ -795,7 +820,7 @@ const frank_board_desc_t frank_board_table[] = {
      * slave's firmware is listening rather than only that its
      * RUN pin works. Recorded so that nothing drives it by
      * accident — see the field's note in board_desc.h. */
-    .id = FRANK_BOARD_NEXT, .name = "FRANK Next", .slug = "next",
+    .id = FRANK_BOARD_NEXT, .name = "FRANK Next rev A", .slug = "next",
     .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_MASTER,
     .caps = CAP_PSRAM_QMI | CAP_SD | CAP_SD_4BIT | CAP_VIDEO_HDMI | CAP_AUDIO_I2S | CAP_AUDIO_CODEC_I2C | CAP_USB_DEVICE | CAP_USB_HOST | CAP_USB_HUB | CAP_USB_MUX | CAP_TAPE_IN | CAP_RTC_DS3231 | CAP_I2C | CAP_ESP01 | CAP_LINK | CAP_LINK_RUN,
     .pico_socket = false, .module_memory = false,
@@ -1202,6 +1227,44 @@ const frank_board_desc_t frank_board_table[] = {
     .sig = sig_nano, .sig_len = 6,
     .flash_bytes = 16777216u, .psram_bytes = 8388608u,
     .manual_note = NULL,
+},
+
+/* FRANK Next, second revision. The master's GPIO are rev A's but for
+ * GPIO43, which drives the WS2812 now instead of the slave's RUN. The
+ * RTC is an RV-3032 at 0x51 instead of the DS3231, a PCF8574 at 0x20
+ * joined the bus, and the ESP8266 and the CH343P are gone. */
+{
+    /* GP46/GP45 on J10, through 330R each: GP0/GP1 are the SD
+     * card's CMD and CLK, as on rev A. */
+    /* SDIO 4-bit, CMD and CLK below the data lines, as on rev A. */
+    /* TLV320DAC3100: BCLK/WCLK/DIN, as on rev A. */
+    /* LD2, through 330R. */
+    /* A BC850 squaring the tape input, as on rev A. */
+    .id = FRANK_BOARD_NEXT_B, .name = "FRANK Next rev B", .slug = "next_b",
+    .mcu = FRANK_MCU_RP2350B, .role = FRANK_ROLE_MASTER,
+    .caps = CAP_PSRAM_QMI | CAP_SD | CAP_SD_4BIT | CAP_VIDEO_HDMI | CAP_AUDIO_I2S | CAP_AUDIO_CODEC_I2C | CAP_USB_DEVICE | CAP_USB_HOST | CAP_USB_HUB | CAP_USB_MUX | CAP_TAPE_IN | CAP_RTC_RV3032 | CAP_I2C | CAP_LED_WS2812 | CAP_LINK,
+    .pico_socket = false, .module_memory = false,
+    .pins = {
+        .uart_tx = 46, .uart_rx = 45, .ps2_kb_clk = PIN_NC, .ps2_kb_dat = PIN_NC,
+        .ps2_ms_clk = PIN_NC, .ps2_ms_dat = PIN_NC, .sd_dat0 = 4, .sd_cs = 7,
+        .sd_clk = 1, .sd_cmd = 0, .sd_dat1 = 5, .sd_dat2 = 6,
+        .i2s_data = 11, .i2s_clk_base = 9, .i2s_mclk = 8, .pwm_l = PIN_NC,
+        .pwm_r = PIN_NC, .pcm_i2s_data = PIN_NC, .pcm_i2s_clk_base = PIN_NC, .video_base = 12,
+        .psram_cs = 47, .psram_soft_sclk = PIN_NC, .psram_soft_mosi = PIN_NC, .psram_soft_miso = PIN_NC,
+        .led_ws2812 = 43, .led_plain = PIN_NC, .esp_uart_tx = PIN_NC, .esp_uart_rx = PIN_NC,
+        .esp_reset = PIN_NC, .esp_gpio0 = PIN_NC, .esp_gpio2 = PIN_NC, .pad_latch = PIN_NC,
+        .pad_clk = PIN_NC, .pad_d1 = PIN_NC, .pad_d2 = PIN_NC, .tape_in = 44,
+        .i2c_sda = 2, .i2c_scl = 3, .onewire = PIN_NC, .pio_usb_dp = PIN_NC,
+        .ay_rclk = PIN_NC, .ay_srclk = PIN_NC, .ay_ser = PIN_NC, .dip = PIN_NC,
+        .kbd_col_base = PIN_NC, .kbd_row_base = PIN_NC, .kbd_col_len = 0, .kbd_row_len = 0,
+        .host_bus_base = PIN_NC, .host_bus_len = 0, .host_clk = PIN_NC, .host_reset = PIN_NC,
+        .host_ready = PIN_NC, .link_a_data = 20, .link_b_data = 30, .link_fs = 40,
+        .link_db_out = 41, .link_db_in = 42, .link_run = PIN_NC,
+    },
+    .video_default = VIDEO_AUTO, .i2s_lr_swapped = false,
+    .sig = sig_next_b, .sig_len = 9,
+    .flash_bytes = 16777216u, .psram_bytes = 8388608u,
+    .manual_note = "The slave's RUN is the PCF8574's P0 (I2C 0x20), not a GPIO. The USB mux takes the master's USB to the hub, or to the USB-C socket when BOOT is held at reset; the PCF8574's P2/P3 force it either way.",
 },
 
 };
