@@ -41,6 +41,9 @@ typedef struct {
 
     uint  tx_data_base, tx_clk, tx_valid;
     uint  rx_data_base, rx_clk, rx_valid;
+    bool  tx_rev, rx_rev;   /* data wired D7..D0 upwards (link_pins_t) */
+    uint32_t *rx_buf;       /* rx_rev: the frame link_rx_wait() turns back */
+    size_t rx_words;
 
     uint  db_out;        /* doorbell we drive   */
     uint  db_in;         /* doorbell we observe */
@@ -66,10 +69,28 @@ typedef struct {
 #define LINK_CTRL_CLKDIV 2.0f
 
 /* Claim two SMs on `pio`, load both programs, configure the pins and
- * grab two DMA channels. Starts at clkdiv 1.0 (maximum rate). */
+ * grab two DMA channels. Starts at clkdiv 1.0 (maximum rate). Each bus
+ * as the Core 2 and FRANK Next rev A wire it: D0..D7 upwards, CLK above
+ * them, VALID above that. */
 void link_init(link_t *l, PIO pio,
                uint tx_data_base, uint rx_data_base,
                uint db_out, uint db_in, uint fs, bool fs_is_output);
+
+/* A bus wired otherwise: CLK and VALID anywhere, the data D0..D7 upwards
+ * or, reversed, D7..D0 upwards (FRANK Next rev B's slave). The far end
+ * needs nothing different: the bytes on the wire are the same. */
+typedef struct {
+    uint data, clk, valid;
+    bool reversed;
+} link_bus_pins_t;
+
+typedef struct {
+    link_bus_pins_t tx, rx;
+    uint db_out, db_in, fs;
+    bool fs_is_output;
+} link_pins_t;
+
+void link_init_pins(link_t *l, PIO pio, const link_pins_t *p);
 
 /* Set the divider used for bulk transfers. Only the transmitter is
  * divided — the receiver is edge-driven and always runs flat out.

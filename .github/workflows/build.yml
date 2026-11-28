@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [M1, M2, NA, NB, C2, SL, FZ, FN, Z0, PC, TW, AF, OL]
+        board: [M1, M2, NA, NB, C2, SL, SB, FZ, FN, Z0, PC, TW, AF, OL]
         example: [hello, video, diag]
         exclude:
           - {board: SL, example: video}   # the slave has no HDMI
@@ -45,6 +45,8 @@ jobs:
           - {board: M2, example: video, opts: "-DFRANK_HDMI_BACKEND=pio"}
           - {board: M2, example: diag, opts: "-DFRANK_CONSOLE=uart"}
           - {board: NA, example: dual, opts: ""}
+          - {board: NB, example: dual, opts: ""}
+          - {board: SB, example: dual, opts: ""}
           - {board: SL, example: dual, opts: ""}
           - {board: C2, example: dual, opts: ""}
           - {board: GA, example: runtime, opts: ""}

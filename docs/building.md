@@ -29,7 +29,7 @@ frank_firmware(myfw)                          # the platform, linker script, con
 
 | Option | Values | Default |
 |---|---|---|
-| `FRANK_BOARD` | M1 M2 NA NB C2 SL FZ FN Z0 PC TW AF OL, or GA GB XT (run time); C2 is experimental, a firmware need not support it | (required) |
+| `FRANK_BOARD` | M1 M2 NA NB C2 SL SB FZ FN Z0 PC TW AF OL, or GA GB XT (run time); C2 is experimental, a firmware need not support it | (required) |
 | `FRANK_CONSOLE` | `usb` (CDC on the native port), `uart`, `none` | the board's |
 | `FRANK_RUNTIME_BOARD` | `ON`, `OFF` | `ON` for GA, GB, XT |
 | `FRANK_USB_HOST` | `native`, `pio`, `none` | PIO-USB where the board has it and the console is USB; the native port with a UART console; else none |

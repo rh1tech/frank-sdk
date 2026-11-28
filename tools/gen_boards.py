@@ -99,8 +99,11 @@ def pin_claims(b):
         add("usb.pio_usb_5v_en", usb["pio_usb_5v_en"])
     lk = b.get("link")
     if lk:
-        add("link", *range(lk["a_data"], lk["a_data"] + 10), *range(lk["b_data"], lk["b_data"] + 10),
-            lk["fs"], lk["db_out"], lk["db_in"], lk.get("run"))
+        # each bus: 8 data pins, CLK and VALID (data+8, data+9 unless named)
+        def bus(x):
+            d = lk[f"{x}_data"]
+            return [*range(d, d + 8), lk.get(f"{x}_clk", d + 8), lk.get(f"{x}_valid", d + 9)]
+        add("link", *bus("a"), *bus("b"), lk["fs"], lk["db_out"], lk["db_in"], lk.get("run"))
     return claims
 
 

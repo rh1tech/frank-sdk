@@ -16,6 +16,20 @@
 
 #include <string.h>
 
+/* a word's 32 bits mirrored: one instruction on the M33 */
+static inline uint32_t rbit32(uint32_t x) {
+#if defined(__ARM_ARCH_8M_MAIN__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
+    __asm("rbit %0, %1" : "=r"(x) : "r"(x));
+    return x;
+#else
+    x = (x >> 1 & 0x55555555u) | (x & 0x55555555u) << 1;
+    x = (x >> 2 & 0x33333333u) | (x & 0x33333333u) << 2;
+    x = (x >> 4 & 0x0F0F0F0Fu) | (x & 0x0F0F0F0Fu) << 4;
+    x = (x >> 8 & 0x00FF00FFu) | (x & 0x00FF00FFu) << 8;
+    return x >> 16 | x << 16;
+#endif
+}
+
 /* Once the TX FIFO reads empty, at most one 32-bit word is left in the
  * output shift register. Waiting for that to clock out is what stops
  * VALID from dropping mid-byte, but the wait has to be derived from the
@@ -24,7 +38,8 @@
  * frame and turn the round-trip figure into a measurement of our own
  * padding. Four bytes plus a generous margin. */
 static inline uint32_t tx_drain_us(const link_t *l) {
-    float cycles = 4.0f * (float)LINK_PIO_CYCLES_PER_BYTE * l->applied_clkdiv;
+    float cycles = (l->tx_rev ? (float)LINK_PIO_CYCLES_PER_WORD_REV : 4.0f * (float)LINK_PIO_CYCLES_PER_BYTE) *
+                   l->applied_clkdiv;
     float us = (cycles * 1000000.0f) / (float)clock_get_hz(clk_sys);
     return (uint32_t)us + 2u;
 }
@@ -32,15 +47,33 @@ static inline uint32_t tx_drain_us(const link_t *l) {
 void link_init(link_t *l, PIO pio,
                uint tx_data_base, uint rx_data_base,
                uint db_out, uint db_in, uint fs, bool fs_is_output) {
+    const link_pins_t p = {
+        .tx = {tx_data_base, tx_data_base + 8, tx_data_base + 9, false},
+        .rx = {rx_data_base, rx_data_base + 8, rx_data_base + 9, false},
+        .db_out = db_out, .db_in = db_in, .fs = fs, .fs_is_output = fs_is_output,
+    };
+    link_init_pins(l, pio, &p);
+}
+
+void link_init_pins(link_t *l, PIO pio, const link_pins_t *p) {
     memset(l, 0, sizeof(*l));
+
+    const uint tx_data_base = p->tx.data, rx_data_base = p->rx.data;
+    const uint db_out = p->db_out, db_in = p->db_in, fs = p->fs;
+    const bool fs_is_output = p->fs_is_output;
+    /* the layout link_tx/link_rx were written for: CLK at data+8 */
+    const bool tx_plain = !p->tx.reversed && p->tx.clk == tx_data_base + 8;
+    const bool rx_plain = !p->rx.reversed && p->rx.clk == rx_data_base + 8;
 
     l->pio = pio;
     l->tx_data_base = tx_data_base;
-    l->tx_clk       = tx_data_base + 8;
-    l->tx_valid     = tx_data_base + 9;
+    l->tx_clk       = p->tx.clk;
+    l->tx_valid     = p->tx.valid;
+    l->tx_rev       = p->tx.reversed;
     l->rx_data_base = rx_data_base;
-    l->rx_clk       = rx_data_base + 8;
-    l->rx_valid     = rx_data_base + 9;
+    l->rx_clk       = p->rx.clk;
+    l->rx_valid     = p->rx.valid;
+    l->rx_rev       = p->rx.reversed;
     l->db_out       = db_out;
     l->db_in        = db_in;
     l->fs           = fs;
@@ -57,26 +90,42 @@ void link_init(link_t *l, PIO pio,
      * The slave's pins are all below 24 and the macro compiles out
      * there, so this is master-only in practice. */
     uint gpio_hi = (tx_data_base > rx_data_base ? tx_data_base : rx_data_base) + 8;
+    if (l->tx_clk > gpio_hi) gpio_hi = l->tx_clk;
+    if (l->rx_clk > gpio_hi) gpio_hi = l->rx_clk;
     if (gpio_hi > 31) pio_set_gpio_base(pio, 16);
 #endif
 
     l->sm_tx  = pio_claim_unused_sm(pio, true);
     l->sm_rx  = pio_claim_unused_sm(pio, true);
-    l->off_tx = pio_add_program(pio, &link_tx_program);
-    l->off_rx = pio_add_program(pio, &link_rx_program);
+    l->off_tx = pio_add_program(pio, tx_plain ? &link_tx_program : &link_tx_rev_program);
+    if (rx_plain) {
+        l->off_rx = pio_add_program(pio, &link_rx_program);
+    } else {
+        static uint16_t rx_insn[3];
+        link_rx_any_program(rx_insn, (l->rx_clk - rx_data_base) & 31);
+        const pio_program_t rx_prog = {.instructions = rx_insn, .length = 3, .origin = -1};
+        l->off_rx = pio_add_program(pio, &rx_prog);
+    }
 
     /* Both of these fail rather than misbehave if the pins fall outside
      * the PIO's GPIO window, which is the one configuration mistake that
      * would otherwise produce a link that looks wired but reads garbage
      * off whichever low GPIOs the high pins aliased onto. */
-    hard_assert(link_tx_program_init(pio, l->sm_tx, l->off_tx,
-                                     tx_data_base, l->applied_clkdiv) == PICO_OK);
+    /* A clock that is not data+8 with the bits in order has no program
+     * yet: only the reversed layout (rev B's slave) does. */
+    hard_assert(tx_plain || p->tx.reversed);
+    hard_assert(tx_plain ? link_tx_program_init(pio, l->sm_tx, l->off_tx,
+                                                tx_data_base, l->applied_clkdiv) == PICO_OK
+                         : link_tx_rev_program_init(pio, l->sm_tx, l->off_tx, tx_data_base,
+                                                    l->tx_clk, l->applied_clkdiv) == PICO_OK);
     /* The receiver is edge-driven: it must always run as fast as it can,
      * because its three-instruction loop has to complete inside the
      * peer's byte period. Dividing it would eat the very margin the
      * sweep is trying to measure. */
-    hard_assert(link_rx_program_init(pio, l->sm_rx, l->off_rx,
-                                     rx_data_base, 1.0f) == PICO_OK);
+    hard_assert(rx_plain ? link_rx_program_init(pio, l->sm_rx, l->off_rx,
+                                                rx_data_base, 1.0f) == PICO_OK
+                         : link_rx_any_program_init(pio, l->sm_rx, l->off_rx, rx_data_base,
+                                                    l->rx_clk, l->rx_rev) == PICO_OK);
 
     /* VALID we drive, VALID the peer drives. Both are plain SIO. */
     gpio_init(l->tx_valid);
@@ -136,6 +185,7 @@ void link_use_bulk_rate(link_t *l) { apply_clkdiv(l, l->bulk_clkdiv);   }
 
 uint32_t link_byte_rate(const link_t *l) {
     float hz = (float)clock_get_hz(clk_sys) / l->bulk_clkdiv;
+    if (l->tx_rev) return (uint32_t)(hz * 4.0f / (float)LINK_PIO_CYCLES_PER_WORD_REV);
     return (uint32_t)(hz / (float)LINK_PIO_CYCLES_PER_BYTE);
 }
 
@@ -225,6 +275,8 @@ bool link_tx_finish(link_t *l, uint32_t timeout_us) {
 
 void link_rx_arm(link_t *l, void *buf, size_t bytes) {
     size_t words = bytes / 4;
+    l->rx_buf = buf;
+    l->rx_words = words;
 
     /* Only abort a channel that is actually running. dma_channel_abort()
      * spins on the abort bit and carries an RP2350 erratum workaround;
@@ -259,6 +311,7 @@ void link_rx_arm(link_t *l, void *buf, size_t bytes) {
 void link_rx_arm_ring(link_t *l, void *buf, uint32_t ring_bits,
                       size_t total_bytes) {
     size_t words = total_bytes / 4;
+    l->rx_words = 0;   /* a throughput run: nobody reads the words */
 
     dma_channel_abort(l->dma_rx);
 
@@ -298,6 +351,11 @@ size_t link_rx_wait(link_t *l, uint32_t timeout_us) {
             link_rx_abort(l);
             return left ? left : 4;   /* never report success on timeout */
         }
+    }
+    /* reversed data lines: each word came in bit-reversed whole */
+    if (l->rx_rev) {
+        for (size_t i = 0; i < l->rx_words; i++) l->rx_buf[i] = rbit32(l->rx_buf[i]);
+        l->rx_words = 0;
     }
     return 0;
 }

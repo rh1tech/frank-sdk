@@ -20,6 +20,28 @@
 
 static link_t link;
 static link_session_t session;
+/* a board file names a bus's CLK and VALID only where they are not
+ * data+8 and data+9, and reversed only for D7..D0 upwards (FRANK Next
+ * rev B's slave) */
+#ifndef FRANK_LINK_A_CLK
+#define FRANK_LINK_A_CLK (FRANK_LINK_A_DATA + 8)
+#endif
+#ifndef FRANK_LINK_A_VALID
+#define FRANK_LINK_A_VALID (FRANK_LINK_A_DATA + 9)
+#endif
+#ifndef FRANK_LINK_A_REVERSED
+#define FRANK_LINK_A_REVERSED 0
+#endif
+#ifndef FRANK_LINK_B_CLK
+#define FRANK_LINK_B_CLK (FRANK_LINK_B_DATA + 8)
+#endif
+#ifndef FRANK_LINK_B_VALID
+#define FRANK_LINK_B_VALID (FRANK_LINK_B_DATA + 9)
+#endif
+#ifndef FRANK_LINK_B_REVERSED
+#define FRANK_LINK_B_REVERSED 0
+#endif
+
 static uint8_t ctrl_tx[LINK_CTRL_BYTES] __attribute__((aligned(4)));
 static uint8_t ctrl_rx[LINK_CTRL_BYTES] __attribute__((aligned(4)));
 #define ECHO_MAX (16u * 1024u)
@@ -32,13 +54,15 @@ link_session_t *frank_link_init(void) {
         (FRANK_PIO_LINK == 2 && FRANK_PIO2_GPIO_BASE))
         pio_set_gpio_base(pio, 16);
 #endif
+    /* bus A runs master->slave, bus B back: each half sends on one */
+    const link_bus_pins_t a = {FRANK_LINK_A_DATA, FRANK_LINK_A_CLK, FRANK_LINK_A_VALID, FRANK_LINK_A_REVERSED};
+    const link_bus_pins_t b = {FRANK_LINK_B_DATA, FRANK_LINK_B_CLK, FRANK_LINK_B_VALID, FRANK_LINK_B_REVERSED};
 #if FRANK_LINK_SIDE_MASTER
-    link_init(&link, pio, FRANK_LINK_A_DATA, FRANK_LINK_B_DATA, FRANK_LINK_DB_OUT, FRANK_LINK_DB_IN,
-              FRANK_LINK_FS, true);
+    const link_pins_t p = {a, b, FRANK_LINK_DB_OUT, FRANK_LINK_DB_IN, FRANK_LINK_FS, true};
 #else
-    link_init(&link, pio, FRANK_LINK_B_DATA, FRANK_LINK_A_DATA, FRANK_LINK_DB_OUT, FRANK_LINK_DB_IN,
-              FRANK_LINK_FS, false);
+    const link_pins_t p = {b, a, FRANK_LINK_DB_OUT, FRANK_LINK_DB_IN, FRANK_LINK_FS, false};
 #endif
+    link_init_pins(&link, pio, &p);
     session.link = &link;
     session.ctrl_tx = ctrl_tx;
     session.ctrl_rx = ctrl_rx;

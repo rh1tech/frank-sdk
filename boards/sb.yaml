@@ -1,0 +1,41 @@
+# The slave half of FRANK Next rev B (2.xx), boards/nb.yaml's pair. From the
+# frank-lab frank_next2 netlist and PCB; no board is built yet.
+#
+# Its link is rev A's (boards/sl.yaml) mirrored: slave GPIO n is rev A's
+# GPIO 24-n, with bus B's CLK and VALID swapped on top. The data run D7..D0
+# upwards, CLK and VALID sit below the data: drivers/link's reversed layout
+# (link_tx_rev, link_rx_any) on this side, the master unchanged.
+id: SB
+name: FRANK Next rev B (slave)
+covers: [FRANK Next rev B slave]
+mcu: rp2350a
+role: slave
+sources:
+  - frank-lab frank_next2 (schematic and PCB, rev 2.xx, unbuilt)
+flash: {bytes: 16M, part: W25Q128JVPIQ}
+psram: {cs: 0, bytes: 8M, part: APS6404L}   # GPIO0, 2K2 up: the SDK's default UART0 TX would drive it
+clocks:
+  cpu_mhz: 504          # the master's clock, always
+  vreg: 1.65
+  psram_mhz: 133
+  flash_mhz: 66
+console:
+  default: uart
+  uart: {inst: 1, tx: 24, rx: 25}   # J6
+usb: {native: device}   # its own USB-C socket
+wifi: {chip: CYW43439, module: RM2, cs: 26, data: 27, wl_on: 28, clk: 29}   # WL_ON and BT_ON together
+link:
+  side: slave
+  a_data: 16            # bus A in: D7..D0 on GPIO16-23
+  a_clk: 15
+  a_valid: 14
+  a_reversed: true
+  b_data: 6             # bus B out: D7..D0 on GPIO6-13
+  b_clk: 4
+  b_valid: 5
+  b_reversed: true
+  fs: 3
+  db_in: 2              # the master's DB_MS (its GPIO41)
+  db_out: 1             # DB_SM, to the master's GPIO42
+pio:
+  link: 0

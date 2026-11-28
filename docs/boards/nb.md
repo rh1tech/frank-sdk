@@ -2,7 +2,7 @@
 
 Generated from [`boards/nb.yaml`](../../boards/nb.yaml) by `tools/gen_boards.py`. Do not edit.
 
-- **MCU:** RP2350B, role master
+- **MCU:** RP2350B, role master, pair `SB`
 - **Covers:** FRANK Next rev B, FRANK Next 2.xx
 - **Flash:** 16M W25Q128JVPIQ
 - **PSRAM:** 8M on CS GPIO47

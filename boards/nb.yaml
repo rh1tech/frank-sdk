@@ -1,6 +1,6 @@
 # FRANK Next rev B (2.xx) — the master half. From the frank-lab frank_next2
 # netlist; no board is built yet, so nothing here has run on hardware.
-# Rev A is boards/na.yaml.
+# Rev A is boards/na.yaml; the slave half is boards/sb.yaml.
 #
 # What changed on the master since rev A: GPIO0-42, 44-47 are the same nets.
 # GPIO43, rev A's wire to the slave's RUN, is the WS2812 (LD2) now; the
@@ -14,6 +14,7 @@ name: FRANK Next rev B (master)
 covers: [FRANK Next rev B, FRANK Next 2.xx]
 mcu: rp2350b
 role: master
+pair: SB
 sources:
   - frank-lab frank_next2 (schematic, rev 2.xx, unbuilt)
 flash: {bytes: 16M, part: W25Q128JVPIQ}
